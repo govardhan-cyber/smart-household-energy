@@ -80,37 +80,48 @@ const SolarReadinessScore: React.FC<{
     statusText = "Low Feasibility";
   }
 
-  const circumference = 226.2; // 2 * pi * 36
+  const circumference = 188.5; // 2 * pi * 30
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-5 text-left h-[180px]">
-      <div className="space-y-2 flex-1">
-        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 block">Solar Readiness</span>
-        <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight">{statusText}</h4>
-        <div className="text-[10px] text-slate-555 dark:text-slate-455 space-y-1.5 pt-1.5 leading-normal">
-          <div className="flex items-center gap-1.5">🟢 Roof Area: <span className="font-extrabold text-slate-700 dark:text-slate-300">{roofArea} sq ft</span></div>
-          <div className="flex items-center gap-1.5">🟢 Solar Yield: <span className="font-extrabold text-slate-700 dark:text-slate-300">{(recommendedKw * 120)} kWh/mo</span></div>
-          <div className="flex items-center gap-1.5">🟢 DISCOM State: <span className="font-extrabold text-slate-700 dark:text-slate-300">{stateName}</span></div>
+    <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left h-[210px] sm:h-[180px] overflow-hidden">
+      <div className="space-y-3.5 flex-1">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 block">Solar Readiness</span>
+          <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight mt-0.5">{statusText}</h4>
+        </div>
+        <div className="text-[10px] text-slate-500 dark:text-slate-450 space-y-2 pt-0.5">
+          <div className="flex justify-between border-b border-slate-100 dark:border-slate-800/60 pb-1">
+            <span>Roof Area</span>
+            <span className="font-extrabold text-slate-800 dark:text-slate-200">{roofArea} sq ft</span>
+          </div>
+          <div className="flex justify-between border-b border-slate-100 dark:border-slate-800/60 pb-1">
+            <span>Solar Yield</span>
+            <span className="font-extrabold text-slate-800 dark:text-slate-200">{recommendedKw * 120} kWh/mo</span>
+          </div>
+          <div className="flex justify-between">
+            <span>DISCOM</span>
+            <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate max-w-[80px]" title={stateName}>{stateName}</span>
+          </div>
         </div>
       </div>
       
-      <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+      <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
         <svg className="w-full h-full transform -rotate-90">
           <circle
-            cx="56"
-            cy="56"
-            r="36"
+            cx="40"
+            cy="40"
+            r="30"
             className="stroke-slate-100 dark:stroke-slate-800"
-            strokeWidth="8"
+            strokeWidth="7"
             fill="transparent"
           />
           <circle
-            cx="56"
-            cy="56"
-            r="36"
+            cx="40"
+            cy="40"
+            r="30"
             className="stroke-amber-500 dark:stroke-primary-green transition-all duration-300 ease-out"
-            strokeWidth="8"
+            strokeWidth="7"
             fill="transparent"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -118,13 +129,14 @@ const SolarReadinessScore: React.FC<{
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className="text-xl font-display font-black text-slate-900 dark:text-white leading-none">{animatedScore}</span>
+          <span className="text-lg font-display font-black text-slate-900 dark:text-white leading-none">{animatedScore}</span>
           <span className="text-[8px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">/ 100</span>
         </div>
       </div>
     </div>
   );
 };
+
 
 export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   tariffState,
