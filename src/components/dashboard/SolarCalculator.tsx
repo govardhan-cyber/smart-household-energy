@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, ChevronDown, MapPin } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -155,7 +155,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [tariffIncrease, setTariffIncrease] = useState<number>(4); 
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
   const [maintenanceRate, setMaintenanceRate] = useState<number>(1.0); 
-  const [expandAssumptions, setExpandAssumptions] = useState<boolean>(false);
+
 
   useEffect(() => {
     setIsCalculating(true);
@@ -786,89 +786,82 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
             </div>
 
-            {/* Collapsible Assumptions Accordion */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-950/20">
-              <button
-                type="button"
-                onClick={() => setExpandAssumptions(!expandAssumptions)}
-                className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-350 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition-colors"
-              >
+            {/* Financial Modeling Assumptions (Always Open) */}
+            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-955/20">
+              <div className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-350 border-b border-slate-200 dark:border-slate-800">
                 <span className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-slate-400" />
                   Financial Modeling Assumptions
                 </span>
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${expandAssumptions ? "rotate-180" : ""}`} />
-              </button>
+              </div>
 
-              {expandAssumptions && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-4 text-xs bg-white dark:bg-slate-900/50">
-                  <div className="space-y-2">
-                    <div className="flex justify-between font-semibold text-slate-600 dark:text-slate-400">
-                      <span>Annual Tariff Rate Increase</span>
-                      <span className="text-primary-blue dark:text-primary-green font-bold">{tariffIncrease}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="15"
-                      step="0.5"
-                      value={tariffIncrease}
-                      onChange={(e) => setTariffIncrease(parseFloat(e.target.value))}
-                      className="premium-slider w-full cursor-pointer"
-                      style={{
-                        background: activeTheme === "dark"
-                          ? `linear-gradient(to right, #10b981 0%, #10b981 ${(tariffIncrease / 15) * 100}%, #1e293b ${(tariffIncrease / 15) * 100}%, #1e293b 100%)`
-                          : `linear-gradient(to right, #2563eb 0%, #2563eb ${(tariffIncrease / 15) * 100}%, #e2e8f0 ${(tariffIncrease / 15) * 100}%, #e2e8f0 100%)`
-                      }}
-                    />
-                    <span className="text-[10px] text-slate-400 block">Typical range: 3% to 6% per year as utility costs rise.</span>
+              <div className="p-4 space-y-4 text-xs bg-white dark:bg-slate-900/50">
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold text-slate-600 dark:text-slate-400">
+                    <span>Annual Tariff Rate Increase</span>
+                    <span className="text-primary-blue dark:text-primary-green font-bold">{tariffIncrease}%</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
-                      <span>Annual Module Degradation</span>
-                      <span className="text-amber-500 font-bold">{panelDegradation}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="2.0"
-                      step="0.1"
-                      value={panelDegradation}
-                      onChange={(e) => setPanelDegradation(parseFloat(e.target.value))}
-                      className="premium-slider w-full cursor-pointer"
-                      style={{
-                        background: activeTheme === "dark"
-                          ? `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b 100%)`
-                          : `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 100%)`
-                      }}
-                    />
-                    <span className="text-[10px] text-slate-400 block">Premium panels (TOPCon) degrade slower (~0.4% - 0.8%) than Mono-PERC (~0.8% - 1.2%).</span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
-                      <span>Annual Maintenance Cost</span>
-                      <span className="text-slate-700 dark:text-slate-350 font-bold">{maintenanceRate}% <span className="font-normal text-slate-400">of cost</span></span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.0"
-                      max="5.0"
-                      step="0.25"
-                      value={maintenanceRate}
-                      onChange={(e) => setMaintenanceRate(parseFloat(e.target.value))}
-                      className="premium-slider w-full cursor-pointer"
-                      style={{
-                        background: activeTheme === "dark"
-                          ? `linear-gradient(to right, #10b981 0%, #10b981 ${(maintenanceRate / 5) * 100}%, #1e293b ${(maintenanceRate / 5) * 100}%, #1e293b 100%)`
-                          : `linear-gradient(to right, #2563eb 0%, #2563eb ${(maintenanceRate / 5) * 100}%, #e2e8f0 ${(maintenanceRate / 5) * 100}%, #e2e8f0 100%)`
-                      }}
-                    />
-                    <span className="text-[10px] text-slate-400 block">Inverter servicing, panel cleaning, and wiring maintenance.</span>
-                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="15"
+                    step="0.5"
+                    value={tariffIncrease}
+                    onChange={(e) => setTariffIncrease(parseFloat(e.target.value))}
+                    className="premium-slider w-full cursor-pointer"
+                    style={{
+                      background: activeTheme === "dark"
+                        ? `linear-gradient(to right, #10b981 0%, #10b981 ${(tariffIncrease / 15) * 100}%, #1e293b ${(tariffIncrease / 15) * 100}%, #1e293b 100%)`
+                        : `linear-gradient(to right, #2563eb 0%, #2563eb ${(tariffIncrease / 15) * 100}%, #e2e8f0 ${(tariffIncrease / 15) * 100}%, #e2e8f0 100%)`
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-400 block">Typical range: 3% to 6% per year as utility costs rise.</span>
                 </div>
-              )}
+
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
+                    <span>Annual Module Degradation</span>
+                    <span className="text-amber-500 font-bold">{panelDegradation}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="2.0"
+                    step="0.1"
+                    value={panelDegradation}
+                    onChange={(e) => setPanelDegradation(parseFloat(e.target.value))}
+                    className="premium-slider w-full cursor-pointer"
+                    style={{
+                      background: activeTheme === "dark"
+                        ? `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b 100%)`
+                        : `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 100%)`
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-400 block">Premium panels (TOPCon) degrade slower (~0.4% - 0.8%) than Mono-PERC (~0.8% - 1.2%).</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
+                    <span>Annual Maintenance Cost</span>
+                    <span className="text-slate-700 dark:text-slate-350 font-bold">{maintenanceRate}% <span className="font-normal text-slate-400">of cost</span></span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.0"
+                    max="5.0"
+                    step="0.25"
+                    value={maintenanceRate}
+                    onChange={(e) => setMaintenanceRate(parseFloat(e.target.value))}
+                    className="premium-slider w-full cursor-pointer"
+                    style={{
+                      background: activeTheme === "dark"
+                        ? `linear-gradient(to right, #10b981 0%, #10b981 ${(maintenanceRate / 5) * 100}%, #1e293b ${(maintenanceRate / 5) * 100}%, #1e293b 100%)`
+                        : `linear-gradient(to right, #2563eb 0%, #2563eb ${(maintenanceRate / 5) * 100}%, #e2e8f0 ${(maintenanceRate / 5) * 100}%, #e2e8f0 100%)`
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-400 block">Inverter servicing, panel cleaning, and wiring maintenance.</span>
+                </div>
+              </div>
             </div>
 
             {/* AI Solar Advisor Widget */}
