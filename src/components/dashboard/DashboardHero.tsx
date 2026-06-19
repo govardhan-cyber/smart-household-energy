@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { 
   Sun, TrendingUp, TrendingDown, ArrowRight, 
   Settings, Award, ShieldCheck, 
-  Leaf, Compass, Play
+  Leaf, Compass, Play,
+  ChevronDown, ChevronUp, Zap, Sparkles, HelpCircle, MessageSquare
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── 0. REUSABLE ANIMATED NUMBER COMPONENT ──────────────────────────────────
 export const AnimatedNumber: React.FC<{
@@ -285,79 +286,574 @@ export const KpiCard: React.FC<{
 };
 
 // ─── 6. ENERGY HEALTH SCORE CARD ──────────────────────────────────────────────
-export const EnergyHealthScore: React.FC<{ score: number }> = ({ score }) => {
-  let status: "Excellent" | "Good" | "Average" | "Needs Improvement" = "Excellent";
-  let colorClass = "text-green-500 dark:text-primary-green";
-  let bgClass = "bg-green-50/30 dark:bg-green-950/10 border-green-200 dark:border-green-900/40";
-  let desc = "Your household energy configuration is optimal.";
-
-  if (score < 60) {
-    status = "Needs Improvement";
-    colorClass = "text-red-500 dark:text-red-400";
-    bgClass = "bg-red-50/30 dark:bg-red-950/10 border-red-200 dark:border-red-900/40";
-    desc = "High energy waste detected. Upgrade appliances or adjust hours.";
-  } else if (score < 75) {
-    status = "Average";
-    colorClass = "text-orange-500 dark:text-warning-orange";
-    bgClass = "bg-orange-50/30 dark:bg-orange-950/10 border-orange-200 dark:border-orange-900/40";
-    desc = "Potential savings are available. Focus on cooling and geyser hours.";
-  } else if (score < 90) {
-    status = "Good";
-    colorClass = "text-blue-500 dark:text-blue-400";
-    bgClass = "bg-blue-50/30 dark:bg-blue-950/10 border-blue-200 dark:border-blue-900/40";
-    desc = "Solid efficiency. Minor habits adjustments can unlock more savings.";
+export const calculateScoreForReport = (report: any) => {
+  if (!report || !report.appliances || report.appliances.length === 0) return 100;
+  let score = 100;
+  
+  // A. Monthly consumption penalty
+  if (report.totalUnits > 250) {
+    const excess = report.totalUnits - 250;
+    const penalty = Math.min(30, (excess / 250) * 15);
+    score -= penalty;
+  } else {
+    const savings = 250 - report.totalUnits;
+    const bonus = Math.min(5, (savings / 250) * 10);
+    score += bonus;
   }
 
+  // B. Savings opportunity penalty
+  const billCharge = report.estimatedBill || 1;
+  const savingsRatio = report.savingsPotential / billCharge;
+  if (savingsRatio > 0.05) {
+    const savingsPenalty = Math.min(30, savingsRatio * 50);
+    score -= savingsPenalty;
+  }
+
+  // C. Solar offset bonus
+  const solarOffsetPercent = report.totalUnits > 0 && report.usageAfter !== undefined 
+    ? Math.min(100, Math.round(((report.totalUnits - report.usageAfter) / report.totalUnits) * 100))
+    : 0;
+  if (solarOffsetPercent > 0) {
+    const solarBonus = Math.min(15, (solarOffsetPercent / 100) * 15);
+    score += solarBonus;
+  }
+
+  // D. Appliance specific runtime penalties
+  const ac = report.appliances.find((a: any) => a.name?.toLowerCase() === "air conditioner" || a.name?.toLowerCase() === "ac" || a.id === "ac");
+  if (ac && ac.hours > 6) {
+    score -= 10;
+  }
+
+  const lights = report.appliances.find((a: any) => a.name?.toLowerCase() === "lights" || a.name?.toLowerCase() === "tube light" || a.id === "lights");
+  if (lights && lights.watts > 12) {
+    score -= 5;
+  }
+
+  const fridge = report.appliances.find((a: any) => a.name?.toLowerCase() === "refrigerator" || a.name?.toLowerCase() === "fridge" || a.id === "fridge");
+  if (fridge && fridge.quantity > 1) {
+    score -= 5;
+  }
+
+  return Math.max(10, Math.min(100, Math.round(score)));
+};
+
+export interface EnergyHealthScoreProps {
+  score: number;
+  reports?: any[];
+  totalUnits?: number;
+  savingsPotential?: number;
+  solarOffsetPercent?: number;
+  appliances?: {
+    id: string;
+    name: string;
+    quantity: number;
+    hours: number;
+    watts: number;
+    age?: number;
+    unitAges?: number[];
+  }[];
+}
+
+export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({ 
+  score,
+  reports = [],
+  totalUnits = 0,
+  savingsPotential = 0,
+  solarOffsetPercent = 0,
+  appliances = []
+}) => {
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showAiExpl, setShowAiExpl] = useState(false);
+  
+  // Staged animation state reveals
+  const [showGrade, setShowGrade] = useState(false);
+  const [showSavings, setShowSavings] = useState(false);
+
+  // Animate the score counting up on load/update
+  useEffect(() => {
+    setAnimatedScore(0);
+    setShowGrade(false);
+    setShowSavings(false);
+
+    const start = 0;
+    const end = score;
+    if (start === end) {
+      setAnimatedScore(end);
+      setShowGrade(true);
+      setShowSavings(true);
+      return;
+    }
+
+    const duration = 1200; // 1.2s to count up
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = progress * (2 - progress); // Ease out quad
+      
+      setAnimatedScore(Math.round(start + easedProgress * (end - start)));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setTimeout(() => setShowGrade(true), 150);
+        setTimeout(() => setShowSavings(true), 300);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [score]);
+
+  // Compute Letter Grade & Status Colors
+  let grade = "D";
+  let statusText = "Needs Improvement";
+  let subtext = "Low efficiency home";
+  let gradientStart = "#EF4444";
+  let gradientEnd = "#DC2626";
+  let glowColor = "rgba(239, 68, 68, 0.2)";
+
+  if (score >= 90) {
+    grade = "A+";
+    statusText = "Excellent";
+    subtext = "Top 5% Efficient Homes";
+    gradientStart = "#22C55E";
+    gradientEnd = "#38BDF8";
+    glowColor = "rgba(34, 197, 94, 0.2)";
+  } else if (score >= 80) {
+    grade = "A";
+    statusText = "Very Good";
+    subtext = "Top 18% Efficient Homes";
+    gradientStart = "#22C55E";
+    gradientEnd = "#84CC16";
+    glowColor = "rgba(34, 197, 94, 0.25)";
+  } else if (score >= 70) {
+    grade = "B";
+    statusText = "Good";
+    subtext = "Above Average Efficiency";
+    gradientStart = "#FACC15";
+    gradientEnd = "#F59E0B";
+    glowColor = "rgba(250, 204, 21, 0.2)";
+  } else if (score >= 60) {
+    grade = "C";
+    statusText = "Average";
+    subtext = "Typical Energy Profile";
+    gradientStart = "#FB923C";
+    gradientEnd = "#EA580C";
+    glowColor = "rgba(251, 146, 60, 0.2)";
+  }
+
+  // Calculate dynamic sub-score breakdown (max sum matches `score` exactly)
+  const rawConsumption = Math.max(10, Math.min(50, Math.round(
+    totalUnits > 250 
+      ? 40 - Math.min(30, ((totalUnits - 250) / 250) * 15) 
+      : 40 + Math.min(10, ((250 - totalUnits) / 250) * 10)
+  )));
+
+  const acApp = appliances.find(a => a.id === "ac" && a.quantity > 0);
+  const lightsApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
+  const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
+  const billCharge = totalUnits * 7.5;
+  const savingsRatio = savingsPotential / (billCharge || 1);
+
+  const rawEfficiency = Math.max(5, Math.min(20, Math.round(
+    20 - (acApp && acApp.hours > 6 ? 6 : 0)
+       - (lightsApp && lightsApp.watts > 12 ? 3 : 0)
+       - (fridgeApp && fridgeApp.quantity > 1 ? 3 : 0)
+       - Math.min(8, savingsRatio * 25)
+  )));
+
+  const rawCarbon = Math.max(5, Math.min(20, Math.round(
+    20 - Math.min(15, (totalUnits / 500) * 15)
+  )));
+
+  const rawSolar = Math.max(1, Math.min(10, Math.round(
+    solarOffsetPercent > 0 
+      ? 3 + Math.min(7, (solarOffsetPercent / 100) * 7) 
+      : 5
+  )));
+
+  const rawSum = rawConsumption + rawEfficiency + rawCarbon + rawSolar;
+  const diff = score - rawSum;
+
+  let subConsumption = rawConsumption;
+  let subEfficiency = rawEfficiency;
+  let subCarbon = rawCarbon;
+  let subSolar = rawSolar;
+
+  if (diff !== 0) {
+    const oldCons = subConsumption;
+    subConsumption = Math.max(10, Math.min(50, subConsumption + diff));
+    const remainingDiff = diff - (subConsumption - oldCons);
+    
+    if (remainingDiff !== 0) {
+      const oldCarbon = subCarbon;
+      subCarbon = Math.max(5, Math.min(20, subCarbon + remainingDiff));
+      const remainingDiff2 = remainingDiff - (subCarbon - oldCarbon);
+      
+      if (remainingDiff2 !== 0) {
+        subEfficiency = Math.max(5, Math.min(20, subEfficiency + remainingDiff2));
+      }
+    }
+  }
+
+  // Calculate score trend compared to previous reports
+  const [trend, setTrend] = useState<{
+    text: string;
+    type: "up" | "down" | "neutral";
+    value: number;
+  }>({ text: "Initial Baseline", type: "neutral", value: 0 });
+
+  useEffect(() => {
+    if (reports && reports.length > 0) {
+      const latestSavedReport = reports[0];
+      const prevScore = calculateScoreForReport(latestSavedReport);
+      const diffScore = score - prevScore;
+      
+      if (diffScore > 0) {
+        setTrend({ text: `+${diffScore} Since Last Audit`, type: "up", value: diffScore });
+      } else if (diffScore < 0) {
+        setTrend({ text: `-${Math.abs(diffScore)} Since Last Audit`, type: "down", value: Math.abs(diffScore) });
+      } else {
+        setTrend({ text: "Steady progress", type: "neutral", value: 0 });
+      }
+    } else {
+      setTrend({ text: "Initial Baseline Started", type: "neutral", value: 0 });
+    }
+  }, [reports, score]);
+
+  // Construct tailored AI explanations
+  const getExplanationPoints = () => {
+    const positives: string[] = [];
+    const negatives: string[] = [];
+
+    if (totalUnits <= 250) {
+      positives.push(`Monthly usage is highly efficient at ${totalUnits} kWh (below 250 kWh target).`);
+    } else {
+      negatives.push(`Monthly usage (${totalUnits} kWh) is elevated, incurring higher slab charges.`);
+    }
+
+    if (savingsRatio > 0.15) {
+      negatives.push(`Potential savings of ₹${Math.round(savingsPotential)}/mo are active (could cut bill by ${(savingsRatio * 100).toFixed(0)}%).`);
+    } else if (savingsPotential > 0) {
+      positives.push(`Wasted energy potential is minimal (savings capped at ₹${Math.round(savingsPotential)}/mo).`);
+    }
+
+    if (solarOffsetPercent > 0) {
+      positives.push(`Solar setup successfully offsets ${solarOffsetPercent}% of grid dependency.`);
+    }
+
+    if (acApp && acApp.hours > 6) {
+      negatives.push(`High AC runtime (${acApp.hours} hrs/day) increases consumption.`);
+    } else if (acApp && acApp.quantity > 0) {
+      positives.push(`AC usage is kept within highly optimized runtime limits (${acApp.hours} hrs/day).`);
+    }
+
+    if (fridgeApp && fridgeApp.quantity > 1) {
+      negatives.push("Multiple refrigerators running simultaneously multiplies your base load.");
+    }
+
+    let hasDecayAC = acApp?.unitAges?.some(age => age >= 5) ?? false;
+    let hasDecayFridge = fridgeApp?.unitAges?.some(age => age >= 5) ?? false;
+    const fanApp = appliances.find(a => a.id === "fan");
+    let hasDecayFan = fanApp?.unitAges?.some(age => age >= 5) ?? false;
+
+    if (hasDecayAC || hasDecayFridge || hasDecayFan) {
+      const decayingApps = [];
+      if (hasDecayAC) decayingApps.push("AC");
+      if (hasDecayFridge) decayingApps.push("Fridge");
+      if (hasDecayFan) decayingApps.push("Fan");
+      negatives.push(`Efficiency decay (loss of up to 15%) detected on aging ${decayingApps.join(", ")} units.`);
+    }
+
+    return { positives, negatives };
+  };
+
+  const { positives, negatives } = getExplanationPoints();
+
+  // Opens ChatBot with preset prompt
+  const handleConsultAI = () => {
+    window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
+      detail: { message: `Analyze my Energy Health Score of ${score}/100 (Grade ${grade}, Status: ${statusText}). My appliances details: ${appliances.map(a => `${a.name}: ${a.quantity}x (${a.hours}h/day)`).join(", ")}. How can I improve my score?` } 
+    }));
+  };
+
+  const circumference = 339.3; // 2 * pi * 54
+  const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
+
   return (
-    <div className={`p-6 rounded-3xl border text-left flex flex-col sm:flex-row items-center justify-between gap-6 ${bgClass} shadow-sm hover:shadow transition-shadow duration-300`}>
-      <div className="space-y-2 max-w-sm">
-        <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-550">
-          <Award className={`w-4 h-4 ${colorClass}`} />
-          Energy Health Score
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden text-left hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 relative w-full"
+      style={{
+        boxShadow: `0 4px 20px -2px rgba(0,0,0,0.05), 0 0 25px ${glowColor}`
+      }}
+      onMouseEnter={() => setShowDetails(true)}
+      onMouseLeave={() => {
+        setShowDetails(false);
+        setShowAiExpl(false);
+      }}
+    >
+      {/* SVG Linear Gradient Definitions */}
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <linearGradient id="premiumScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={gradientStart} />
+            <stop offset="100%" stopColor={gradientEnd} />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      {/* Main card body */}
+      <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 cursor-pointer" onClick={() => setShowDetails(!showDetails)}>
+        <div className="space-y-3.5 flex-1">
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-550">
+            <Award className="w-4.5 h-4.5 text-slate-400" />
+            <span>Energy Health Score</span>
+            {showDetails ? <ChevronUp className="w-3.5 h-3.5 ml-1 text-slate-400 dark:text-slate-500" /> : <ChevronDown className="w-3.5 h-3.5 ml-1 text-slate-400 dark:text-slate-500" />}
+          </div>
+
+          <div className="space-y-1">
+            <h3 className="text-2xl font-display font-black text-slate-900 dark:text-white leading-tight">
+              {statusText} Status
+            </h3>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-450 leading-relaxed">
+              {subtext}
+            </p>
+          </div>
+
+          {/* Trend Indicator */}
+          <div className="flex items-center gap-1.5 pt-1">
+            {trend.type === "up" ? (
+              <div className="flex items-center gap-1 bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-primary-green px-2.5 py-1 rounded-full text-[10px] font-bold border border-green-150 dark:border-green-900/30">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>{trend.text}</span>
+              </div>
+            ) : trend.type === "down" ? (
+              <div className="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 px-2.5 py-1 rounded-full text-[10px] font-bold border border-red-150 dark:border-red-900/30">
+                <TrendingDown className="w-3.5 h-3.5" />
+                <span>{trend.text}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full text-[10px] font-bold border border-slate-200 dark:border-slate-750">
+                <span>{trend.text}</span>
+              </div>
+            )}
+          </div>
         </div>
-        <h3 className={`text-xl font-display font-black leading-tight ${colorClass}`}>
-          {status} Status
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          {desc} Check insights to improve your score.
-        </p>
+
+        {/* Premium Score Ring */}
+        <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+          <svg className="w-full h-full transform -rotate-90">
+            {/* Background circle track */}
+            <circle
+              cx="72"
+              cy="72"
+              r="54"
+              className="stroke-slate-100 dark:stroke-slate-800"
+              strokeWidth="14"
+              fill="transparent"
+            />
+            {/* Foreground animated progress */}
+            <circle
+              cx="72"
+              cy="72"
+              r="54"
+              stroke="url(#premiumScoreGradient)"
+              strokeWidth="14"
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-all duration-300 ease-out"
+            />
+          </svg>
+          
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            {/* Score Number */}
+            <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+              {animatedScore}
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider">
+              / 100
+            </span>
+
+            {/* Letter Grade (Animated reveal) */}
+            <AnimatePresence>
+              {showGrade && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: -2 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  className="mt-1 bg-slate-900 dark:bg-slate-800 text-white dark:text-primary-green px-2 py-0.5 rounded-md text-[9px] font-extrabold tracking-wide uppercase shadow-sm border border-slate-750"
+                >
+                  Grade {grade}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
 
-      <div className="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle
-            cx="56"
-            cy="56"
-            r="46"
-            className="stroke-slate-200 dark:stroke-slate-800"
-            strokeWidth="8"
-            fill="transparent"
-          />
-          <circle
-            cx="56"
-            cy="56"
-            r="46"
-            stroke="currentColor"
-            strokeWidth="8"
-            fill="transparent"
-            strokeDasharray={289}
-            strokeDashoffset={289 - (score / 100) * 289}
-            strokeLinecap="round"
-            className={`transition-all duration-1000 ease-out ${colorClass}`}
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center justify-center">
-          <span className="text-2xl font-display font-black text-slate-850 dark:text-white leading-none">
-            {score}
-          </span>
-          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-555 uppercase mt-0.5">
-            / 100
-          </span>
-        </div>
-      </div>
-    </div>
+      {/* Staged savings reveal */}
+      <AnimatePresence>
+        {showSavings && savingsPotential > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="px-6 pb-5 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-4"
+          >
+            <span className="text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-550 tracking-wider">Potential Savings:</span>
+            <span className="text-xs font-black text-primary-green bg-green-50/60 dark:bg-green-950/20 px-3 py-1 rounded-xl border border-green-100 dark:border-green-900/30">
+              ₹{Math.round(savingsPotential)} / month
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Interactive Expandable Detailed Breakdown Panel */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 px-6 py-5 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 flex items-center gap-1">
+                <span>Detailed Performance Breakdown</span>
+                {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </h4>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAiExpl(!showAiExpl);
+                }}
+                className="flex items-center gap-1 text-[10px] font-extrabold text-primary-blue dark:text-primary-green hover:underline cursor-pointer"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>{showAiExpl ? "Show Scores" : "Explain Score"}</span>
+              </button>
+            </div>
+
+            {!showAiExpl ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 1. Consumption */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                      Consumption
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">{subConsumption} <span className="text-slate-400">/ 50</span></span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-1000" 
+                      style={{ width: `${(subConsumption / 50) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Efficiency */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                      <Sparkles className="w-3.5 h-3.5 text-primary-green" />
+                      Appliance Efficiency
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">{subEfficiency} <span className="text-slate-400">/ 20</span></span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-1000" 
+                      style={{ width: `${(subEfficiency / 20) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Carbon Impact */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                      <Leaf className="w-3.5 h-3.5 text-green-500" />
+                      Carbon Impact
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">{subCarbon} <span className="text-slate-400">/ 20</span></span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-1000" 
+                      style={{ width: `${(subCarbon / 20) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Solar Potential */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] font-semibold">
+                    <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                      <Sun className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                      Solar Gen Potential
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">{subSolar} <span className="text-slate-400">/ 10</span></span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all duration-1000" 
+                      style={{ width: `${(subSolar / 10) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Real-time Dynamic AI Audit Logs Panel */
+              <div className="space-y-3.5 text-xs text-slate-655 dark:text-slate-350">
+                <div className="space-y-2 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner max-h-44 overflow-y-auto">
+                  <div className="font-bold text-slate-900 dark:text-white pb-1 border-b border-slate-100 dark:border-slate-800">
+                    Why is my score {score}?
+                  </div>
+                  
+                  {positives.map((p, idx) => (
+                    <div key={idx} className="flex gap-2 items-start text-green-600 dark:text-primary-green">
+                      <span className="font-bold shrink-0">✓</span>
+                      <span>{p}</span>
+                    </div>
+                  ))}
+
+                  {negatives.map((n, idx) => (
+                    <div key={idx} className="flex gap-2 items-start text-red-500 dark:text-red-400">
+                      <span className="font-bold shrink-0">⚠</span>
+                      <span>{n}</span>
+                    </div>
+                  ))}
+                  
+                  {positives.length === 0 && negatives.length === 0 && (
+                    <p className="text-slate-400 italic">Configure your appliances in the audit tabs to generate real-time AI logs.</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleConsultAI}
+                    className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-[10px] font-bold text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all cursor-pointer shadow-sm"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Consult AI Advisor</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
+
 
 // ─── 7. INSIGHT CARD ──────────────────────────────────────────────────────────
 export const InsightCard: React.FC<{

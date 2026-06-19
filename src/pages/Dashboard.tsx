@@ -1094,7 +1094,14 @@ export const Dashboard: React.FC = () => {
 
               {/* Health Score & Quick Action Panel Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 no-print">
-                <EnergyHealthScore score={healthScore} />
+                <EnergyHealthScore 
+                  score={healthScore} 
+                  reports={reports}
+                  totalUnits={liveTotalUnits}
+                  savingsPotential={liveSavingsPotential}
+                  solarOffsetPercent={solarOffsetPercent}
+                  appliances={appliances}
+                />
                 <QuickActionPanel
                   onRunAudit={handleRunAudit}
                   onGoToSolar={() => setActiveTab("solar")}

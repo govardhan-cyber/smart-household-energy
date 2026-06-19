@@ -330,6 +330,18 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     }
   };
 
+  useEffect(() => {
+    const handleTriggerChat = (e: Event) => {
+      const customEvent = e as CustomEvent<{ message: string }>;
+      setIsOpen(true);
+      if (customEvent.detail?.message) {
+        handleSendMessage(customEvent.detail.message);
+      }
+    };
+    window.addEventListener("she_trigger_chat", handleTriggerChat);
+    return () => window.removeEventListener("she_trigger_chat", handleTriggerChat);
+  }, [handleSendMessage]);
+
   const suggestions = [
     { label: "Explain My Bill", prompt: "Explain my electricity bill and tariff charge breakdown" },
     { label: "Reduce My Costs", prompt: "How can I save ₹500 per month on my energy bill?" },
