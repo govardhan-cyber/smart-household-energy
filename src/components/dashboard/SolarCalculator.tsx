@@ -904,6 +904,23 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
           </div>
+
+          {/* Panel details sub-section */}
+          <div className="bg-slate-50 dark:bg-slate-955/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm">
+            <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">Rooftop Module Details:</span>
+            <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400">
+              <div>Modules Needed:</div>
+              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelsNeeded} panels ({panelWattage}W)</div>
+              <div>Single Panel Dimensions:</div>
+              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelSizeLabel}</div>
+              <div>Single Panel Weight:</div>
+              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">~{panelWeight} kg</div>
+              <div>Internal Efficiency:</div>
+              <div className="font-semibold text-primary-green text-right">
+                {panelEfficiency.toFixed(1)}%
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right Column: ROI Outputs */}
@@ -1091,22 +1108,6 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
             </div>
 
-            {/* Panel details sub-section */}
-            <div className="bg-slate-50 dark:bg-slate-950/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm">
-              <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">Rooftop Module Details:</span>
-              <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400">
-                <div>Modules Needed:</div>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelsNeeded} panels ({panelWattage}W)</div>
-                <div>Single Panel Dimensions:</div>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelSizeLabel}</div>
-                <div>Single Panel Weight:</div>
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">~{panelWeight} kg</div>
-                <div>Internal Efficiency:</div>
-                <div className="font-semibold text-primary-green text-right">
-                  {panelEfficiency.toFixed(1)}%
-                </div>
-              </div>
-            </div>
 
             {/* Security details note */}
             <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
