@@ -3,7 +3,8 @@ import {
   Sun, TrendingUp, TrendingDown, ArrowRight, 
   Settings, Award, ShieldCheck, 
   Leaf, Compass, Play,
-  ChevronDown, ChevronUp, Zap, Sparkles, HelpCircle, MessageSquare
+  ChevronDown, ChevronUp, Zap, Sparkles, HelpCircle, MessageSquare,
+  Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -895,13 +896,61 @@ export const InsightCard: React.FC<{
 };
 
 // ─── 8. QUICK ACTION PANEL ───────────────────────────────────────────────────
-export const QuickActionPanel: React.FC<{
+// ─── 8. QUICK ACTION PANEL ───────────────────────────────────────────────────
+export interface QuickActionPanelProps {
   onRunAudit: () => void;
   onGoToSolar: () => void;
   onGoToSettings: () => void;
-}> = ({ onRunAudit, onGoToSolar, onGoToSettings }) => {
+  reports?: any[];
+}
+
+export const QuickActionPanel: React.FC<QuickActionPanelProps> = ({ 
+  onRunAudit, 
+  onGoToSolar, 
+  onGoToSettings,
+  reports = []
+}) => {
+  const getRecentActivities = () => {
+    if (reports && reports.length > 0) {
+      const latest = reports[0];
+      const activities = [`Audit completed (${latest.totalUnits} kWh)`];
+      
+      if (reports.length > 1) {
+        const prev = reports[1];
+        const prevScore = calculateScoreForReport(prev);
+        const curScore = calculateScoreForReport(latest);
+        const scoreDiff = curScore - prevScore;
+        if (scoreDiff > 0) {
+          activities.push(`Score improved +${scoreDiff}`);
+        } else if (scoreDiff < 0) {
+          activities.push(`Score changed ${scoreDiff}`);
+        } else {
+          activities.push("Audit score steady");
+        }
+      } else {
+        activities.push("Baseline audit recorded");
+      }
+      
+      if (latest.savingsPotential > 0) {
+        activities.push(`Savings: ₹${Math.round(latest.savingsPotential)}/mo`);
+      } else {
+        activities.push("Optimal config active");
+      }
+      
+      return activities;
+    }
+    
+    return [
+      "No audit completed yet",
+      "Ready to start solar check",
+      "System settings initialized"
+    ];
+  };
+
+  const recentActivities = getRecentActivities();
+
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-left">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 text-left">
       <div>
         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
           Quick Actions
@@ -911,28 +960,113 @@ export const QuickActionPanel: React.FC<{
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        <button
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {/* Card 1: Energy Audit */}
+        <div 
           onClick={onRunAudit}
-          className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-150 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:bg-slate-950/20 transition-all text-center gap-1.5"
+          style={{
+            background: "linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05))"
+          }}
+          className="p-5 rounded-3xl border border-green-200/40 dark:border-green-900/20 flex flex-col justify-between h-[280px] hover:-translate-y-1.5 hover:shadow-xl hover:shadow-green-500/5 transition-all duration-300 cursor-pointer group text-left"
         >
-          <Award className="w-5 h-5 text-primary-blue dark:text-primary-green" />
-          <span className="text-[10px] font-bold text-slate-750 dark:text-slate-300">Run Audit</span>
-        </button>
-        <button
+          <div className="space-y-4">
+            <div className="p-3 bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-primary-green rounded-2xl w-fit">
+              <Zap className="w-12 h-12 group-hover:scale-110 transition-transform duration-300" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-display font-black text-slate-900 dark:text-white leading-tight">
+                Run Energy Audit
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                Analyze your home. Save up to ₹500/mo.
+              </p>
+            </div>
+          </div>
+          <button className="flex items-center gap-1.5 text-[10px] font-black text-green-600 dark:text-primary-green group-hover:translate-x-1 transition-transform duration-300 w-fit">
+            <span>Start Audit</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Card 2: Solar Planner */}
+        <div 
           onClick={onGoToSolar}
-          className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-150 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:bg-slate-950/20 transition-all text-center gap-1.5"
+          style={{
+            background: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))"
+          }}
+          className="p-5 rounded-3xl border border-amber-200/40 dark:border-amber-900/20 flex flex-col justify-between h-[280px] hover:-translate-y-1.5 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 cursor-pointer group text-left"
         >
-          <Sun className="w-5 h-5 text-amber-500" />
-          <span className="text-[10px] font-bold text-slate-750 dark:text-slate-300">Solar Sheet</span>
-        </button>
-        <button
+          <div className="space-y-4">
+            <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-2xl w-fit">
+              <Sun className="w-12 h-12 group-hover:scale-110 transition-transform duration-300" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-display font-black text-slate-900 dark:text-white leading-tight">
+                Solar Planner
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                Calculate ROI. Payback in 4.5 yrs.
+              </p>
+            </div>
+          </div>
+          <button className="flex items-center gap-1.5 text-[10px] font-black text-amber-600 dark:text-amber-400 group-hover:translate-x-1 transition-transform duration-300 w-fit">
+            <span>Plan Solar</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Card 3: Settings */}
+        <div 
           onClick={onGoToSettings}
-          className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-150 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:bg-slate-950/20 transition-all text-center gap-1.5"
+          style={{
+            background: "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.05))"
+          }}
+          className="p-5 rounded-3xl border border-sky-200/40 dark:border-sky-900/20 flex flex-col justify-between h-[280px] hover:-translate-y-1.5 hover:shadow-xl hover:shadow-sky-500/5 transition-all duration-300 cursor-pointer group text-left"
         >
-          <Settings className="w-5 h-5 text-slate-500" />
-          <span className="text-[10px] font-bold text-slate-750 dark:text-slate-300">Settings</span>
-        </button>
+          <div className="space-y-4">
+            <div className="p-3 bg-sky-500/10 dark:bg-sky-500/20 text-sky-500 rounded-2xl w-fit">
+              <Settings className="w-12 h-12 group-hover:scale-110 transition-transform duration-300" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-display font-black text-slate-900 dark:text-white leading-tight">
+                Settings
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                Manage preferences. Update profile.
+              </p>
+            </div>
+          </div>
+          <button className="flex items-center gap-1.5 text-[10px] font-black text-sky-600 dark:text-sky-400 group-hover:translate-x-1 transition-transform duration-300 w-fit">
+            <span>Configure</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <hr className="border-slate-100 dark:border-slate-800" />
+
+      {/* Recent Activity */}
+      <div className="space-y-3">
+        <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550">
+          Recent Activity
+        </h4>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {recentActivities.map((act, idx) => (
+            <div 
+              key={idx} 
+              className="flex items-center gap-2.5 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-850"
+            >
+              <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500 dark:bg-green-950/20 dark:text-primary-green shrink-0">
+                <Check className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
+                {act}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1106,6 +1106,7 @@ export const Dashboard: React.FC = () => {
                   onRunAudit={handleRunAudit}
                   onGoToSolar={() => setActiveTab("solar")}
                   onGoToSettings={() => navigate("/settings")}
+                  reports={reports}
                 />
               </div>
 
