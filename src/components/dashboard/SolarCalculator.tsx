@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, ChevronDown } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, ChevronDown, MapPin } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -565,21 +565,25 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-2.5">
                   {[
-                    { code: "ap", label: "Andhra Pradesh", short: "AP", emoji: "📍" },
-                    { code: "ts", label: "Telangana", short: "TS", emoji: "📍" },
-                    { code: "ka", label: "Karnataka", short: "KA", emoji: "📍" }
+                    { code: "ap", label: "Andhra Pradesh", short: "AP" },
+                    { code: "ts", label: "Telangana", short: "TS" },
+                    { code: "ka", label: "Karnataka", short: "KA" }
                   ].map(st => (
                     <button
                       key={st.code}
                       onClick={() => setSelectedState(st.code)}
                       type="button"
-                      className={`py-2 px-1 text-xs font-bold rounded-2xl border transition-all duration-205 flex flex-col items-center justify-center gap-1 ${
+                      className={`py-2.5 px-1 text-xs font-bold rounded-2xl border transition-all duration-205 flex flex-col items-center justify-center gap-1.5 ${
                         selectedState === st.code
-                          ? "border-primary-blue bg-blue-505/5 text-primary-blue shadow-[0_0_15px_rgba(59,130,246,0.25)] dark:border-primary-green dark:bg-green-500/5 dark:text-primary-green dark:shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                          ? "border-primary-blue bg-blue-500/5 text-primary-blue shadow-[0_0_15px_rgba(59,130,246,0.25)] dark:border-primary-green dark:bg-green-500/5 dark:text-primary-green dark:shadow-[0_0_15px_rgba(16,185,129,0.25)]"
                           : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-slate-350 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400"
                       }`}
                     >
-                      <span className="text-sm">{st.emoji}</span>
+                      <MapPin className={`w-4 h-4 transition-colors ${
+                        selectedState === st.code
+                          ? "text-primary-blue dark:text-primary-green"
+                          : "text-slate-400 dark:text-slate-500"
+                      }`} />
                       <span className="text-[10px] tracking-wide uppercase font-black">{st.short}</span>
                     </button>
                   ))}
