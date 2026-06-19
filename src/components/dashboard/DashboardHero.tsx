@@ -646,54 +646,56 @@ export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({
         </div>
 
         {/* Premium Score Ring */}
-        <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full transform -rotate-90">
-            {/* Background circle track */}
-            <circle
-              cx="72"
-              cy="72"
-              r="54"
-              className="stroke-slate-100 dark:stroke-slate-800"
-              strokeWidth="14"
-              fill="transparent"
-            />
-            {/* Foreground animated progress */}
-            <circle
-              cx="72"
-              cy="72"
-              r="54"
-              stroke="url(#premiumScoreGradient)"
-              strokeWidth="14"
-              fill="transparent"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-all duration-300 ease-out"
-            />
-          </svg>
-          
-          <div className="absolute flex flex-col items-center justify-center text-center">
-            {/* Score Number */}
-            <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
-              {animatedScore}
-            </span>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider">
-              / 100
-            </span>
-
-            {/* Letter Grade (Animated reveal) */}
-            <AnimatePresence>
-              {showGrade && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, y: -2 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  className="mt-1 bg-slate-900 dark:bg-slate-800 text-white dark:text-primary-green px-2 py-0.5 rounded-md text-[9px] font-extrabold tracking-wide uppercase shadow-sm border border-slate-750"
-                >
-                  Grade {grade}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        <div className="flex flex-col items-center gap-2.5 shrink-0">
+          <div className="relative w-36 h-36 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90">
+              {/* Background circle track */}
+              <circle
+                cx="72"
+                cy="72"
+                r="54"
+                className="stroke-slate-100 dark:stroke-slate-800"
+                strokeWidth="14"
+                fill="transparent"
+              />
+              {/* Foreground animated progress */}
+              <circle
+                cx="72"
+                cy="72"
+                r="54"
+                stroke="url(#premiumScoreGradient)"
+                strokeWidth="14"
+                fill="transparent"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-300 ease-out"
+              />
+            </svg>
+            
+            <div className="absolute flex flex-col items-center justify-center text-center">
+              {/* Score Number */}
+              <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+                {animatedScore}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5 tracking-wider">
+                / 100
+              </span>
+            </div>
           </div>
+
+          {/* Letter Grade (Animated reveal) outside the circle! */}
+          <AnimatePresence>
+            {showGrade && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="bg-slate-950 dark:bg-slate-800 text-white dark:text-primary-green px-3 py-1 rounded-full text-[10px] font-black tracking-wide uppercase shadow-md border border-slate-750"
+              >
+                Grade {grade}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
