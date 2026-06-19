@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions, IS_FIREBASE_CONFIGURED } from "../firebase/config";
 
@@ -64,7 +64,31 @@ export const reportsService = {
 
         return realId;
       } catch (e) {
-        console.error("Cloud Functions validateAndSaveReport error, falling back to localStorage:", e);
+        console.error("Cloud Functions validateAndSaveReport error, trying direct Firestore write:", e);
+        if (db) {
+          try {
+            const reportsRef = collection(db, "energy_reports");
+            const newDocRef = doc(reportsRef);
+            const reportWithId = {
+              ...report,
+              id: newDocRef.id,
+              validatedByBackend: false
+            };
+            await setDoc(newDocRef, reportWithId);
+
+            // Update cached item with real Firestore doc ID
+            const freshData = localStorage.getItem(cacheKey);
+            if (freshData) {
+              const freshList: EnergyReport[] = JSON.parse(freshData);
+              const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: newDocRef.id } : r);
+              localStorage.setItem(cacheKey, JSON.stringify(updatedList));
+            }
+            return newDocRef.id;
+          } catch (firestoreErr) {
+            console.error("Firestore direct write fallback also failed:", firestoreErr);
+          }
+        }
+
         const localId = "report_" + Math.random().toString(36).substr(2, 9);
         const freshData = localStorage.getItem(cacheKey);
         if (freshData) {
