@@ -552,7 +552,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Interactive Inputs */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-6 space-y-6">
           <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             
             {/* Header */}
@@ -907,7 +907,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
         </div>
 
         {/* Right Column: ROI Outputs */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-6 space-y-6">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
