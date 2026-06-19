@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Play, Trash2, Sun, ArrowRight, ShieldCheck, 
   AlertTriangle, TrendingDown, Cpu, ChevronRight,
-  Leaf, Award, Printer
+  Leaf, Award
 } from "lucide-react";
 import { runHomeAudit } from "../../utils/auditEngine";
 import type { AuditResult } from "../../utils/auditEngine";
@@ -225,15 +225,8 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         {/* Left Column: Interactive Audit workspace */}
         <div className="lg:col-span-8 space-y-6">
           
-          {/* Print-Only Branded Header */}
-          <div className="print-only mb-6 border-b border-slate-200 dark:border-slate-800 pb-4 text-left">
-            <h1 className="text-2xl font-display font-black text-slate-900">AI Home Energy Audit Report</h1>
-            <p className="text-xs text-slate-500 font-bold">Generated on {new Date().toLocaleDateString()} for your household</p>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Smart Household Energy AI Diagnostics Platform</p>
-          </div>
-
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-green-900/20 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 no-print">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-green-900/20 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="space-y-2 max-w-lg">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-white/10 text-white">
@@ -249,34 +242,23 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-              <button
-                onClick={handleRunAudit}
-                disabled={isScanning || activeAppliances.length === 0}
-                className="w-full sm:w-auto h-12 px-6 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest rounded-2xl text-slate-900 bg-white hover:bg-slate-100 dark:text-slate-950 dark:bg-primary-green dark:hover:bg-primary-green/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
-              >
-                {isScanning ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 animate-spin rounded-full"></div>
-                    Scanning...
-                  </>
-                ) : (
-                  <>
-                    Run Home Audit
-                    <Play className="w-4 h-4 fill-current ml-0.5" />
-                  </>
-                )}
-              </button>
-              {auditResult && !isScanning && (
-                <button
-                  onClick={() => window.print()}
-                  className="w-full sm:w-auto h-12 px-6 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest rounded-2xl text-white bg-blue-700 hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all shadow-md active:scale-[0.98] hover:scale-[1.02]"
-                >
-                  Export PDF
-                  <Printer className="w-4 h-4 ml-0.5" />
-                </button>
+            <button
+              onClick={handleRunAudit}
+              disabled={isScanning || activeAppliances.length === 0}
+              className="w-full sm:w-auto h-12 px-6 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest rounded-2xl text-slate-900 bg-white hover:bg-slate-100 dark:text-slate-950 dark:bg-primary-green dark:hover:bg-primary-green/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
+            >
+              {isScanning ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-slate-900/30 border-t-slate-900 animate-spin rounded-full"></div>
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  Run Home Audit
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                </>
               )}
-            </div>
+            </button>
           </div>
 
           {/* Loader Scanning Animation */}
@@ -537,7 +519,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         </div>
 
         {/* Right Column: Past Audits Log History */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 no-print">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
               Audit Logs History
