@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { db, IS_FIREBASE_CONFIGURED } from "../firebase/config";
-import { collection, doc, addDoc, getDocs, deleteDoc, query, where, orderBy } from "firebase/firestore";
+import { collection, doc, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
 import { createWorker } from "tesseract.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -132,34 +132,62 @@ export const BillAnalyzer: React.FC = () => {
   // Load history from Firestore or LocalStorage fallback
   const loadHistory = async () => {
     if (!user) return;
-    setLoadingHistory(true);
+    
+    const cacheKey = `she_bill_history_${user.uid}`;
+    
+    // 1. Instantly load from localStorage cache first to avoid blank screens/delays
+    const cached = localStorage.getItem(cacheKey);
+    let cachedRecords: BillRecord[] = [];
+    if (cached) {
+      try {
+        cachedRecords = JSON.parse(cached);
+        setHistory(cachedRecords);
+        if (cachedRecords.length > 0 && !activeBill) {
+          setActiveBill(cachedRecords[0]);
+        }
+        setLoadingHistory(false);
+      } catch (e) {
+        console.error("Failed to parse cached bill history:", e);
+      }
+    } else {
+      setLoadingHistory(true);
+    }
+
+    // 2. Fetch fresh data from network/Firestore
     try {
       if (IS_FIREBASE_CONFIGURED && db) {
+        // Query without orderBy to avoid needing a composite index in Firestore
         const q = query(
           collection(db, "billHistory"),
-          where("userId", "==", user.uid),
-          orderBy("uploadDate", "desc")
+          where("userId", "==", user.uid)
         );
         const snap = await getDocs(q);
         const records: BillRecord[] = [];
         snap.forEach((doc) => {
           records.push({ id: doc.id, ...doc.data() } as BillRecord);
         });
+        
+        // Sort descending by uploadDate client-side
+        records.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+        
         setHistory(records);
+        localStorage.setItem(cacheKey, JSON.stringify(records));
+        
         if (records.length > 0 && !activeBill) {
           setActiveBill(records[0]);
         }
       } else {
-        // LocalStorage fallback
-        const cached = localStorage.getItem(`she_bill_history_${user.uid}`);
-        const records = cached ? JSON.parse(cached) : [];
-        setHistory(records);
-        if (records.length > 0 && !activeBill) {
-          setActiveBill(records[0]);
+        // LocalStorage fallback if Firebase is not configured
+        if (!cached) {
+          setHistory([]);
         }
       }
     } catch (err) {
       console.error("Error fetching bill history:", err);
+      // Fallback: If network query fails, keep using cached records if they exist
+      if (cachedRecords.length > 0) {
+        setHistory(cachedRecords);
+      }
     } finally {
       setLoadingHistory(false);
     }
@@ -519,9 +547,11 @@ export const BillAnalyzer: React.FC = () => {
       } else {
         const id = "mock_b_" + Math.random().toString(36).substr(2, 9);
         finalRecord = { id, ...record };
-        const localList = [finalRecord, ...history];
-        localStorage.setItem(`she_bill_history_${user.uid}`, JSON.stringify(localList));
       }
+
+      // Always update localStorage cache
+      const localList = [finalRecord, ...history];
+      localStorage.setItem(`she_bill_history_${user.uid}`, JSON.stringify(localList));
 
       setHistory(prev => [finalRecord, ...prev]);
       setActiveBill(finalRecord);
@@ -555,10 +585,11 @@ export const BillAnalyzer: React.FC = () => {
     try {
       if (IS_FIREBASE_CONFIGURED && db) {
         await deleteDoc(doc(db, "billHistory", id));
-      } else {
-        const localList = history.filter(h => h.id !== id);
-        localStorage.setItem(`she_bill_history_${user.uid}`, JSON.stringify(localList));
       }
+      
+      // Always update localStorage cache
+      const localList = history.filter(h => h.id !== id);
+      localStorage.setItem(`she_bill_history_${user.uid}`, JSON.stringify(localList));
       
       setHistory(prev => prev.filter(h => h.id !== id));
       if (activeBill?.id === id) {
