@@ -1533,6 +1533,7 @@ export const Dashboard: React.FC = () => {
                 customFlatRate={user?.customFlatRate || 7.5}
                 mode="consumption"
                 loading={reportsLoading}
+                recommendedKw={recommendedKw}
               />
             </motion.div>
           )}
@@ -1567,6 +1568,7 @@ export const Dashboard: React.FC = () => {
                 customFlatRate={user?.customFlatRate || 7.5}
                 mode="consumption"
                 loading={reportsLoading}
+                recommendedKw={recommendedKw}
               />
             </motion.div>
           )}

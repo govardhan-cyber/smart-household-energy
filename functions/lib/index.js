@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateAndSaveReport = void 0;
+exports.generateRecommendations = exports.calculateSolarROI = exports.calculateBillForecast = exports.calculateBillScore = exports.calculateEnergyScore = exports.validateAndSaveReport = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -47,4 +47,13 @@ exports.validateAndSaveReport = functions.https.onCall(async (data, context) => 
         msg: "Report successfully validated server-side and recorded to Firestore.",
     };
 });
+var scoring_1 = require("./scoring");
+Object.defineProperty(exports, "calculateEnergyScore", { enumerable: true, get: function () { return scoring_1.calculateEnergyScore; } });
+Object.defineProperty(exports, "calculateBillScore", { enumerable: true, get: function () { return scoring_1.calculateBillScore; } });
+var forecasting_1 = require("./forecasting");
+Object.defineProperty(exports, "calculateBillForecast", { enumerable: true, get: function () { return forecasting_1.calculateBillForecast; } });
+var solar_1 = require("./solar");
+Object.defineProperty(exports, "calculateSolarROI", { enumerable: true, get: function () { return solar_1.calculateSolarROI; } });
+var recommendations_1 = require("./recommendations");
+Object.defineProperty(exports, "generateRecommendations", { enumerable: true, get: function () { return recommendations_1.generateRecommendations; } });
 //# sourceMappingURL=index.js.map

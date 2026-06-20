@@ -94,3 +94,9 @@ export const validateAndSaveReport = functions.https.onCall(
   }
 );
 
+export { calculateEnergyScore, calculateBillScore } from "./scoring";
+export { calculateBillForecast } from "./forecasting";
+export { calculateSolarROI } from "./solar";
+export { generateRecommendations } from "./recommendations";
+
+

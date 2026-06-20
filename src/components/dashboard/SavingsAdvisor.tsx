@@ -159,7 +159,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
           <div className="flex gap-2 mt-3 no-print">
             <button
               onClick={onExportCSV}
-              className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-855 dark:text-white transition-all"
+              className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-850 dark:text-white transition-all"
               title="Download CSV report"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
@@ -167,7 +167,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             </button>
             <button
               onClick={onPrint}
-              className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-855 dark:text-white transition-all"
+              className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-semibold hover:bg-slate-50 dark:hover:bg-slate-850 dark:text-white transition-all"
               title="Print / Save PDF report"
             >
               <Printer className="w-3.5 h-3.5 text-slate-500" />
@@ -219,7 +219,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-850 shrink-0 group-hover:scale-105 group-hover:bg-white dark:group-hover:bg-slate-855 transition-all duration-300">
+                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-800 shrink-0 group-hover:scale-105 group-hover:bg-white dark:group-hover:bg-slate-800 transition-all duration-300">
                     {tip.icon}
                   </div>
                   <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border rounded-full ${tip.badgeColor}`}>
@@ -333,7 +333,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* Slider Controls */}
-          <div className="md:col-span-5 space-y-3.5 bg-slate-50/50 dark:bg-slate-955/25 p-4 rounded-xl border border-slate-100 dark:border-slate-855">
+          <div className="md:col-span-5 space-y-3.5 bg-slate-50/50 dark:bg-slate-900/25 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center">
               <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                 {sliderLabel}
@@ -359,7 +359,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
           {/* Results Grid */}
           <div className="md:col-span-7 grid grid-cols-3 gap-3">
             {/* Current Usage */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-955 rounded-xl border border-slate-150 dark:border-slate-855 text-center">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center">
               <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Current Usage</span>
               <span className="text-sm sm:text-base font-mono font-bold text-slate-800 dark:text-white mt-1 block">
                 {Math.round(analysisResult.totalUnits)} kWh
@@ -367,7 +367,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             </div>
 
             {/* Simulated Usage */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-955 rounded-xl border border-slate-150 dark:border-slate-855 text-center">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-150 dark:border-slate-800 text-center">
               <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">New Usage</span>
               <span className="text-sm sm:text-base font-mono font-bold text-primary-blue dark:text-primary-green mt-1 block">
                 {Math.round(newUnits)} kWh

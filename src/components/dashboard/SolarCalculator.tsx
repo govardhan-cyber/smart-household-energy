@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -46,6 +46,7 @@ const AnimatedNumber: React.FC<{
 };
 
 // Solar Readiness Score Component
+// Solar Readiness Score Component
 const SolarReadinessScore: React.FC<{ 
   score: number; 
   stateName: string; 
@@ -74,63 +75,170 @@ const SolarReadinessScore: React.FC<{
   }, [score]);
 
   let statusText = "Good Candidate";
+  let badgeColor = "bg-green-500/10 text-green-700 dark:text-primary-green border-green-500/20";
+  let badgeText = "Good Potential";
+  let textExplanation = "Score >75 indicates high suitability.";
+  
   if (score >= 85) {
     statusText = "Excellent Candidate";
+    badgeColor = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+    badgeText = "Excellent Potential";
+    textExplanation = "Score >85 indicates outstanding setup.";
   } else if (score < 60) {
     statusText = "Low Feasibility";
+    badgeColor = "bg-rose-500/10 text-rose-600 dark:text-rose-450 border-rose-500/20";
+    badgeText = "Low Feasibility";
+    textExplanation = "Score <60 suggests lower generation.";
   }
 
-  const circumference = 188.5; // 2 * pi * 30
+  const circumference = 163.3; // 2 * pi * 26
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left h-[210px] sm:h-[180px] overflow-hidden">
-      <div className="space-y-3.5 flex-1">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 block">Solar Readiness</span>
-          <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight mt-0.5">{statusText}</h4>
+    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between text-left space-y-3 relative">
+      {/* Top Row: Title block and circular gauge side-by-side */}
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-2">
+        <div className="flex gap-2">
+          <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl h-9 w-9 flex items-center justify-center shrink-0">
+            <Sun className="w-4.5 h-4.5 animate-spin" style={{ animationDuration: "15s" }} />
+          </div>
+          <div>
+            <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block">
+              SOLAR READINESS
+            </span>
+            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase leading-tight mt-0.5">
+              {statusText}
+            </h3>
+            <p className="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+              High potential for solar installation.
+            </p>
+          </div>
         </div>
-        <div className="text-[10px] text-slate-500 dark:text-slate-450 space-y-2 pt-0.5">
-          <div className="flex justify-between border-b border-slate-100 dark:border-slate-800/60 pb-1">
-            <span>Roof Area</span>
-            <span className="font-extrabold text-slate-800 dark:text-slate-200">{roofArea} sq ft</span>
-          </div>
-          <div className="flex justify-between border-b border-slate-100 dark:border-slate-800/60 pb-1">
-            <span>Solar Yield</span>
-            <span className="font-extrabold text-slate-800 dark:text-slate-200">{recommendedKw * 120} kWh/mo</span>
-          </div>
-          <div className="flex justify-between">
-            <span>DISCOM</span>
-            <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate max-w-[80px]" title={stateName}>{stateName}</span>
+
+        {/* Circular Gauge */}
+        <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 64 64">
+            <circle
+              cx="32"
+              cy="32"
+              r="26"
+              className="stroke-slate-100 dark:stroke-slate-800"
+              strokeWidth="5.5"
+              fill="transparent"
+            />
+            <circle
+              cx="32"
+              cy="32"
+              r="26"
+              className="stroke-amber-500 dark:stroke-primary-green transition-all duration-300 ease-out"
+              strokeWidth="5.5"
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center justify-center text-center">
+            <span className="text-base font-display font-black text-slate-900 dark:text-white leading-none">
+              {animatedScore}
+            </span>
+            <span className="text-[7.5px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">
+              / 100
+            </span>
           </div>
         </div>
       </div>
-      
-      <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle
-            cx="40"
-            cy="40"
-            r="30"
-            className="stroke-slate-100 dark:stroke-slate-800"
-            strokeWidth="7"
-            fill="transparent"
-          />
-          <circle
-            cx="40"
-            cy="40"
-            r="30"
-            className="stroke-amber-500 dark:stroke-primary-green transition-all duration-300 ease-out"
-            strokeWidth="7"
-            fill="transparent"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className="text-lg font-display font-black text-slate-900 dark:text-white leading-none">{animatedScore}</span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">/ 100</span>
+
+      {/* Middle Block: List and Potential Badge side-by-side */}
+      <div className="flex items-center justify-between gap-4 my-0.5">
+        {/* Left Side: Compact row items */}
+        <div className="flex-1 space-y-2">
+          {/* Roof Area */}
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-green-500/10 text-green-600 dark:text-primary-green rounded-md shrink-0">
+              <Home className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">Usable Area</span>
+              <span className="text-xs font-bold text-green-650 dark:text-primary-green mt-0.5 block">
+                {roofArea} sq ft
+              </span>
+            </div>
+          </div>
+
+          {/* Solar Yield */}
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-blue-500/10 text-blue-500 rounded-md shrink-0">
+              <Zap className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">Solar Yield</span>
+              <span className="text-xs font-bold text-blue-500 mt-0.5 block">
+                {Math.round(recommendedKw * 120)} kWh/mo
+              </span>
+            </div>
+          </div>
+
+          {/* DISCOM */}
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-purple-500/10 text-purple-500 rounded-md shrink-0">
+              <Building2 className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">DISCOM Provider</span>
+              <span className="text-xs font-bold text-purple-505 dark:text-purple-400 mt-0.5 block truncate max-w-[125px]" title={stateName}>
+                {stateName}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Badge & description */}
+        <div className="flex flex-col items-center shrink-0 w-28 text-center space-y-0.5">
+          <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${badgeColor}`}>
+            {badgeText}
+          </span>
+          <p className="text-[9px] text-slate-450 dark:text-slate-500 font-semibold leading-tight mt-1">
+            {textExplanation}
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Group: Alert & Footer grouped together to eliminate awkward vertical stretching gaps */}
+      <div className="space-y-2 mt-auto">
+        {/* Bottom Block: Compact Good Fit Alert */}
+        <div className="p-2.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 rounded-xl flex items-center justify-between gap-2.5 text-left">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-lg shrink-0">
+              <Leaf className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-455 block">
+                Why it's a good fit
+              </span>
+              <span className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
+                Ample roof space & high yield for maximum savings.
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
+                detail: { message: `Analyze my solar readiness parameters. My roof is ${roofArea} sq ft in ${stateName}. Explain why this is a good fit.` } 
+              }));
+            }}
+            type="button"
+            className="p-1 text-emerald-600 dark:text-primary-green hover:bg-emerald-500/15 rounded-md transition-all text-xs font-black shrink-0 cursor-pointer"
+            title="View Details"
+          >
+            ➔
+          </button>
+        </div>
+
+        {/* Footer Info Callout */}
+        <div className="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-400 dark:text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-850">
+          <Info className="w-3 h-3" />
+          <span>Score based on roof, yield, and DISCOM provider.</span>
         </div>
       </div>
     </div>
@@ -155,6 +263,11 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [tariffIncrease, setTariffIncrease] = useState<number>(4); 
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
   const [maintenanceRate, setMaintenanceRate] = useState<number>(1.0); 
+
+  // Custom visual states for isometric roof planner
+  const [roofTilt, setRoofTilt] = useState<"flat" | "inclined">("inclined");
+  const [roofOrientation, setRoofOrientation] = useState<"south" | "east" | "west">("south");
+  const [shadedPanels, setShadedPanels] = useState<Record<number, boolean>>({}); 
 
 
   useEffect(() => {
@@ -245,7 +358,20 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   };
 
   const installationCost = getEstimatedCost(recommendedKw, selectedCity);
-  const monthlyGeneration = recommendedKw * 120; // kWh
+  
+  const orientationMultiplier = roofOrientation === "south" ? 1.0 : 0.85;
+  const tiltMultiplier = roofTilt === "flat" ? 0.90 : 1.0;
+  
+  // Calculate panels needed dynamically to compute shading factor
+  const panelWattageTmp = solarTech === "topcon" ? 580 : 500;
+  const panelsNeededTmp = Math.ceil((recommendedKw * 1000) / panelWattageTmp);
+  const shadedCount = Object.values(shadedPanels).filter(Boolean).length;
+  const shadingFactor = panelsNeededTmp > 0 
+    ? 1 - (Math.min(panelsNeededTmp, shadedCount) / panelsNeededTmp) * 0.60
+    : 1.0;
+
+  const solarEfficiencyFactor = orientationMultiplier * tiltMultiplier * shadingFactor;
+  const monthlyGeneration = recommendedKw * 120 * solarEfficiencyFactor; // kWh
 
   // Technology details
   const panelWattage = solarTech === "topcon" ? 580 : 500;
@@ -455,29 +581,238 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const billPercent = ((monthlyBill - 1000) / 14000) * 100;
   const roofPercent = ((roofArea - 50) / 1450) * 100;
 
-  // Custom visual components
+  // Custom visual component helpers
+  const togglePanelShaded = (idx: number) => {
+    setShadedPanels(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
   const renderRoofMockup = () => {
+    const orientationMultiplier = roofOrientation === "south" ? 1.0 : 0.85;
+    const tiltMultiplier = roofTilt === "flat" ? 0.90 : 1.0;
+    const shadedCount = Object.values(shadedPanels).filter(Boolean).length;
+    const shadingFactor = panelsNeeded > 0 
+      ? 1 - (Math.min(panelsNeeded, shadedCount) / panelsNeeded) * 0.60
+      : 1.0;
+    const systemOutputPercent = Math.round(orientationMultiplier * tiltMultiplier * shadingFactor * 100);
+
+    // Sun visual positions
+    let sunX = 190, sunY = 15, sunGlow = "rgba(245, 158, 11, 0.4)";
+    if (roofOrientation === "east") {
+      sunX = 60; sunY = 25; sunGlow = "rgba(249, 115, 22, 0.3)";
+    } else if (roofOrientation === "west") {
+      sunX = 320; sunY = 25; sunGlow = "rgba(249, 115, 22, 0.3)";
+    }
+
+    // Bilinear interpolation for panels on isometric roof
+    const y_front = roofTilt === "flat" ? 95 : 115;
+    const y_back = roofTilt === "flat" ? 55 : 65;
+
+    const cols = 4;
+    const rows = Math.max(1, Math.ceil(panelsNeeded / cols));
+    const du = 0.82 / cols;
+    const dv = 0.82 / rows;
+
+    const getIsoXY = (u: number, v: number) => {
+      const lx = 60 + v * (160 - 60);
+      const ly = y_front + v * (y_back - y_front);
+      const rx = 240 + v * (340 - 240);
+      const ry = y_front + v * (y_back - y_front);
+      return {
+        x: lx + u * (rx - lx),
+        y: ly + u * (ry - ly)
+      };
+    };
+
     return (
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden flex flex-col justify-between h-[180px] shadow-sm">
-        <div className="absolute top-2.5 right-2.5 text-amber-500 text-lg animate-pulse">☀</div>
-        <div className="flex-1 flex items-center justify-center pt-2">
-          <div className="relative w-44 h-20 bg-slate-105 dark:bg-slate-950 rounded-xl flex flex-wrap items-center justify-center p-2.5 gap-1 border-b-[3px] border-slate-300 dark:border-slate-850">
-            <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 border-l-[88px] border-r-[88px] border-b-[20px] border-l-transparent border-r-transparent border-b-slate-200 dark:border-b-slate-900 w-0 h-0"></div>
-            {Array.from({ length: Math.min(12, panelsNeeded) }).map((_, idx) => (
-              <div 
-                key={idx} 
-                className="w-8 h-6 bg-gradient-to-br from-blue-700 to-indigo-900 border border-blue-400/20 rounded shadow flex items-center justify-center text-[7px] text-white/50 font-bold"
-                style={{ transform: "skewX(-8deg)" }}
-              >
-                █
-              </div>
-            ))}
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden flex flex-col justify-between shadow-sm space-y-3">
+        {/* Title */}
+        <div className="flex justify-between items-center text-left">
+          <div>
+            <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">
+              ROOFTOP PLACEMENT MAP
+            </span>
+            <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase">
+              Isometric Rooftop Planner
+            </h4>
+          </div>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+            systemOutputPercent >= 90
+              ? "bg-green-500/10 border-green-500/20 text-primary-green"
+              : systemOutputPercent >= 70
+              ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+              : "bg-red-500/10 border-red-500/20 text-red-500"
+          }`}>
+            Yield: {systemOutputPercent}%
+          </span>
+        </div>
+
+        {/* SVG Canvas */}
+        <div className="flex-1 flex items-center justify-center py-1 bg-slate-50/55 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative min-h-[125px]">
+          {/* Sun Glow */}
+          <div 
+            className="absolute rounded-full pointer-events-none transition-all duration-500"
+            style={{ 
+              left: sunX + 45, 
+              top: sunY + 5, 
+              width: 50, 
+              height: 50, 
+              boxShadow: `0 0 45px 15px ${sunGlow}`,
+              backgroundColor: "transparent"
+            }}
+          />
+
+          <svg viewBox="0 0 400 180" className="w-full h-auto max-w-[340px]">
+            {/* Sun */}
+            <circle cx={sunX} cy={sunY} r="8" fill="#FBBF24" className="transition-all duration-500" />
+            <circle cx={sunX} cy={sunY} r="12" fill="none" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" className="animate-spin transition-all duration-500" style={{ animationDuration: "12s" }} />
+
+            {/* Sun Rays */}
+            <line x1={sunX} y1={sunY + 12} x2={sunX} y2={sunY + 22} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+            <line x1={sunX - 12} y1={sunY} x2={sunX - 22} y2={sunY} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+            <line x1={sunX + 12} y1={sunY} x2={sunX + 22} y2={sunY} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+            <line x1={sunX - 9} y1={sunY + 9} x2={sunX - 16} y2={sunY + 16} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+            <line x1={sunX + 9} y1={sunY + 9} x2={sunX + 16} y2={sunY + 16} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+
+            {/* House structure */}
+            {/* Front Wall */}
+            <polygon 
+              points={`60,${y_front} 240,${y_front} 240,165 60,165`} 
+              className="fill-slate-100 dark:fill-slate-800 stroke-slate-200 dark:stroke-slate-850 stroke-[1.5px] transition-all duration-500" 
+            />
+            {/* Side Wall */}
+            <polygon 
+              points={`240,${y_front} 340,${y_back} 340,120 240,165`} 
+              className="fill-slate-150 dark:fill-slate-750 stroke-slate-200 dark:stroke-slate-850 stroke-[1.5px] transition-all duration-500" 
+            />
+            
+            {/* Door */}
+            <rect x="130" y="125" width="40" height="40" rx="4" className="fill-slate-200 dark:fill-slate-900 stroke-slate-300 dark:stroke-slate-850" />
+            <circle cx="162" cy="145" r="1.5" fill="#B45309" />
+
+            {/* Window */}
+            <polygon 
+              points="270,125 310,110 310,95 270,110" 
+              className="fill-cyan-500/10 dark:fill-cyan-500/5 stroke-slate-300 dark:stroke-slate-850" 
+            />
+            <line x1="290" y1="117.5" x2="290" y2="102.5" stroke="#94A3B8" strokeWidth="1" />
+
+            {/* Roof plane */}
+            <polygon 
+              points={`60,${y_front} 160,${y_back} 340,${y_back} 240,${y_front}`} 
+              className="fill-slate-250 dark:fill-slate-700 stroke-slate-350 dark:stroke-slate-800 stroke-[2px] transition-all duration-500" 
+            />
+
+            {/* SOLAR PANELS */}
+            {Array.from({ length: panelsNeeded }).map((_, idx) => {
+              const r = Math.floor(idx / cols);
+              const c = idx % cols;
+
+              const u_start = 0.08 + c * (0.84 / cols);
+              const v_start = 0.08 + r * (0.84 / rows);
+
+              const pA = getIsoXY(u_start, v_start);
+              const pB = getIsoXY(u_start + du, v_start);
+              const pC = getIsoXY(u_start + du, v_start + dv);
+              const pD = getIsoXY(u_start, v_start + dv);
+
+              const isShaded = !!shadedPanels[idx];
+
+              return (
+                <polygon
+                  key={idx}
+                  points={`${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`}
+                  onClick={() => togglePanelShaded(idx)}
+                  className={`cursor-pointer transition-all duration-300 stroke-[1px] ${
+                    isShaded
+                      ? "fill-slate-800 dark:fill-slate-900 stroke-slate-650 hover:fill-slate-700"
+                      : "fill-indigo-650 hover:fill-indigo-500 stroke-indigo-400/50"
+                  }`}
+                />
+              );
+            })}
+          </svg>
+
+          {/* Hint Overlay */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-slate-950/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full pointer-events-none tracking-wide select-none">
+            💡 CLICK PANELS TO TOGGLE SHADING
           </div>
         </div>
-        <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-850">
-          <span>Panels: {panelsNeeded}</span>
-          <span>Coverage: {spaceUtilizedPercent}%</span>
-          <span>Unused: {100 - spaceUtilizedPercent}%</span>
+
+        {/* Controls */}
+        <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-850">
+          <div className="flex justify-between items-center gap-4 text-left text-[11px] font-bold">
+            {/* Tilt Control */}
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-slate-400 uppercase text-[9px] tracking-wider">Roof Tilt</span>
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+                <button
+                  onClick={() => setRoofTilt("inclined")}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    roofTilt === "inclined"
+                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Pitched (15°)
+                </button>
+                <button
+                  onClick={() => setRoofTilt("flat")}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    roofTilt === "flat"
+                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  Flat (0°)
+                </button>
+              </div>
+            </div>
+
+            {/* Orientation Control */}
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-slate-400 uppercase text-[9px] tracking-wider">Orientation</span>
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+                <button
+                  onClick={() => setRoofOrientation("south")}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    roofOrientation === "south"
+                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  South
+                </button>
+                <button
+                  onClick={() => setRoofOrientation("east")}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    roofOrientation === "east"
+                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  East
+                </button>
+                <button
+                  onClick={() => setRoofOrientation("west")}
+                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    roofOrientation === "west"
+                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  West
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between text-[9.5px] font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 mt-0.5">
+            <span>Panels: {panelsNeeded} ({shadedCount} Shaded)</span>
+            <span>Coverage: {spaceUtilizedPercent}%</span>
+          </div>
         </div>
       </div>
     );
@@ -756,7 +1091,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Sizing Logic Explanation */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-955/40 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
               <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">How Sizing Works:</span>
               <p>
                 To offset a bill of <span className="font-semibold text-slate-700 dark:text-slate-300">₹<AnimatedNumber value={monthlyBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></span> in {getFullStateName(selectedState)}, your house requires a <span className="font-semibold text-slate-705 dark:text-slate-300"><AnimatedNumber value={kwNeededByUsage} formatter={(v) => v.toFixed(1)} /> kW</span> system.
@@ -787,7 +1122,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Financial Modeling Assumptions (Always Open) */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-955/20">
+            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20">
               <div className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-350 border-b border-slate-200 dark:border-slate-800">
                 <span className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-slate-400" />
@@ -899,7 +1234,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </div>
 
           {/* Panel details sub-section */}
-          <div className="bg-slate-50 dark:bg-slate-955/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm">
+          <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm">
             <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">Rooftop Module Details:</span>
             <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400">
               <div>Modules Needed:</div>
