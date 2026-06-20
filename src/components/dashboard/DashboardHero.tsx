@@ -881,30 +881,61 @@ export const InsightCard: React.FC<{
   impact: string;
   difficulty?: string;
 }> = ({ icon, title, description, impact, difficulty = "Easy" }) => {
+  const config = {
+    Easy: {
+      bg: "bg-gradient-to-br from-white to-green-50/20 dark:from-slate-900 dark:to-green-950/5",
+      border: "border-slate-200/80 dark:border-slate-800/80 hover:border-green-300 dark:hover:border-green-800/60",
+      glow: "bg-green-500/10 dark:bg-green-500/5",
+      badge: "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border-green-200/40 dark:border-green-900/40",
+      iconBg: "bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border border-green-100/50 dark:border-green-900/20"
+    },
+    Medium: {
+      bg: "bg-gradient-to-br from-white to-blue-50/20 dark:from-slate-900 dark:to-blue-950/5",
+      border: "border-slate-200/80 dark:border-slate-800/80 hover:border-blue-300 dark:hover:border-blue-800/60",
+      glow: "bg-blue-500/10 dark:bg-blue-500/5",
+      badge: "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border-blue-200/40 dark:border-blue-900/40",
+      iconBg: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-455 border border-blue-100/50 dark:border-blue-900/20"
+    },
+    Hard: {
+      bg: "bg-gradient-to-br from-white to-red-50/20 dark:from-slate-900 dark:to-red-950/5",
+      border: "border-slate-200/80 dark:border-slate-800/80 hover:border-red-300 dark:hover:border-red-800/60",
+      glow: "bg-red-500/10 dark:bg-red-500/5",
+      badge: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border-red-200/40 dark:border-red-900/40",
+      iconBg: "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100/50 dark:border-red-900/20"
+    }
+  };
+
+  const diffKey = (difficulty === "Easy" || difficulty === "Medium" || difficulty === "Hard") ? difficulty : "Easy";
+  const styles = config[diffKey];
+
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 shadow-sm flex flex-col justify-between space-y-4 hover:-translate-y-0.5 transition-all">
-      <div className="space-y-2.5 text-left">
+    <div className={`p-5 rounded-2xl border shadow-sm flex flex-col justify-between space-y-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative overflow-hidden text-left group ${styles.bg} ${styles.border}`}>
+      {/* Corner Ambient Glow */}
+      <div className={`absolute -right-10 -top-10 w-28 h-28 blur-2xl opacity-40 dark:opacity-20 pointer-events-none rounded-full transition-transform duration-500 group-hover:scale-125 ${styles.glow}`} />
+      
+      <div className="space-y-3.5 relative z-10">
         <div className="flex items-center justify-between">
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 text-slate-600 dark:text-slate-350">
+          <div className={`p-2.5 rounded-xl flex items-center justify-center ${styles.iconBg}`}>
             {icon}
           </div>
-          <span className="text-[9px] font-extrabold px-1.5 py-0.5 border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800 text-slate-550 dark:text-slate-300 rounded-lg uppercase tracking-wide">
+          <span className={`text-[10px] font-extrabold px-2.5 py-0.5 border rounded-lg uppercase tracking-wider ${styles.badge}`}>
             {difficulty}
           </span>
         </div>
-        <div>
+        
+        <div className="space-y-1">
           <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wide truncate">
             {title}
           </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             {description}
           </p>
         </div>
       </div>
 
-      <div className="border-t border-slate-50 dark:border-slate-850 pt-3 flex items-center justify-between">
-        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase">Estimated Impact:</span>
-        <span className="text-xs font-black text-primary-green font-display">{impact}</span>
+      <div className="border-t border-slate-100/60 dark:border-slate-800/60 pt-3.5 flex items-center justify-between relative z-10">
+        <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Estimated Impact:</span>
+        <span className="text-xs font-black font-display px-2 py-0.5 rounded-md bg-green-50/50 dark:bg-green-950/20 border border-green-100/40 dark:border-green-900/30 text-green-600 dark:text-primary-green">{impact}</span>
       </div>
     </div>
   );
