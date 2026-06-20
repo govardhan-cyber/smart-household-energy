@@ -1,56 +1,32 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Settings, ArrowRight, ShieldCheck, Leaf, TrendingUp, Sun } from "lucide-react";
+import { Cpu, ArrowRight, ShieldCheck, Leaf, TrendingUp, Sun } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
 export const Home: React.FC = () => {
   const { user } = useAuth();
 
-  // Custom SVGs matching the screenshot precisely
-  const ACIcon = () => (
-    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <rect x={3} y={6} width={18} height={10} rx={2} />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 16v2M10 16v2M14 16v2M18 16v2M7 11h10" />
-    </svg>
-  );
-
-  const FridgeIcon = () => (
-    <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <rect x={5} y={3} width={14} height={18} rx={2} />
-      <line x1={5} y1={10} x2={19} y2={10} strokeWidth={2.5} />
-      <line x1={9} y1={6} x2={9} y2={8} strokeWidth={2.5} />
-      <line x1={9} y1={13} x2={9} y2={16} strokeWidth={2.5} />
-    </svg>
-  );
-
-  const FanIcon = () => (
-    <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <circle cx={12} cy={12} r={3} />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9c-2-2-5-1-5 2s2 5 5 2M12 15c2 2 5 1 5-2s-2-5-5-2M9 12c-2 2-1 5 2 5s5-2 2-5M15 12c2-2 1-5-2-5s-5 2-2 5" />
-    </svg>
-  );
-
   const MiniChartSVG = () => (
-    <svg className="w-20 h-8 text-emerald-500 shrink-0" viewBox="0 0 100 30" fill="none">
+    <svg className="w-full h-full text-emerald-500 shrink-0" viewBox="0 0 100 40" fill="none">
       <defs>
         <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
           <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path
-        d="M0 25 Q15 5, 30 15 T60 10 T90 5"
+        d="M 5,30 C 20,28 35,15 50,22 C 65,28 80,10 95,8"
         stroke="currentColor"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M0 25 Q15 5, 30 15 T60 10 T90 5 L90 30 L0 30 Z"
+        d="M 5,30 C 20,28 35,15 50,22 C 65,28 80,10 95,8 L 95,40 L 5,40 Z"
         fill="url(#chart-grad)"
       />
-      <circle cx="90" cy="5" r="2.5" fill="currentColor" />
+      <circle cx="95" cy="8" r="2.5" fill="#ffffff" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 
@@ -113,8 +89,8 @@ export const Home: React.FC = () => {
   return (
     <div className="flex-1 bg-[#070b15] text-slate-100 relative overflow-hidden flex flex-col justify-between py-12 lg:py-16">
       {/* Decorative Glow Blobs */}
-      <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-emerald-500/5 blur-[100px] pointer-events-none -z-10"></div>
-      <div className="absolute top-40 right-10 w-96 h-96 rounded-full bg-blue-500/5 blur-[120px] pointer-events-none -z-10"></div>
+      <div className="absolute top-0 left-0 w-[45%] h-[45%] rounded-full bg-[#10b981]/5 blur-[100px] pointer-events-none -z-10"></div>
+      <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none -z-10"></div>
       
       {/* Left Leaf decoration */}
       <LeftLeavesSVG />
@@ -136,9 +112,9 @@ export const Home: React.FC = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-950/20 border border-emerald-900/40 text-xs font-semibold text-emerald-400"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0c1a16] border border-[#10b981]/30 text-xs font-semibold text-[#10b981]"
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Cpu className="w-3.5 h-3.5" />
               Built for AP DISCOM tariffs
             </motion.div>
 
@@ -148,7 +124,7 @@ export const Home: React.FC = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="text-4xl sm:text-5xl lg:text-[54px] font-display font-extrabold text-white tracking-tight leading-[1.1]"
             >
-              See where your <span className="text-blue-450">energy</span> goes — then <span className="text-emerald-400">cut the next bill.</span>
+              See where your <span className="text-[#60a5fa]">energy</span> goes — then <span className="text-[#10b981]">cut the next bill.</span>
             </motion.h1>
 
             <motion.p
@@ -176,7 +152,7 @@ export const Home: React.FC = () => {
               </Link>
               <Link
                 to={user ? "/dashboard" : "/login"}
-                className="px-6 py-3.5 flex items-center justify-center text-sm font-bold text-slate-300 bg-slate-900/50 hover:bg-slate-800/60 rounded-xl border border-slate-800 transition-colors cursor-pointer"
+                className="px-6 py-3.5 flex items-center justify-center text-sm font-bold text-slate-300 bg-[#0b101f]/50 hover:bg-slate-800/60 rounded-xl border border-slate-800 transition-colors cursor-pointer"
               >
                 I already have one
               </Link>
@@ -224,8 +200,8 @@ export const Home: React.FC = () => {
                   </h3>
                 </div>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-[10px] font-extrabold text-emerald-400 border border-emerald-500/20 shrink-0">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  <svg className="w-3 h-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 19H10M19 19V10M19 19L5 5" />
                   </svg>
                   18% lower
                 </span>
@@ -244,7 +220,7 @@ export const Home: React.FC = () => {
                     132 kWh projected usage
                   </span>
                 </div>
-                <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                <div className="bg-[#070b15] border border-slate-800/60 rounded-2xl flex items-center justify-center shrink-0 w-[140px] h-[80px] p-2">
                   <MiniChartSVG />
                 </div>
               </div>
@@ -252,69 +228,53 @@ export const Home: React.FC = () => {
               {/* Progress bars list */}
               <div className="space-y-4 pt-1">
                 {/* AC cooling */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-red-955/20 flex items-center justify-center shrink-0">
-                    <ACIcon />
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-bold text-slate-200">AC cooling</span>
+                    <span className="text-[11px] font-semibold text-red-400 font-mono">72 kWh</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="text-xs font-bold text-slate-200">AC cooling</span>
-                      <span className="text-[11px] font-semibold text-red-400 font-mono">72 kWh</span>
-                    </div>
-                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 rounded-full w-[70%]" />
-                    </div>
+                  <div className="h-2.5 w-full bg-slate-800/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full w-[78%]" />
                   </div>
                 </div>
 
                 {/* Fridge */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-955/20 flex items-center justify-center shrink-0">
-                    <FridgeIcon />
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-bold text-slate-200">Fridge</span>
+                    <span className="text-[11px] font-semibold text-orange-400 font-mono">36 kWh</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="text-xs font-bold text-slate-200">Fridge</span>
-                      <span className="text-[11px] font-semibold text-orange-400 font-mono">36 kWh</span>
-                    </div>
-                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-orange-500 rounded-full w-[45%]" />
-                    </div>
+                  <div className="h-2.5 w-full bg-slate-800/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-orange-500 rounded-full w-[45%]" />
                   </div>
                 </div>
 
                 {/* Fans & lights */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-950/20 flex items-center justify-center shrink-0">
-                    <FanIcon />
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-bold text-slate-200">Fans & lights</span>
+                    <span className="text-[11px] font-semibold text-emerald-400 font-mono">24 kWh</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="text-xs font-bold text-slate-200">Fans & lights</span>
-                      <span className="text-[11px] font-semibold text-emerald-400 font-mono">24 kWh</span>
-                    </div>
-                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full w-[25%]" />
-                    </div>
+                  <div className="h-2.5 w-full bg-slate-800/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#10b981] rounded-full w-[26%]" />
                   </div>
                 </div>
               </div>
 
               {/* Best next action */}
-              <div className="bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 flex items-start gap-3 mt-1 shadow-sm">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+              <div className="bg-[#070b15] border border-[#10b981]/25 rounded-2xl p-4 flex items-start gap-3 mt-1 shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 flex items-center justify-center shrink-0">
                   <Leaf className="w-4 h-4" />
                 </div>
                 <div className="space-y-0.5 text-xs text-left">
-                  <h4 className="font-extrabold text-white">Best next action</h4>
-                  <p className="text-slate-400 leading-relaxed font-semibold">
+                  <h4 className="font-extrabold text-white text-xs sm:text-sm">Best next action</h4>
+                  <p className="text-slate-400 leading-relaxed font-semibold text-[11px] sm:text-xs">
                     Shift AC runtime by one hour and set cooling to 26 C to reduce peak usage.
                   </p>
                 </div>
               </div>
             </div>
           </motion.div>
-
         </div>
 
         {/* Large Stats Impact Banner */}
