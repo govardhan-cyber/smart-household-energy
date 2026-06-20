@@ -67,9 +67,14 @@ export const PersonalizedGreeting: React.FC<{ userName?: string }> = ({ userName
   }, []);
 
   return (
-    <h1 className="text-2xl sm:text-3.5xl font-display font-black text-slate-900 dark:text-white tracking-tight">
-      {greeting}
-      {userName ? `, ${userName}` : ""} 👋
+    <h1 className="text-2xl sm:text-3.5xl font-display font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center">
+      <span>{greeting}</span>
+      {userName && (
+        <span className="bg-gradient-to-r from-primary-blue via-blue-500 to-accent-neon dark:from-primary-green dark:to-accent-neon bg-clip-text text-transparent ml-2 font-black">
+          {userName}
+        </span>
+      )}
+      <span className="ml-2">👋</span>
     </h1>
   );
 };
@@ -89,7 +94,7 @@ export const HeroInsight: React.FC<{
   // Determine the highest priority insight
   if (savingsOpportunity > 200) {
     return (
-      <p className="text-sm sm:text-base font-semibold text-slate-655 dark:text-slate-300">
+      <p className="text-sm sm:text-base font-semibold text-slate-655 dark:text-slate-350">
         Your home could save{" "}
         <span className="text-primary-blue dark:text-primary-green font-black">
           ₹{Math.round(savingsOpportunity).toLocaleString("en-IN")}
@@ -101,7 +106,7 @@ export const HeroInsight: React.FC<{
 
   if (solarOffsetPercent > 30) {
     return (
-      <p className="text-sm sm:text-base font-semibold text-slate-655 dark:text-slate-300">
+      <p className="text-sm sm:text-base font-semibold text-slate-655 dark:text-slate-350">
         Your roof could offset{" "}
         <span className="text-amber-500 font-black">{solarOffsetPercent}%</span> of
         your annual electricity usage.
@@ -141,17 +146,17 @@ export const TrendComparison: React.FC<{
   trend: "up" | "down" | "neutral";
   type: "positive" | "negative" | "neutral";
 }> = ({ label, value, trend, type }) => {
-  let badgeColor = "bg-slate-100 border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-350";
+  let badgeColor = "bg-slate-100/80 border-slate-200/60 text-slate-600 dark:bg-slate-800/40 dark:border-slate-700/60 dark:text-slate-300";
   if (type === "positive") {
-    badgeColor = "bg-green-50 border-green-200 text-green-600 dark:bg-green-950/20 dark:border-green-900/40 dark:text-primary-green";
+    badgeColor = "bg-green-500/8 border-green-500/20 text-green-600 dark:bg-green-500/10 dark:border-green-500/20 dark:text-primary-green";
   } else if (type === "negative") {
-    badgeColor = "bg-red-50 border-red-200 text-red-500 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400";
+    badgeColor = "bg-red-500/8 border-red-500/20 text-red-500 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-450";
   } else if (type === "neutral") {
-    badgeColor = "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-500";
+    badgeColor = "bg-amber-500/8 border-amber-500/20 text-amber-600 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400";
   }
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${badgeColor}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-extrabold border shadow-sm backdrop-blur-sm ${badgeColor}`}>
       {trend === "up" && <TrendingUp className="w-3.5 h-3.5" />}
       {trend === "down" && <TrendingDown className="w-3.5 h-3.5" />}
       <span>
@@ -189,15 +194,18 @@ export const DashboardHero: React.FC<{
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="bg-gradient-to-br from-white via-slate-50/20 to-blue-50/10 dark:from-slate-900 dark:via-slate-950/40 dark:to-green-950/10 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden text-left flex flex-col md:flex-row md:items-center justify-between gap-6"
+      className="bg-gradient-to-br from-white/90 via-slate-50/50 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-950/50 dark:to-emerald-950/5 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm relative overflow-hidden text-left flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:shadow-md transition-shadow duration-300"
     >
-      {/* Decorative Glow accent */}
-      <div className="absolute top-0 right-0 -mt-16 -mr-16 w-48 h-48 bg-primary-blue/5 dark:bg-primary-green/5 rounded-full blur-2xl pointer-events-none"></div>
+      {/* Decorative Glow Blob Accents */}
+      <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-blue-500/10 dark:bg-blue-600/8 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-750"></div>
+      <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-emerald-500/8 dark:bg-emerald-600/6 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-750"></div>
       
-      <div className="space-y-3.5 z-10">
+      {/* Blueprint Grid Mesh Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] absolute inset-0" />
+
+      <div className="space-y-3.5 z-10 relative">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <PersonalizedGreeting userName={userName} />
-          
         </div>
         
         <HeroInsight
@@ -221,13 +229,13 @@ export const DashboardHero: React.FC<{
         </div>
       </div>
 
-      <div className="flex-shrink-0 z-10 self-stretch sm:self-auto flex items-center md:justify-end">
+      <div className="flex-shrink-0 z-10 self-stretch sm:self-auto flex items-center md:justify-end relative">
         <button
           onClick={onRunAudit}
-          className="w-full sm:w-auto h-12 px-6 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider rounded-2xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full sm:w-auto h-12 px-6 inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider rounded-2xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-md hover:shadow-lg hover:scale-[1.03] hover:shadow-primary-blue/10 dark:hover:shadow-primary-green/10 active:scale-[0.98] group cursor-pointer"
         >
           Run Energy Audit
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
         </button>
       </div>
     </motion.div>
