@@ -259,9 +259,21 @@ export const KpiCard: React.FC<{
     return rounded.toString();
   };
 
+  // Map border classes to custom glowing background colors
+  const glowColorMap: Record<string, string> = {
+    "border-l-primary-blue": "bg-blue-400 dark:bg-blue-600",
+    "border-l-warning-orange": "bg-orange-400 dark:bg-orange-600",
+    "border-l-primary-green": "bg-emerald-400 dark:bg-emerald-600",
+    "border-l-amber-500": "bg-amber-400 dark:bg-amber-600",
+  };
+  const glowBgClass = glowColorMap[borderColorClass] || "bg-slate-400 dark:bg-slate-600";
+
   return (
     <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300`}>
-      <div className="flex items-center justify-between">
+      {/* Top right corner glowing wash */}
+      <div className={`absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-125 transition-transform duration-500`} />
+
+      <div className="flex items-center justify-between relative z-10">
         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
           {title}
         </span>
@@ -269,7 +281,7 @@ export const KpiCard: React.FC<{
           {icon}
         </div>
       </div>
-      <div className="mt-4">
+      <div className="mt-4 relative z-10">
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
             <AnimatedNumber value={value} formatter={formatter} />
