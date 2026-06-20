@@ -1135,7 +1135,7 @@ export const Dashboard: React.FC = () => {
               )}
 
               {/* Step Progress Bar (Full Width) */}
-          <div id="wizard-progress-bar" className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm no-print">
+          <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
             <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
               {[
                 { step: 1, label: "Appliances" },
@@ -1150,9 +1150,9 @@ export const Dashboard: React.FC = () => {
                     <div className="flex flex-col items-center">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                         isCompleted
-                          ? "bg-green-600 text-white"
+                          ? "bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-500/20"
                           : isActive
-                          ? "bg-primary-blue text-white shadow-md shadow-primary-blue/20 dark:bg-primary-green dark:text-slate-950 animate-pulse-custom"
+                          ? "bg-primary-blue text-white shadow-md ring-4 ring-primary-blue/20 dark:ring-primary-green/20 dark:bg-primary-green dark:text-slate-950 animate-pulse-custom"
                           : "bg-slate-100 text-slate-450 dark:bg-slate-800 dark:text-slate-555"
                       }`}>
                         {isCompleted ? <Check className="w-5 h-5" /> : s.step}
@@ -1162,14 +1162,14 @@ export const Dashboard: React.FC = () => {
                           ? "text-primary-blue dark:text-primary-green"
                           : isCompleted
                           ? "text-slate-700 dark:text-slate-350"
-                          : "text-slate-400 dark:text-slate-550"
+                          : "text-slate-400 dark:text-slate-555"
                       }`}>
                         {s.label}
                       </span>
                     </div>
                     {idx < arr.length - 1 && (
-                      <div className="flex-1 h-0.5 mx-4 bg-slate-200 dark:bg-slate-800 relative">
-                        <div className={`absolute top-0 left-0 h-full bg-green-600 transition-all duration-500 ${
+                      <div className="flex-1 h-0.5 mx-4 bg-slate-100 dark:bg-slate-800 relative">
+                        <div className={`absolute top-0 left-0 h-full bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 transition-all duration-500 ${
                           currentStep > s.step ? "w-full" : "w-0"
                         }`} />
                       </div>
@@ -1383,8 +1383,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div className="lg:col-span-5 space-y-6">
-                
-                <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 text-left">
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-6 text-left relative overflow-hidden">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">Summary</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1393,14 +1392,19 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Total units card */}
-                  <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                    {/* Glowing wash circle */}
+                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/5 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
+                    
+                    <div className="flex items-center justify-between relative z-10">
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Estimated Monthly Usage
                       </span>
-                      <Zap className="w-5 h-5 text-primary-blue dark:text-primary-green" />
+                      <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-primary-blue dark:text-primary-green">
+                        <Zap className="w-4 h-4" />
+                      </div>
                     </div>
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1 relative z-10">
                       <span className="text-4xl font-display font-extrabold text-slate-900 dark:text-white leading-none">
                         <AnimatedNumber value={liveTotalUnits} />
                       </span>
@@ -1409,16 +1413,19 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Estimated bill card */}
-                  <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                    {/* Glowing wash circle */}
+                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-green/10 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
+                    
+                    <div className="flex items-center justify-between relative z-10">
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                         Estimated Monthly Bill
                       </span>
-                      <span className="text-xs text-primary-green font-bold bg-green-50 dark:bg-green-950/20 px-2 py-0.5 rounded-full border border-green-150 dark:border-green-900/50">
+                      <span className="text-xs text-primary-green font-bold bg-green-50/80 dark:bg-green-950/30 px-2.5 py-0.5 rounded-full border border-green-200 dark:border-green-900/50 backdrop-blur-sm">
                         After Subsidy
                       </span>
                     </div>
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1.5 relative z-10">
                       <span className="text-4xl font-display font-extrabold text-primary-blue dark:text-primary-green leading-none">
                         ₹<AnimatedNumber value={liveBill.netEnergyCharge} />
                       </span>
@@ -1427,26 +1434,30 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Benchmarking Comparison Banner */}
-                  <div className={`p-4 rounded-2xl border text-xs font-bold flex items-start gap-2.5 ${
+                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all ${
                     isAboveBenchmark 
-                      ? "bg-red-50 border-red-150 text-alert-red dark:bg-red-950/20 dark:border-red-900/40" 
-                      : "bg-green-50 border-green-150 text-primary-green dark:bg-green-950/20 dark:border-green-900/40"
+                      ? "bg-red-50/50 border-red-200 border-l-alert-red text-alert-red dark:bg-red-950/10 dark:border-red-900/30" 
+                      : "bg-green-50/50 border-green-200 border-l-primary-green text-primary-green dark:bg-green-950/10 dark:border-green-900/30"
                   }`}>
                     {isAboveBenchmark ? (
                       <>
-                        <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-alert-red" />
-                        <div>
-                          <span>You spend {benchmarkDiffPercent}% more than similar homes.</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                        <div className="p-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-alert-red">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="font-bold">You spend {benchmarkDiffPercent}% more than similar homes.</span>
+                          <span className="block text-[10px] text-slate-555 dark:text-slate-400 font-semibold mt-0.5">
                             Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
                           </span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
-                        <div>
-                          <span>Great job! You spend {benchmarkDiffPercent}% less than similar homes.</span>
+                        <div className="p-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-primary-green">
+                          <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="font-bold">Great job! You spend {benchmarkDiffPercent}% less than similar homes.</span>
                           <span className="block text-[10px] text-slate-555 dark:text-slate-400 font-semibold mt-0.5">
                             Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
                           </span>
@@ -1457,10 +1468,13 @@ export const Dashboard: React.FC = () => {
 
                   {/* Budget Progress Tracker */}
                   {user && (
-                    <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider">
+                    <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                      {/* Glow circle */}
+                      <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-blue-500/5 dark:bg-green-500/5 blur-xl pointer-events-none rounded-full" />
+                      
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider relative z-10">
                         <span>Budget Tracking</span>
-                        <span>₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}</span>
+                        <span className="text-slate-700 dark:text-slate-350">₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}</span>
                       </div>
                       
                       {/* Progress Bar */}
@@ -1469,11 +1483,15 @@ export const Dashboard: React.FC = () => {
                         const percent = Math.min(100, Math.round((liveBill.netEnergyCharge / budgetLimit) * 100));
                         const isExceeded = liveBill.netEnergyCharge > budgetLimit;
                         return (
-                          <div className="space-y-2">
-                            <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="space-y-3.5 relative z-10">
+                            <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                               <div 
                                 className={`h-full rounded-full transition-all duration-500 ${
-                                  isExceeded ? "bg-red-500" : percent > 80 ? "bg-orange-500" : "bg-primary-blue dark:bg-primary-green"
+                                  isExceeded 
+                                    ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_8px_rgba(239,68,68,0.3)]" 
+                                    : percent > 80 
+                                      ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]" 
+                                      : "bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
                                 }`}
                                 style={{ width: `${percent}%` }}
                               />
@@ -1481,29 +1499,28 @@ export const Dashboard: React.FC = () => {
                             
                             {/* Budget warning alert card */}
                             {isExceeded && (
-                              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl dark:bg-red-950/20 dark:border-red-900/50 text-alert-red dark:text-red-400 text-[10px] font-bold mt-1">
+                              <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-100 rounded-xl dark:bg-red-950/20 dark:border-red-900/50 text-alert-red dark:text-red-400 text-[10px] font-bold mt-1">
                                 <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse" />
                                 <span>Budget Exceeded! Reduce {appliances.some(a => a.id === "ac" && a.quantity > 0) ? "AC" : "heavy appliances"} or other device hours to meet target.</span>
                               </div>
                             )}
                             {!isExceeded && percent > 80 && (
-                              <div className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-100 rounded-xl dark:bg-orange-950/10 dark:border-orange-900/30 text-warning-orange text-[10px] font-bold mt-1">
+                              <div className="flex items-start gap-2.5 p-3 bg-orange-50 border border-orange-100 rounded-xl dark:bg-orange-950/10 dark:border-orange-900/30 text-warning-orange text-[10px] font-bold mt-1">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <span>Approaching budget limit (over 80% used). Consider optimizing usage.</span>
                               </div>
                             )}
                             {!isExceeded && percent <= 80 && (
-                              <p className="text-[10px] font-bold text-green-600 dark:text-primary-green">
-                                Safe Zone: Consuming within your budget target.
-                              </p>
+                              <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-primary-green">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-primary-green animate-ping" />
+                                <span>Safe Zone: Consuming within your budget target.</span>
+                              </div>
                             )}
                           </div>
                         );
                       })()}
                     </div>
                   )}
-
-
 
                   {/* Privacy note */}
                   <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
