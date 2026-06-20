@@ -201,7 +201,7 @@ export const DashboardHero: React.FC<{
       <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-emerald-500/8 dark:bg-emerald-600/6 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-750"></div>
       
       {/* Blueprint Grid Mesh Pattern Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] dark:bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] absolute inset-0" />
+      <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
 
       <div className="space-y-3.5 z-10 relative">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
