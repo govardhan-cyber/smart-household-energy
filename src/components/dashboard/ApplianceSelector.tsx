@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-  Wind, Flame, Tv, Fan, Laptop, Lightbulb, Zap, ChevronRight, Check,
+  Wind, Flame, Tv, Fan, Laptop, Lightbulb, Zap, ChevronRight,
   Refrigerator, WashingMachine, Microwave, CookingPot, Coffee, Blender,
   Monitor, Router, Gamepad2, Printer, Filter, Thermometer, Droplet, GlassWater
 } from "lucide-react";
@@ -90,12 +90,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                         isSelected ? "bg-primary-blue dark:bg-primary-green" : "bg-transparent"
                       }`} />
 
-                      {/* Top-Right Circular Checkmark Badge */}
-                      {isSelected && (
-                        <div className="absolute top-3.5 right-3.5 w-5 h-5 rounded-full bg-primary-blue dark:bg-primary-green text-white dark:text-slate-950 flex items-center justify-center shadow-sm relative z-20">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </div>
-                      )}
+
 
                       <div className={`p-2.5 rounded-xl border transition-all relative z-10 ${
                         isSelected
