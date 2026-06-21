@@ -1081,47 +1081,65 @@ export const BillAnalyzer: React.FC = () => {
       {/* ─── DYNAMIC METRICS SECTION ────────────────────────────────────────── */}
       {activeBill && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-blue text-left">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Consumption</span>
-            <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-1">
-              {activeBill.parsedData.unitsConsumed} kWh
+          
+          {/* Card 1: Extracted Consumption */}
+          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-blue text-left">
+            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-blue-400 dark:bg-blue-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
+            <div className="relative z-10">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Consumption</span>
+              <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-1">
+                {activeBill.parsedData.unitsConsumed} kWh
+              </div>
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+                {activeBill.parsedData.billingPeriod || "Monthly period"}
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-450 mt-1 uppercase">
-              {activeBill.parsedData.billingPeriod || "Monthly period"}
-            </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-amber-500 text-left">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Bill Amount</span>
-            <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-              ₹{activeBill.parsedData.totalAmount}
+          {/* Card 2: Extracted Bill Amount */}
+          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-amber-500 text-left">
+            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-amber-400 dark:bg-amber-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
+            <div className="relative z-10">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Bill Amount</span>
+              <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+                ₹{activeBill.parsedData.totalAmount}
+              </div>
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+                Tariff: {activeBill.parsedData.tariffCategory || "Domestic"}
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-455 mt-1 uppercase">
-              Tariff: {activeBill.parsedData.tariffCategory || "Domestic"}
-            </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-green text-left">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Energy Efficiency Score</span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{calcs?.score}</span>
-              <span className="text-[10px] text-slate-400">/100</span>
-              <span className="ml-auto text-[10px] sm:text-xs px-2 py-0.5 rounded bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-primary-green font-bold uppercase">{calcs?.grade} Grade</span>
+          {/* Card 3: Energy Efficiency Score */}
+          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-green text-left">
+            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-emerald-400 dark:bg-emerald-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
+            <div className="relative z-10">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Energy Efficiency Score</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{calcs?.score}</span>
+                <span className="text-[10px] text-slate-400">/100</span>
+                <span className="ml-auto text-[10px] sm:text-xs px-2 py-0.5 rounded bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-primary-green font-bold uppercase">{calcs?.grade} Grade</span>
+              </div>
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+                BEE Grade Rating
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-455 mt-1 uppercase">
-              BEE Grade Rating
-            </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-cyan-500 text-left">
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Cost Forecast (Next Month)</span>
-            <div className="text-lg sm:text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">
-              ₹{calcs?.forecastAmount}
+          {/* Card 4: Cost Forecast */}
+          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-cyan-500 text-left">
+            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-cyan-400 dark:bg-cyan-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
+            <div className="relative z-10">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Cost Forecast (Next Month)</span>
+              <div className="text-lg sm:text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                ₹{calcs?.forecastAmount}
+              </div>
+              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+                Confidence Index: {calcs?.confidence}%
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs font-medium text-slate-455 mt-1 uppercase">
-              Confidence Index: {calcs?.confidence}%
-            </p>
           </div>
+
         </div>
       )}
 
