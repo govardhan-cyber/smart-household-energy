@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
+import { motion } from "framer-motion";
 
 interface SolarCalculatorProps {
   tariffState: string;
@@ -251,6 +252,28 @@ const SolarReadinessScore: React.FC<{
 };
 
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.25,
+      ease: "easeInOut" as const
+    }
+  }
+};
+
 export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   tariffState,
   activeTheme
@@ -268,6 +291,19 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleSelectReferenceSize = (targetBill: number, targetSpace: number) => {
+    setMonthlyBill(targetBill);
+    setRoofArea(targetSpace);
+    
+    // Smooth scroll to the top of the planner inputs card
+    setTimeout(() => {
+      const plannerCard = document.getElementById("solar-savings-planner-card");
+      if (plannerCard) {
+        plannerCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 50);
+  };
 
   const [tariffIncrease, setTariffIncrease] = useState<number>(4); 
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
@@ -893,12 +929,20 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   };
 
   return (
-    <div className="space-y-8 text-left">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8 text-left"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Interactive Inputs */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden group">
+        <motion.div
+          variants={itemVariants}
+          className="lg:col-span-6 space-y-6"
+        >
+          <div id="solar-savings-planner-card" className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden group">
             {/* Top right corner glowing wash */}
             <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
             
@@ -1275,10 +1319,13 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column: ROI Outputs */}
-        <div className="lg:col-span-6 space-y-6">
+        <motion.div
+          variants={itemVariants}
+          className="lg:col-span-6 space-y-6"
+        >
           <div className="space-y-6 relative">
 
             {/* 1. Centerpiece Hero Result Card */}
@@ -1475,66 +1522,128 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <span>Slab calculations match active {getFullStateName(selectedState)} net metering rules.</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Sizing and Tech Guide reference section */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-        <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Rooftop Solar Quick Sizing Reference (2026 Guidelines)</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            General reference parameters for planning residential rooftop systems in India using standard 540W solar modules.
-          </p>
+      <motion.div
+        variants={itemVariants}
+        className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden"
+      >
+        {/* Top decorative glow */}
+        <div className="absolute -right-16 -top-16 w-36 h-36 blur-3xl opacity-10 rounded-full bg-amber-500 pointer-events-none" />
+
+        {/* Card Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-start gap-3.5">
+            <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-2xl shrink-0 shadow-sm">
+              <Sun className="w-5.5 h-5.5 animate-pulse" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+                Rooftop Solar Quick Sizing Reference
+              </h3>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                Standard guidelines for planning domestic systems in India based on 540W solar modules.
+              </p>
+            </div>
+          </div>
+          <div className="self-start sm:self-center px-3 py-1 bg-amber-50 dark:bg-amber-955/40 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider">
+            2026 Guidelines
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-455 font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">Solar System Size</th>
-                <th className="py-3 px-4">Number of Panels (540W)</th>
-                <th className="py-3 px-4">Shadow-Free Space Needed</th>
-                <th className="py-3 px-4">Cost in Pune (with Subsidy)*</th>
-                <th className="py-3 px-4">25-Yr Expected Savings*</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-655 dark:text-slate-350">
-              {[
-                { size: "1 kW", panels: "~2 panels", space: "100 sq ft", cost: "~₹60,000", savings: "~₹5.3 Lakhs" },
-                { size: "2 kW", panels: "~4 panels", space: "200 sq ft", cost: "~₹1.15 Lakh", savings: "~₹10.74 Lakhs" },
-                { size: "3 kW", panels: "~6 panels", space: "300 sq ft", cost: "~₹1.32 Lakh", savings: "~₹16.11 Lakhs" },
-                { size: "4 kW", panels: "~8 panels", space: "400 sq ft", cost: "~₹1.77 Lakh", savings: "~₹21.48 Lakhs" },
-                { size: "5 kW", panels: "~10 panels", space: "500 sq ft", cost: "~₹2.32 Lakh", savings: "~₹33.46 Lakhs" },
-                { size: "10 kW", panels: "~19 panels", space: "1,000 sq ft", cost: "~₹4.87 Lakh", savings: "~₹66.92 Lakhs" }
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/20">
-                  <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{row.size}</td>
-                  <td className="py-3 px-4">{row.panels}</td>
-                  <td className="py-3 px-4">{row.space}</td>
-                  <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{row.cost}</td>
-                  <td className="py-3 px-4 text-primary-green font-semibold">{row.savings}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Sizing Grid Container */}
+        <div className="space-y-3.5">
+          {/* Header Row (Visible on Desktop) */}
+          <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider text-[9px] border-b border-slate-100 dark:border-slate-800/60 text-left">
+            <div className="col-span-3 pl-2">Solar System Size</div>
+            <div className="col-span-2">Number of Panels (540W)</div>
+            <div className="col-span-2">Shadow-Free Space Needed</div>
+            <div className="col-span-2">Cost in Pune (with Subsidy)*</div>
+            <div className="col-span-3 text-right">25-Yr Expected Savings*</div>
+          </div>
+
+          {/* Cards List */}
+          <div className="space-y-2.5">
+            {[
+              { size: "1 kW", panels: "~2 panels", space: "100 sq ft", cost: "~₹60,000", savings: "~₹5.3 Lakhs", color: "bg-sky-500", shadow: "shadow-[0_0_8px_rgba(14,165,233,0.3)]", badge: "Standard", targetBill: 1500, targetSpace: 100 },
+              { size: "2 kW", panels: "~4 panels", space: "200 sq ft", cost: "~₹1.15 Lakh", savings: "~₹10.74 Lakhs", color: "bg-sky-500", shadow: "shadow-[0_0_8px_rgba(14,165,233,0.3)]", badge: "Standard", targetBill: 3000, targetSpace: 200 },
+              { size: "3 kW", panels: "~6 panels", space: "300 sq ft", cost: "~₹1.32 Lakh", savings: "~₹16.11 Lakhs", color: "bg-amber-500", shadow: "shadow-[0_0_8px_rgba(245,158,11,0.3)]", badge: "Popular", targetBill: 4500, targetSpace: 300 },
+              { size: "4 kW", panels: "~8 panels", space: "450 sq ft", cost: "~₹1.77 Lakh", savings: "~₹21.48 Lakhs", color: "bg-amber-500", shadow: "shadow-[0_0_8px_rgba(245,158,11,0.3)]", badge: "Medium Home", targetBill: 6000, targetSpace: 400 },
+              { size: "5 kW", panels: "~10 panels", space: "500 sq ft", cost: "~₹2.32 Lakh", savings: "~₹33.46 Lakhs", color: "bg-emerald-500", shadow: "shadow-[0_0_8px_rgba(16,185,129,0.3)]", badge: "Heavy Usage", targetBill: 7500, targetSpace: 500 },
+              { size: "10 kW", panels: "~19 panels", space: "1,000 sq ft", cost: "~₹4.87 Lakh", savings: "~₹66.92 Lakhs", color: "bg-indigo-500", shadow: "shadow-[0_0_8px_rgba(99,102,241,0.3)]", badge: "Commercial", targetBill: 15000, targetSpace: 1000 }
+            ].map((row, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.995 }}
+                onClick={() => handleSelectReferenceSize(row.targetBill, row.targetSpace)}
+                className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800/85 bg-white/40 dark:bg-slate-950/20 hover:bg-white dark:hover:bg-slate-900/60 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md hover:shadow-slate-200/10 dark:hover:shadow-black/10 transition-all duration-300 cursor-pointer group/row grid grid-cols-12 gap-3.5 items-center relative overflow-hidden text-left"
+              >
+                {/* Glowing left capacity stripe */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${row.color} ${row.shadow} transition-all duration-300`} />
+                
+                {/* 1. Size column */}
+                <div className="col-span-12 md:col-span-3 pl-3.5 flex items-center gap-2.5">
+                  <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tabular-nums">
+                    {row.size}
+                  </span>
+                  <span className="text-[8px] font-black text-slate-450 dark:text-slate-500 uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200/20 dark:border-slate-700/30 tracking-wider">
+                    {row.badge}
+                  </span>
+                </div>
+
+                {/* 2. Panels column */}
+                <div className="col-span-6 md:col-span-2 flex items-center gap-2 text-slate-700 dark:text-slate-350 font-semibold text-xs">
+                  <Layers className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
+                  <span>{row.panels}</span>
+                </div>
+
+                {/* 3. Space column */}
+                <div className="col-span-6 md:col-span-2 flex items-center gap-2 text-slate-700 dark:text-slate-350 font-semibold text-xs">
+                  <Home className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
+                  <span>{row.space}</span>
+                </div>
+
+                {/* 4. Cost column */}
+                <div className="col-span-6 md:col-span-2 flex items-center gap-1">
+                  <span className="text-[9px] font-bold text-slate-450 md:hidden uppercase mr-1">Cost:</span>
+                  <span className="font-extrabold text-slate-850 dark:text-slate-200 tabular-nums text-xs">
+                    {row.cost}
+                  </span>
+                </div>
+
+                {/* 5. Savings column */}
+                <div className="col-span-6 md:col-span-3 flex justify-end items-center">
+                  <div className="inline-flex items-center gap-1 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-primary-green px-3 py-1.5 rounded-xl border border-emerald-500/20 dark:border-emerald-500/30 text-xs font-black shadow-sm group-hover/row:shadow-md transition-shadow duration-200">
+                    <span>{row.savings}</span>
+                    <ArrowUpRight className="w-4 h-4 text-emerald-500 dark:text-primary-green shrink-0" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        <div className="text-[10px] text-slate-400 dark:text-slate-555 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-4">
+        <div className="text-[10px] text-slate-400 dark:text-slate-555 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-4 text-left">
           *Costs are based on SolarSquare base variant starting prices as of March 2026. Savings calculation considers a 3% annual tariff escalation rate and a 1% annual plant degradation rate. Actual costs and generation vary by configuration and local DISCOM policies.
         </div>
-      </div>
+      </motion.div>
 
       {/* Solar Return on Investment Analytics Charts */}
-      <Charts 
-        activeTheme={activeTheme} 
-        liveTotalUnits={kwhNeeded}
-        recommendedKw={recommendedKw}
-        tariffState={tariffKey}
-        customFlatRate={7.5}
-        mode="solar"
-        solarPaybackData={paybackData}
-        solarSavingsData={monthlySavingsData}
-      />
-    </div>
+      <motion.div variants={itemVariants}>
+        <Charts 
+          activeTheme={activeTheme} 
+          liveTotalUnits={kwhNeeded}
+          recommendedKw={recommendedKw}
+          tariffState={tariffKey}
+          customFlatRate={7.5}
+          mode="solar"
+          solarPaybackData={paybackData}
+          solarSavingsData={monthlySavingsData}
+        />
+      </motion.div>
+    </motion.div>
   );
 };

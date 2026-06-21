@@ -95,6 +95,14 @@ export const Dashboard: React.FC = () => {
   // Wizard States
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
   const [activeTab, setActiveTab] = useState<"wizard" | "solar" | "audit">("wizard");
+  const [renderedTab, setRenderedTab] = useState<"wizard" | "solar" | "audit">("wizard");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRenderedTab(activeTab);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
   const [appliances, setAppliances] = useState<ApplianceItem[]>(() => {
     // Initial state setup with quantity=1, hours=6 for AC and Refrigerator, quantity=0 for others.
     return defaultAppliances.map(app => {
@@ -990,66 +998,156 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="flex-1 bg-slate-50 dark:bg-slate-950 transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
       {/* Tab Selector */}
-      <div className="flex justify-center no-print">
-        <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
-          <button
+      <div className="flex justify-center no-print relative z-10">
+        <div className="flex backdrop-blur-md bg-slate-200/50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/30 dark:border-slate-800/50 shadow-inner relative">
+          <motion.button
+            whileHover="hover"
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("wizard")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "wizard"
-                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md border border-slate-200/50 dark:border-slate-700/50"
+                ? "text-slate-900 dark:text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
             }`}
           >
-            <Zap className="w-4 h-4 text-primary-green" />
-            Home Audit Wizard
-          </button>
-          <button
+            {activeTab === "wizard" && (
+              <motion.div
+                layoutId="activeDashboardTab"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200/50 dark:border-slate-700/50 z-0"
+                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-2.5">
+              <motion.span
+                variants={{
+                  hover: {
+                    scale: [1, 1.15, 1.05, 1.15, 1],
+                    transition: { repeat: Infinity, duration: 1.0, ease: "easeInOut" }
+                  }
+                }}
+                className="inline-flex items-center justify-center"
+              >
+                <Zap className={`w-4 h-4 transition-transform duration-300 ${activeTab === "wizard" ? "text-primary-green scale-110" : "text-slate-400"}`} />
+              </motion.span>
+              <span>Home Audit Wizard</span>
+            </span>
+          </motion.button>
+          <motion.button
+            whileHover="hover"
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("solar")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "solar"
-                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md border border-slate-200/50 dark:border-slate-700/50"
+                ? "text-slate-900 dark:text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
             }`}
           >
-            <Sun className="w-4 h-4 text-amber-500" />
-            Solar ROI Calculator
-          </button>
-          <button
+            {activeTab === "solar" && (
+              <motion.div
+                layoutId="activeDashboardTab"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200/50 dark:border-slate-700/50 z-0"
+                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-2.5">
+              <motion.span
+                variants={{
+                  hover: {
+                    rotate: 360,
+                    transition: { repeat: Infinity, duration: 4, ease: "linear" }
+                  }
+                }}
+                className="inline-flex items-center justify-center"
+              >
+                <Sun className={`w-4 h-4 transition-transform duration-300 ${activeTab === "solar" ? "text-amber-500 scale-110" : "text-slate-400"}`} />
+              </motion.span>
+              <span>Solar ROI Calculator</span>
+            </span>
+          </motion.button>
+          <motion.button
+            whileHover="hover"
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("audit")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+            className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "audit"
-                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md border border-slate-200/50 dark:border-slate-700/50"
+                ? "text-slate-900 dark:text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
             }`}
           >
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            AI Home Audit
-          </button>
+            {activeTab === "audit" && (
+              <motion.div
+                layoutId="activeDashboardTab"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200/50 dark:border-slate-700/50 z-0"
+                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-2.5">
+              <motion.span
+                variants={{
+                  hover: {
+                    scale: 1.15,
+                    y: -3,
+                    transition: { repeat: Infinity, repeatType: "reverse", duration: 0.8, ease: "easeInOut" }
+                  }
+                }}
+                className="inline-flex items-center justify-center"
+              >
+                <Sparkles className={`w-4 h-4 transition-transform duration-300 ${activeTab === "audit" ? "text-amber-500 scale-110" : "text-slate-400"}`} />
+              </motion.span>
+              <span>AI Home Audit</span>
+            </span>
+          </motion.button>
         </div>
       </div>
 
-      {activeTab === "solar" && (
-        <SolarCalculator tariffState={user?.tariffState || "ap"} activeTheme={activeTheme} />
-      )}
+      <AnimatePresence mode="wait">
+        {renderedTab === "solar" && (
+          <motion.div
+            key="solar"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="w-full"
+          >
+            <SolarCalculator tariffState={user?.tariffState || "ap"} activeTheme={activeTheme} />
+          </motion.div>
+        )}
 
-      {activeTab === "audit" && (
-        <AIHomeAudit 
-          activeAppliances={activeAppliances} 
-          user={user} 
-          activeTheme={activeTheme}
-          onNavigateToWizard={() => setActiveTab("wizard")}
-          customWattages={user?.customWattages}
-        />
-      )}
+        {renderedTab === "audit" && (
+          <motion.div
+            key="audit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="w-full"
+          >
+            <AIHomeAudit 
+              activeAppliances={activeAppliances} 
+              user={user} 
+              activeTheme={activeTheme}
+              onNavigateToWizard={() => setActiveTab("wizard")}
+              customWattages={user?.customWattages}
+            />
+          </motion.div>
+        )}
 
-      {activeTab === "wizard" && (
-        <>
-          {activeAppliances.length === 0 && !hasInitiated ? (
-            <DashboardWelcomeState onStartAudit={handleStartAudit} />
-          ) : (
-            <>
-              {/* New Hero Section */}
-              <DashboardHero
+        {renderedTab === "wizard" && (
+          <motion.div
+            key="wizard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="w-full space-y-8"
+          >
+            {activeAppliances.length === 0 && !hasInitiated ? (
+              <DashboardWelcomeState onStartAudit={handleStartAudit} />
+            ) : (
+              <>
+                {/* New Hero Section */}
+                <DashboardHero
                 userName={user?.fullName}
                 savingsOpportunity={liveSavingsPotential}
                 solarOffsetPercent={solarOffsetPercent}
@@ -1609,8 +1707,9 @@ export const Dashboard: React.FC = () => {
           )}
         </>
       )}
-    </>
-  )}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (

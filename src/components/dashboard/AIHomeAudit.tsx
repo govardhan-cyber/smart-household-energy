@@ -10,6 +10,7 @@ import { auditService } from "../../utils/auditService";
 import type { HomeAudit } from "../../utils/auditService";
 import type { ApplianceItem } from "../../utils/tariffCalculator";
 import type { UserProfile } from "../../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AIHomeAuditProps {
   activeAppliances: ApplianceItem[];
@@ -33,6 +34,26 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [selectedPastAuditId, setSelectedPastAuditId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Scanning steps and score animations
+  const [scanStep, setScanStep] = useState(0);
+  const [animatedScore, setAnimatedScore] = useState(0);
+
+  // Staggered variants for animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  } as const;
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  } as const;
 
   // Load past audits history
   const loadAuditHistory = async () => {
@@ -63,6 +84,30 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
     }
   }, [toast]);
 
+  // Animate score count up
+  useEffect(() => {
+    if (auditResult) {
+      let start = 0;
+      const end = auditResult.score;
+      if (start === end) {
+        setAnimatedScore(end);
+        return;
+      }
+      const duration = 1200; // ms
+      const stepTime = Math.abs(Math.floor(duration / end));
+      const timer = setInterval(() => {
+        start += 1;
+        setAnimatedScore(start);
+        if (start >= end) {
+          clearInterval(timer);
+        }
+      }, stepTime);
+      return () => clearInterval(timer);
+    } else {
+      setAnimatedScore(0);
+    }
+  }, [auditResult]);
+
   // Run the audit scanner
   const handleRunAudit = async () => {
     if (activeAppliances.length === 0) {
@@ -75,9 +120,15 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
 
     setIsScanning(true);
     setSelectedPastAuditId(null);
+    setScanStep(0);
+
+    const stepInterval = setInterval(() => {
+      setScanStep((prev) => Math.min(prev + 1, 3));
+    }, 750);
     
     // Simulate premium scan animation
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    clearInterval(stepInterval);
 
     try {
       const res = runHomeAudit(
@@ -153,7 +204,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
     const offset = circumference - (score / 100) * circumference;
 
     return (
-      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-955/10 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl relative overflow-hidden">
         <div className="relative w-36 h-36 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90">
             {/* Background circle */}
@@ -161,12 +212,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               cx="72"
               cy="72"
               r={radius}
-              className={isDark ? "stroke-slate-800" : "stroke-slate-200"}
+              className={isDark ? "stroke-slate-850" : "stroke-slate-200"}
               strokeWidth="10"
               fill="transparent"
             />
             {/* Foreground progress circle */}
-            <circle
+            <motion.circle
               cx="72"
               cy="72"
               r={radius}
@@ -174,9 +225,11 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               strokeWidth="10"
               fill="transparent"
               strokeDasharray={circumference}
-              strokeDashoffset={offset}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: offset }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
               strokeLinecap="round"
-              className={`transition-all duration-1000 ease-out ${
+              className={
                 score >= 85
                   ? "text-emerald-500"
                   : score >= 70
@@ -184,12 +237,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                   : score >= 50
                   ? "text-amber-500"
                   : "text-red-500"
-              }`}
+              }
             />
           </svg>
           <div className="absolute flex flex-col items-center justify-center">
             <span className="text-3xl font-display font-black text-slate-850 dark:text-white">
-              {score}
+              {animatedScore}
             </span>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
               Score
@@ -207,17 +260,36 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
 
   return (
     <div className="space-y-8 text-left relative">
+      <style>{`
+        @keyframes scanSweep {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        .laser-sweep-line {
+          animation: scanSweep 2.5s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Toast Notification */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-950 px-4 py-3 rounded-2xl shadow-xl border border-slate-800 dark:border-slate-100 text-xs font-bold animate-fade-in">
-          {toast.type === "success" ? (
-            <ShieldCheck className="w-4 h-4 text-green-400 dark:text-green-600" />
-          ) : (
-            <AlertTriangle className="w-4 h-4 text-red-400 dark:text-red-600" />
-          )}
-          {toast.message}
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9, transition: { duration: 0.25 } }}
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-950 px-4 py-3 rounded-2xl shadow-xl border border-slate-800 dark:border-slate-100 text-xs font-bold"
+          >
+            {toast.type === "success" ? (
+              <ShieldCheck className="w-4 h-4 text-green-400 dark:text-green-600" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-red-400 dark:text-red-600" />
+            )}
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Grid split: Audit Area (left) vs Log History (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -226,7 +298,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         <div className="lg:col-span-8 space-y-6">
           
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-green-900/20 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-green-900/20 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          >
             <div className="space-y-2 max-w-lg">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-white/10 text-white">
@@ -259,33 +336,76 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 </>
               )}
             </button>
-          </div>
+          </motion.div>
 
-          {/* Loader Scanning Animation */}
-          {isScanning && (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm space-y-6">
-              <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-                {/* Scanner pulse circles */}
-                <div className="absolute inset-0 bg-primary-blue/10 dark:bg-primary-green/10 rounded-full animate-ping"></div>
-                <div className="absolute inset-2 bg-primary-blue/20 dark:bg-primary-green/20 rounded-full animate-pulse"></div>
-                <div className="relative p-4 rounded-full bg-blue-50 text-primary-blue dark:bg-green-950/20 dark:text-primary-green border border-blue-200 dark:border-green-800/40">
-                  <Cpu className="w-8 h-8 animate-spin-slow" />
+          {/* Loader Scanning Animation with AnimatePresence */}
+          <AnimatePresence mode="wait">
+            {isScanning && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="p-12 text-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/60 rounded-3xl shadow-lg relative overflow-hidden min-h-[320px] flex flex-col justify-center items-center space-y-6 hero-dot-grid"
+              >
+                {/* Laser Line Sweep Overlay */}
+                <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500/80 to-transparent dark:via-emerald-400/85 laser-sweep-line pointer-events-none shadow-[0_0_12px_rgba(59,130,246,0.6)] dark:shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+
+                <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 bg-primary-blue/10 dark:bg-primary-green/10 rounded-full animate-ping"></div>
+                  <div className="absolute inset-3 bg-primary-blue/20 dark:bg-primary-green/20 rounded-full animate-pulse"></div>
+                  <div className="relative p-5 rounded-full bg-blue-50/80 text-primary-blue dark:bg-green-950/40 dark:text-primary-green border border-blue-200 dark:border-green-800/50 shadow-md">
+                    <Cpu className="w-10 h-10 animate-spin-slow" />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-1 max-w-xs mx-auto">
-                <h4 className="text-sm font-black text-slate-850 dark:text-white">Analyzing Home Profile</h4>
-                <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
-                  Parsing {activeAppliances.length} active configurations. Calculating slab charges and solar offset bounds...
-                </p>
-              </div>
-            </div>
-          )}
+
+                <div className="space-y-3 max-w-xs mx-auto z-10">
+                  <h4 className="text-sm font-black text-slate-850 dark:text-white uppercase tracking-widest flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+                    Running AI Audit
+                  </h4>
+                  
+                  {/* Dynamic Scan Steps */}
+                  <div className="h-10 flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={scanStep}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed font-mono"
+                      >
+                        {scanStep === 0 && "🔍 Parsing appliance load configurations..."}
+                        {scanStep === 1 && "⚡ Simulating peak hour waste ratios..."}
+                        {scanStep === 2 && "📈 Calibrating slab charges & tariff boundaries..."}
+                        {scanStep === 3 && "🤖 Synthesizing solar ROI offset limits..."}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Progress bar line */}
+                  <div className="w-40 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary-blue dark:bg-primary-green rounded-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: `${(scanStep + 1) * 25}%` }}
+                      transition={{ duration: 0.7, ease: "easeInOut" }}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Empty State: Prompt users to configure appliances first */}
           {!auditResult && !isScanning && (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm space-y-6">
-              <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600 w-16 h-16 flex items-center justify-center mx-auto border border-slate-100 dark:border-slate-800">
-                <Sparkles className="w-8 h-8" />
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-sm space-y-6"
+            >
+              <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600 w-16 h-16 flex items-center justify-center mx-auto border border-slate-100 dark:border-slate-800/50 shadow-inner">
+                <Sparkles className="w-8 h-8 text-amber-500 animate-pulse" />
               </div>
               <div className="space-y-2 max-w-sm mx-auto">
                 <h4 className="text-base font-bold text-slate-900 dark:text-white">No Audit Report Generated Yet</h4>
@@ -296,7 +416,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               {activeAppliances.length === 0 ? (
                 <button
                   onClick={onNavigateToWizard}
-                  className="h-10 px-5 inline-flex items-center gap-1.5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm"
+                  className="h-10 px-5 inline-flex items-center gap-1.5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm active:scale-[0.98] hover:scale-[1.02]"
                 >
                   Configure Appliances First
                   <ArrowRight className="w-4 h-4" />
@@ -304,29 +424,34 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               ) : (
                 <button
                   onClick={handleRunAudit}
-                  className="h-10 px-5 inline-flex items-center gap-1.5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm"
+                  className="h-10 px-5 inline-flex items-center gap-1.5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm active:scale-[0.98] hover:scale-[1.02]"
                 >
                   Start Analysis Now
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Audit Results View */}
           {auditResult && !isScanning && (
-            <div className="space-y-6">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="space-y-6"
+            >
               
               {/* Score & Primary Insight Panel */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+              <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 
                 {/* Score gauge card */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-center">
                   {renderScoreGauge(auditResult.score, auditResult.status, auditResult.statusColor)}
                 </div>
 
                 {/* AI Insights & High-level details card */}
-                <div className="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+                <div className="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-4">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin-slow" />
@@ -335,7 +460,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     
                     {/* Primary Highlight Insight */}
                     {auditResult.insights.length > 0 ? (
-                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-slate-950/40 dark:to-green-950/10 border border-slate-150 dark:border-slate-800/60 rounded-2xl text-left">
+                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-slate-955/10 dark:to-green-955/10 border border-slate-150 dark:border-slate-800/60 rounded-2xl text-left shadow-inner">
                         <div className="flex items-start gap-2.5">
                           <div className="p-1 rounded-lg bg-amber-500/10 text-amber-500 mt-0.5">
                             <AlertTriangle className="w-4 h-4" />
@@ -360,7 +485,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     <div>
                       <span>Estimated Units:</span>
                       <p className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
-                        {Math.round(auditResult.totalUnits)} <span className="text-[11px] font-normal text-slate-400">kWh/mo</span>
+                        {Math.round(auditResult.totalUnits)} <span className="text-[11px] font-normal text-slate-450">kWh/mo</span>
                       </p>
                     </div>
                     <div>
@@ -371,13 +496,13 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Grid: Energy Hogs (left) vs Solar ROI bounds (right) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+              <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                 
                 {/* Energy Hogs List (Progress bars) */}
-                <div className="md:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="md:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
                       Energy Impact Breakdown
@@ -388,7 +513,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                   </div>
 
                   <div className="space-y-3 pt-1">
-                    {auditResult.hogs.slice(0, 5).map((hog) => (
+                    {auditResult.hogs.slice(0, 5).map((hog, idx) => (
                       <div key={hog.id} className="space-y-1.5 text-xs text-left">
                         <div className="flex justify-between font-bold text-slate-655 dark:text-slate-350">
                           <span>
@@ -402,15 +527,17 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                           </span>
                         </div>
                         <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-500 ${
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${hog.percent}%` }}
+                            transition={{ duration: 0.8, delay: idx * 0.08, ease: "easeOut" }}
+                            className={`h-full rounded-full ${
                               hog.percent > 30 
                                 ? "bg-red-500" 
                                 : hog.percent > 15 
                                 ? "bg-amber-500" 
                                 : "bg-primary-blue dark:bg-primary-green"
                             }`}
-                            style={{ width: `${hog.percent}%` }}
                           />
                         </div>
                       </div>
@@ -424,7 +551,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 </div>
 
                 {/* Solar advice summary card */}
-                <div className="md:col-span-5 bg-gradient-to-br from-slate-50 to-green-50/20 dark:from-slate-950/40 dark:to-green-950/10 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+                <div className="md:col-span-5 bg-gradient-to-br from-slate-50 to-green-50/20 dark:from-slate-950/40 dark:to-green-950/10 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
                   <div className="space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-green-700 dark:text-primary-green flex items-center gap-1">
                       <Sun className="w-3.5 h-3.5 text-amber-500 animate-spin-slow" />
@@ -449,10 +576,10 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Savings Opportunities & Recommendations Grid */}
-              <div className="space-y-4">
+              <motion.div variants={itemVariants} className="space-y-4">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
                     Personalized Savings Opportunities
@@ -465,9 +592,11 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 {auditResult.recommendations.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {auditResult.recommendations.map((rec) => (
-                      <div 
+                      <motion.div 
                         key={rec.id} 
-                        className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm flex flex-col justify-between space-y-4 hover:-translate-y-0.5 transition-all"
+                        whileHover={{ y: -4 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-350 dark:hover:border-slate-700 shadow-sm flex flex-col justify-between space-y-4 transition-colors"
                       >
                         <div className="space-y-1.5 text-left">
                           <div className="flex justify-between items-center gap-2">
@@ -505,26 +634,26 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                             ₹{rec.yearlySavings.toLocaleString("en-IN")}/yr
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                  <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-550 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
                     No savings opportunities found. You are running an exceptionally green household!
                   </div>
                 )}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
         </div>
 
         {/* Right Column: Past Audits Log History */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-950/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-955/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
               Audit Logs History
             </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5">
               Sync past audit reports directly with your account.
             </p>
           </div>
@@ -536,77 +665,90 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Loading logs...</span>
               </div>
             ) : pastAudits.length === 0 ? (
-              <div className="py-8 px-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/20 dark:bg-slate-950/10 space-y-3">
+              <div className="py-8 px-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/20 dark:bg-slate-955/10 space-y-3">
                 <Award className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">No saved audits found</h4>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal max-w-xs mx-auto">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-550 leading-normal max-w-xs mx-auto">
                     Once you perform audits, they will sync automatically and display in this history log.
                   </p>
                 </div>
               </div>
             ) : (
-              pastAudits.map((audit) => {
-                const dateStr = new Date(audit.createdAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric"
-                });
-                const isActive = selectedPastAuditId === audit.id;
-                const scoreColor =
-                  audit.result.score >= 85
-                    ? "bg-green-500"
-                    : audit.result.score >= 70
-                    ? "bg-blue-500"
-                    : audit.result.score >= 50
-                    ? "bg-amber-500"
-                    : "bg-red-500";
+              <div className="space-y-3">
+                <AnimatePresence initial={false}>
+                  {pastAudits.map((audit) => {
+                    const dateStr = new Date(audit.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric"
+                    });
+                    const isActive = selectedPastAuditId === audit.id;
+                    const scoreColor =
+                      audit.result.score >= 85
+                        ? "bg-green-500"
+                        : audit.result.score >= 70
+                        ? "bg-blue-500"
+                        : audit.result.score >= 50
+                        ? "bg-amber-500"
+                        : "bg-red-500";
 
-                return (
-                  <div
-                    key={audit.id}
-                    onClick={() => handleSelectPastAudit(audit)}
-                    className={`p-3 rounded-2xl border transition-all duration-200 text-left flex items-center justify-between gap-3 cursor-pointer ${
-                      isActive
-                        ? "border-primary-blue bg-blue-50 dark:border-primary-green/60 dark:bg-emerald-950/30 dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
-                        : "border-slate-150 bg-slate-50/40 hover:border-slate-300 hover:bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 truncate">
-                      {/* Colored Score Badge */}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 ${scoreColor} shadow-sm dark:ring-2 dark:ring-white/10`}>
-                        {audit.result.score}
-                      </div>
-                      <div className="truncate space-y-0.5">
-                        <h4 className={`text-xs font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
-                          Score: {audit.result.score} ({audit.result.status})
-                        </h4>
-                        <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-                          {dateStr}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {/* Delete button */}
-                      <button
-                        onClick={(e) => handleDeleteAudit(e, audit.id || "")}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
-                        title="Delete log"
+                    return (
+                      <motion.div
+                        key={audit.id}
+                        layout
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        onClick={() => handleSelectPastAudit(audit)}
+                        className={`p-3 rounded-2xl border transition-all duration-200 text-left flex items-center justify-between gap-3 cursor-pointer ${
+                          isActive
+                            ? "border-primary-blue bg-blue-50/50 dark:border-primary-green/60 dark:bg-emerald-950/20 dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
+                            : "border-slate-150 bg-slate-50/40 hover:border-slate-250 hover:bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
+                        }`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                      <ChevronRight className={`w-4 h-4 ${isActive ? 'text-primary-blue dark:text-primary-green' : 'text-slate-400 dark:text-slate-600'}`} />
-                    </div>
-                  </div>
-                );
-              })
+                        <div className="flex items-center gap-3 truncate">
+                          {/* Colored Score Badge */}
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 ${scoreColor} shadow-sm dark:ring-2 dark:ring-white/10`}>
+                            {audit.result.score}
+                          </div>
+                          <div className="truncate space-y-0.5">
+                            <h4 className={`text-xs font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-750 dark:text-slate-200'}`}>
+                              Score: {audit.result.score} ({audit.result.status})
+                            </h4>
+                            <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-wide">
+                              {dateStr}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {/* Delete button */}
+                          <button
+                            onClick={(e) => handleDeleteAudit(e, audit.id || "")}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
+                            title="Delete log"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <ChevronRight className={`w-4 h-4 ${isActive ? 'text-primary-blue dark:text-primary-green' : 'text-slate-400 dark:text-slate-600'}`} />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 
           {/* Environmental Savings Tip Badge */}
           {auditResult && (
-            <div className="bg-gradient-to-tr from-green-50 to-emerald-50/60 dark:from-emerald-950/40 dark:to-green-900/10 p-5 rounded-2xl border border-green-200/60 dark:border-emerald-800/40 text-left space-y-2.5 dark:shadow-[inset_0_0_24px_rgba(16,185,129,0.05)]">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="bg-gradient-to-tr from-green-50 to-emerald-50/60 dark:from-emerald-950/40 dark:to-green-900/10 p-5 rounded-2xl border border-green-200/60 dark:border-emerald-800/40 text-left space-y-2.5 dark:shadow-[inset_0_0_24px_rgba(16,185,129,0.05)]"
+            >
               <span className="text-[10px] font-black text-green-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Leaf className="w-3.5 h-3.5 text-green-600 dark:text-emerald-400 animate-bounce" />
                 Audit Eco Impact
@@ -622,7 +764,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 </span>{" "}
                 trees every year.
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
