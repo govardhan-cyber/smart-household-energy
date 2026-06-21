@@ -404,10 +404,10 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary-blue to-primary-green text-white flex flex-col items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] transition-all cursor-pointer relative group border border-white/10 overflow-hidden"
+          className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-blue to-primary-green text-white flex flex-col items-center justify-center shadow-[0_0_16px_rgba(37,99,235,0.3)] hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transition-all cursor-pointer relative group border border-white/10 overflow-hidden"
         >
           {isOpen ? (
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           ) : (
             <img 
               src={chatbotLogo} 
@@ -416,12 +416,12 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
             />
           )}
           {messages.length === 1 && !isOpen && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-neon opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-accent-neon border border-white dark:border-slate-900"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-accent-neon border border-white dark:border-slate-900"></span>
             </span>
           )}
-          <span className="absolute right-20 scale-0 group-hover:scale-100 bg-slate-900/90 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-md transition-all duration-200 backdrop-blur-sm">
+          <span className="absolute right-16 scale-0 group-hover:scale-100 bg-slate-900/90 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-md transition-all duration-200 backdrop-blur-sm">
             ⚡ Chat with Energy AI
           </span>
         </button>

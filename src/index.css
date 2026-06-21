@@ -292,3 +292,69 @@ body {
   animation: dash-flow 1.5s linear infinite;
 }
 
+/* ── Stepper Animations ──────────────────────────────────────── */
+
+/* Completed step: spring pop */
+@keyframes step-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.18); opacity: 1; }
+  80%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+/* Active step: soft breathing pulse */
+@keyframes step-breathe {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0   rgba(37,99,235,0.45); }
+  50%       { transform: scale(1.07); box-shadow: 0 0 0 10px rgba(37,99,235,0); }
+}
+@keyframes step-breathe-dark {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0   rgba(16,185,129,0.45); }
+  50%       { transform: scale(1.07); box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+}
+
+/* Connector shimmer sweep */
+@keyframes shimmer-sweep {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(300%);  }
+}
+
+/* Icon float for active step */
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-3px); }
+}
+
+/* Checkmark stamp */
+@keyframes check-stamp {
+  0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+  70%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+
+/* Label fade-slide up */
+@keyframes label-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* Utility classes */
+.step-completed { animation: step-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+.step-active    { animation: step-breathe 2s ease-in-out infinite; }
+.dark .step-active { animation: step-breathe-dark 2s ease-in-out infinite; }
+.step-icon-float { animation: icon-float 2.8s ease-in-out infinite; }
+.step-check     { animation: check-stamp 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+.step-label     { animation: label-rise 0.4s ease both; }
+
+.connector-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.connector-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer-sweep 2s ease-in-out infinite;
+}
+

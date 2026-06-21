@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { db, IS_FIREBASE_CONFIGURED } from "../firebase/config";
 import { collection, doc, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
 import { createWorker } from "tesseract.js";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { 
   FileText, Upload, CheckCircle2, AlertTriangle, Eye, Trash2, 
   Download, Printer, Sparkles, Leaf, Calendar,
@@ -83,7 +83,8 @@ export const BillAnalyzer: React.FC = () => {
   // Extracted Bill Details
   const [activeBill, setActiveBill] = useState<BillRecord | null>(null);
   const [selectedBillForModal, setSelectedBillForModal] = useState<BillRecord | null>(null);
-  
+
+
   // Custom Settings for Score
   const familySize = 4;
   const houseType = "apartment" as string;
@@ -614,6 +615,23 @@ export const BillAnalyzer: React.FC = () => {
   };
 
   // Calculations & Formula engines
+  // ─── Explain Bill with AI (ChatBot Integration) ───────────────────────────
+  const handleExplainWithAI = () => {
+    if (!activeBill) return;
+    
+    const prompt = `Explain my electricity bill in a simple, formatted way. Here are the details:
+- Units Consumed: ${activeBill.parsedData.unitsConsumed} kWh
+- Total Bill Amount: ₹${activeBill.parsedData.totalAmount}
+- Tariff Category: ${activeBill.parsedData.tariffCategory || "Domestic"}
+- Due Date: ${activeBill.parsedData.dueDate || "N/A"}
+- Billing Period: ${activeBill.parsedData.billingPeriod || "N/A"}
+Please break down the charges in simple terms and provide 2-3 saving tips.`;
+
+    window.dispatchEvent(new CustomEvent("she_trigger_chat", {
+      detail: { message: prompt }
+    }));
+  };
+
   const getCalculations = (bill: BillRecord | null = activeBill) => {
     if (!bill) return null;
     const data = bill.parsedData;
@@ -777,40 +795,72 @@ export const BillAnalyzer: React.FC = () => {
 
   const PIE_COLORS = ["#3b82f6", "#f59e0b", "#10b981", "#8b5cf6"];
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { y: 15, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 110,
+        damping: 15
+      }
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 print:p-0 print:bg-white print:text-black">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 print:p-0 print:bg-white print:text-black"
+    >
       
       {/* ─── TITLE HEADER ────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 print:hidden">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white uppercase flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary-green animate-pulse" />
+      <motion.div 
+        variants={itemVariants}
+        className="relative overflow-hidden bg-gradient-to-r from-blue-600/10 via-teal-500/5 to-transparent dark:from-blue-950/20 dark:via-emerald-950/10 dark:to-transparent border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden shadow-sm"
+      >
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-blue/5 dark:bg-primary-green/5 blur-3xl rounded-full pointer-events-none" />
+        <div className="relative z-10">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-primary-green animate-pulse" />
             Electricity Bill Analyzer
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
             Upload images or PDFs to extract consumption, charges, and AI intelligence insights.
           </p>
         </div>
 
         {activeBill && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-10 shrink-0">
             <button
               onClick={() => handleExportCSV(activeBill)}
-              className="h-10 px-4 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-semibold rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer active:scale-[0.98] transition-all"
+              className="h-10 px-4 flex items-center gap-1.5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-xl text-slate-705 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer active:scale-[0.98] transition-all shadow-sm"
             >
               <Download className="w-3.5 h-3.5" />
               Export CSV
             </button>
             <button
               onClick={handlePrintReport}
-              className="h-10 px-4 flex items-center gap-1.5 bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-lg hover:opacity-90 cursor-pointer active:scale-[0.98] transition-all"
+              className="h-10 px-4 flex items-center gap-1.5 bg-gradient-to-r from-primary-blue to-blue-700 dark:from-primary-green dark:to-emerald-600 dark:text-slate-950 text-xs sm:text-sm font-black uppercase tracking-widest rounded-xl hover:opacity-95 shadow-md hover:shadow-lg cursor-pointer active:scale-[0.98] transition-all text-white"
             >
               <Printer className="w-3.5 h-3.5" />
               Print PDF Report
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Toast Alert */}
       <AnimatePresence>
@@ -820,39 +870,49 @@ export const BillAnalyzer: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.95 }}
             className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border shadow-lg text-xs font-bold ${
-              toast.type === "success" 
-                ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-primary-green" 
-                : "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400"
+              toast.type === "success"
+                ? "bg-green-50 dark:bg-green-950/80 border-green-200 dark:border-green-900 text-green-605 dark:text-green-400"
+                : "bg-red-50 dark:bg-red-950/80 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400"
             }`}
           >
-            <CheckCircle2 className="w-4 h-4" />
-            {toast.message}
+            {toast.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 text-green-500" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+            )}
+            <span>{toast.message}</span>
           </motion.div>
         )}
-      </AnimatePresence>      {/* ─── UPLOADER ROW ─────────────────────────────────────────────────────── */}
-      <div className="max-w-2xl mx-auto w-full print:hidden">
+      </AnimatePresence>
+      <motion.div 
+        variants={itemVariants}
+        className="max-w-2xl mx-auto w-full print:hidden"
+      >
         {status !== "idle" && status !== "success" && status !== "error" ? (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 text-left"
+            initial={{ opacity: 0, scale: 0.96, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl space-y-6 text-left relative overflow-hidden"
           >
+            {/* Ambient glowing background washed light */}
+            <div className="absolute -right-24 -top-24 w-48 h-48 rounded-full blur-3xl opacity-20 bg-cyan-400 pointer-events-none" />
+
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 relative z-10">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-ping"></div>
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></div>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                   Analyzing Your Utility Bill
                 </h3>
               </div>
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-cyan-500 dark:text-cyan-400">
+              <span className="text-[10px] sm:text-xs font-mono font-bold text-cyan-500 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
                 {status === "uploading" ? "STAGE 1/5" : status === "pdf_rendering" ? "STAGE 1/5" : status === "ocr_scanning" ? "STAGE 2/5" : status === "ai_parsing" ? "STAGE 3/5" : "STAGE 4/5"}
               </span>
             </div>
 
             {/* Scanning graphic & Checklist */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
               
               {/* Radar Graphic */}
               <div className="md:col-span-4 flex justify-center">
@@ -888,7 +948,7 @@ export const BillAnalyzer: React.FC = () => {
               <div className="md:col-span-8 space-y-3 font-semibold text-xs sm:text-sm">
                 
                 {/* Step 1 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                   <div className="flex items-center gap-2">
                     {status === "uploading" || status === "pdf_rendering" ? (
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
@@ -899,13 +959,13 @@ export const BillAnalyzer: React.FC = () => {
                       1. Pre-processing & Format Check
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-bold text-slate-400">
                     {status === "uploading" || status === "pdf_rendering" ? "RUNNING" : "COMPLETE"}
                   </span>
                 </div>
 
                 {/* Step 2 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                   <div className="flex items-center gap-2">
                     {status === "ocr_scanning" ? (
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
@@ -918,13 +978,13 @@ export const BillAnalyzer: React.FC = () => {
                       2. OCR Character Extraction
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-bold text-slate-400">
                     {status === "ocr_scanning" ? "RUNNING" : status === "uploading" || status === "pdf_rendering" ? "QUEUED" : "COMPLETE"}
                   </span>
                 </div>
 
                 {/* Step 3 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                   <div className="flex items-center gap-2">
                     {status === "ai_parsing" ? (
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
@@ -937,13 +997,13 @@ export const BillAnalyzer: React.FC = () => {
                       3. Gemini LLM Bill Structure Parsing
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-bold text-slate-400">
                     {status === "ai_parsing" ? "RUNNING" : status === "finalizing" ? "COMPLETE" : "QUEUED"}
                   </span>
                 </div>
 
                 {/* Step 4 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                   <div className="flex items-center gap-2">
                     {status === "finalizing" ? (
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
@@ -954,13 +1014,13 @@ export const BillAnalyzer: React.FC = () => {
                       4. Tariff Slab & Rate Assessment
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-bold text-slate-400">
                     {status === "finalizing" ? "RUNNING" : "QUEUED"}
                   </span>
                 </div>
 
                 {/* Step 5 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
                   <div className="flex items-center gap-2">
                     {status === "finalizing" ? (
                       <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
@@ -971,29 +1031,26 @@ export const BillAnalyzer: React.FC = () => {
                       5. Carbon Footprint & Grade Scoring
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-bold text-slate-400">
                     {status === "finalizing" ? "RUNNING" : "QUEUED"}
                   </span>
                 </div>
 
               </div>
             </div>
-
-
-
           </motion.div>
         ) : (
           <div 
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm text-center space-y-4"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm text-center space-y-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
           >
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 justify-center">
+            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 justify-center">
               <Upload className="w-4 h-4 text-primary-blue dark:text-primary-green" />
               Upload Utility Bill
             </h3>
             
-            <label className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center justify-center gap-2.5 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-950/10 hover:border-primary-blue/30 dark:hover:border-primary-green/30 transition-all group relative overflow-hidden">
+            <label className="border-2 border-dashed border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm hover:bg-slate-50/60 dark:hover:bg-slate-955/20 hover:border-primary-blue/40 dark:hover:border-primary-green/40 transition-all duration-300 group relative overflow-hidden shadow-inner">
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -1006,26 +1063,26 @@ export const BillAnalyzer: React.FC = () => {
                 isPdf ? (
                   <div className="flex flex-col items-center gap-2 text-slate-400 py-4">
                     <FileText className="w-10 h-10 text-red-500 animate-pulse" />
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 max-w-[200px] truncate">{file?.name}</span>
+                    <span className="text-xs font-semibold text-slate-650 dark:text-slate-300 max-w-[200px] truncate">{file?.name}</span>
                     <span className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">PDF File Selected</span>
                   </div>
                 ) : (
                   <div className="relative py-2 max-h-48 flex items-center justify-center">
-                    <img src={previewUrl} alt="Bill Preview" className="max-h-40 object-contain rounded shadow-sm border border-slate-200 dark:border-slate-800" />
+                    <img src={previewUrl} alt="Bill Preview" className="max-h-40 object-contain rounded-xl shadow-md border border-slate-200 dark:border-slate-800" />
                   </div>
                 )
               ) : (
                 <>
-                  <div className="p-2.5 bg-slate-50 dark:bg-slate-955 text-slate-400 dark:text-slate-655 rounded-full border border-slate-150 dark:border-slate-800/85 group-hover:scale-105 transition-transform">
-                    <FileText className="w-5 h-5 group-hover:text-primary-blue dark:group-hover:text-primary-green transition-colors" />
+                  <div className="p-3 bg-slate-50 dark:bg-slate-950 text-slate-400 dark:text-slate-500 rounded-full border border-slate-150 dark:border-slate-850 group-hover:scale-110 group-hover:text-primary-blue dark:group-hover:text-primary-green group-hover:border-primary-blue/20 dark:group-hover:border-primary-green/20 transition-all duration-300 shadow-sm">
+                    <FileText className="w-5 h-5 transition-colors" />
                   </div>
                   
                   <div className="space-y-0.5">
                     <p className="text-xs sm:text-sm font-bold text-slate-850 dark:text-white">
                       Drop your electricity bill here
                     </p>
-                    <p className="text-[11px] sm:text-xs text-slate-500">
-                      or <span className="text-primary-blue dark:text-primary-green">click to upload</span>
+                    <p className="text-[11px] sm:text-xs text-slate-550">
+                      or <span className="text-primary-blue dark:text-primary-green font-bold">click to upload</span>
                     </p>
                   </div>
                   <p className="text-[10px] sm:text-xs text-slate-400">
@@ -1036,7 +1093,7 @@ export const BillAnalyzer: React.FC = () => {
             </label>
 
             {errorMessage && (
-              <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 dark:bg-red-950/10 dark:border-red-900/30 dark:text-red-400 rounded-xl text-xs font-bold flex items-center gap-1.5 justify-center">
+              <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 dark:bg-red-955/20 dark:border-red-900/30 dark:text-red-400 rounded-xl text-xs font-bold flex items-center gap-1.5 justify-center">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 {errorMessage}
               </div>
@@ -1044,7 +1101,7 @@ export const BillAnalyzer: React.FC = () => {
 
             {/* Selected File Card */}
             {file && (
-              <div className="bg-slate-50 dark:bg-slate-955 p-3 rounded-lg border border-slate-150 dark:border-slate-855 flex items-center justify-between gap-3 text-left">
+              <div className="bg-slate-50/50 dark:bg-slate-955/30 p-3 rounded-xl border border-slate-150 dark:border-slate-855 flex items-center justify-between gap-3 text-left">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 text-primary-blue dark:text-primary-green shrink-0">
                     <FileText className="w-4 h-4" />
@@ -1059,7 +1116,7 @@ export const BillAnalyzer: React.FC = () => {
                     setFile(null);
                     setPreviewUrl(null);
                   }}
-                  className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                  className="p-1.5 text-slate-455 hover:text-red-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -1069,21 +1126,29 @@ export const BillAnalyzer: React.FC = () => {
             {file && status === "idle" && (
               <button
                 onClick={handleUploadAndScan}
-                className="w-full h-10 bg-primary-blue text-white dark:bg-primary-green dark:text-slate-955 font-bold uppercase tracking-wider text-xs sm:text-sm rounded-lg shadow-sm hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full h-11 bg-primary-blue text-white dark:bg-primary-green dark:text-slate-955 font-black uppercase tracking-widest text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
               >
                 Scan & Analyze Bill
               </button>
             )}
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* ─── DYNAMIC METRICS SECTION ────────────────────────────────────────── */}
       {activeBill && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print mb-6">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print mb-6"
+        >
           
           {/* Card 1: Extracted Consumption */}
-          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-blue shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <motion.div 
+            variants={itemVariants}
+            className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-blue shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+          >
             {/* Top right corner glowing wash */}
             <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-blue-400 dark:bg-blue-600 group-hover:scale-125 transition-transform duration-500" />
             
@@ -1101,18 +1166,21 @@ export const BillAnalyzer: React.FC = () => {
                 <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
                   {activeBill.parsedData.unitsConsumed}
                 </span>
-                <span className="text-xs font-bold text-slate-400 dark:text-slate-550">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
                   kWh
                 </span>
               </div>
-              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
+              <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 {activeBill.parsedData.billingPeriod || "Monthly period"}
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 2: Extracted Bill Amount */}
-          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <motion.div 
+            variants={itemVariants}
+            className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+          >
             {/* Top right corner glowing wash */}
             <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-amber-400 dark:bg-amber-600 group-hover:scale-125 transition-transform duration-500" />
             
@@ -1131,14 +1199,17 @@ export const BillAnalyzer: React.FC = () => {
                   ₹{activeBill.parsedData.totalAmount}
                 </span>
               </div>
-              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
+              <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 Tariff: {activeBill.parsedData.tariffCategory || "Domestic"}
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 3: Energy Efficiency Score */}
-          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-green shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <motion.div 
+            variants={itemVariants}
+            className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-green shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+          >
             {/* Top right corner glowing wash */}
             <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-emerald-400 dark:bg-emerald-600 group-hover:scale-125 transition-transform duration-500" />
             
@@ -1156,7 +1227,7 @@ export const BillAnalyzer: React.FC = () => {
                 <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
                   {calcs?.score}
                 </span>
-                <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
+                <span className="text-xs font-bold text-slate-450 dark:text-slate-555">
                   /100
                 </span>
                 {calcs?.grade && (
@@ -1165,14 +1236,17 @@ export const BillAnalyzer: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
+              <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 BEE Grade Rating
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 4: Cost Forecast */}
-          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+          <motion.div 
+            variants={itemVariants}
+            className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+          >
             {/* Top right corner glowing wash */}
             <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-cyan-400 dark:bg-cyan-600 group-hover:scale-125 transition-transform duration-500" />
             
@@ -1191,85 +1265,116 @@ export const BillAnalyzer: React.FC = () => {
                   ₹{calcs?.forecastAmount}
                 </span>
               </div>
-              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
+              <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 Confidence Index: {calcs?.confidence}%
               </p>
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       )}
+
 
       {/* ─── MAIN RESULTS GRID ────────────────────────────────────────────────── */}
       {activeBill && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+        >
           
           {/* Left Column: Bill Summary Metadata (col span 4) */}
-          <div className="lg:col-span-4 space-y-6">
+          <motion.div 
+            variants={itemVariants}
+            className="lg:col-span-4 space-y-6"
+          >
             
             {/* Consumer details */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm text-left space-y-3">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-150 dark:border-slate-850 pb-2">
+            <div className="bg-gradient-to-br from-white to-slate-50/20 dark:from-slate-900 dark:to-slate-950/10 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm text-left space-y-4 hover:shadow-md transition-shadow duration-300">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
                 <FileText className="w-4 h-4 text-primary-blue" />
                 Consumer Metadata
               </h3>
               
-              <div className="space-y-2 text-xs sm:text-sm">
-                <div>
-                  <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Consumer Name</span>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5 truncate">{activeBill.parsedData.consumerName}</p>
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-850">
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Consumer Name</span>
+                  <p className="font-bold text-slate-850 dark:text-slate-200 mt-0.5 truncate">{activeBill.parsedData.consumerName}</p>
                 </div>
-                <div>
-                  <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Service Connection No</span>
-                  <p className="font-mono font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{activeBill.parsedData.serviceNumber}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-850">
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">Connection No</span>
+                    <p className="font-mono font-bold text-slate-850 dark:text-slate-200 mt-0.5 truncate">{activeBill.parsedData.serviceNumber}</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-955/20 border border-slate-100 dark:border-slate-850">
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">Customer ID</span>
+                    <p className="font-mono font-bold text-slate-850 dark:text-slate-200 mt-0.5 truncate">{activeBill.parsedData.customerID}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Customer ID</span>
-                  <p className="font-mono font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{activeBill.parsedData.customerID}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Billing Address</span>
-                  <p className="font-medium text-slate-705 dark:text-slate-355 mt-0.5 leading-relaxed">{activeBill.parsedData.address}</p>
+                <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-850">
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Billing Address</span>
+                  <p className="font-semibold text-slate-705 dark:text-slate-350 mt-0.5 leading-relaxed">{activeBill.parsedData.address}</p>
                 </div>
               </div>
             </div>
 
             {/* Bill Details */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm text-left space-y-3">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-150 dark:border-slate-855 pb-2">
+            <div className="bg-gradient-to-br from-white to-slate-50/20 dark:from-slate-900 dark:to-slate-955/10 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm text-left space-y-4 hover:shadow-md transition-shadow duration-300">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
                 <Calendar className="w-4 h-4 text-amber-500" />
                 Billing Information
               </h3>
               
-              <div className="space-y-2 text-xs sm:text-sm">
+              <div className="space-y-3 text-xs sm:text-sm">
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Bill Date</span>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{activeBill.parsedData.billDate}</p>
+                  <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-855">
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Bill Date</span>
+                    <p className="font-bold text-slate-800 dark:text-slate-250 mt-0.5">{activeBill.parsedData.billDate}</p>
                   </div>
-                  <div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Due Date</span>
-                    <p className="font-semibold text-red-500 mt-0.5">{activeBill.parsedData.dueDate}</p>
+                  <div className="p-2.5 rounded-xl bg-red-50/10 dark:bg-red-950/10 border border-red-200/20 dark:border-red-900/20">
+                    <span className="text-[9px] font-bold text-red-400 dark:text-red-400 uppercase tracking-wider block">Due Date</span>
+                    <p className="font-bold text-red-500 mt-0.5">{activeBill.parsedData.dueDate}</p>
                   </div>
                 </div>
-                <div className="border-t border-slate-100 dark:border-slate-855 pt-2">
-                  <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Meter Readings</span>
-                  <div className="grid grid-cols-2 gap-2 mt-1 font-mono text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-855 pt-2.5">
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Meter Readings</span>
+                  <div className="grid grid-cols-2 gap-2 font-mono text-xs">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Previous</span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{activeBill.parsedData.previousReading} kWh</span>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase block">Previous</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-350">{activeBill.parsedData.previousReading} kWh</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Current</span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{activeBill.parsedData.currentReading} kWh</span>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase block">Current</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-350">{activeBill.parsedData.currentReading} kWh</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* ── EXPLAIN MY BILL – compact, below Billing Information ── */}
+            <div className="bg-gradient-to-br from-white to-slate-50/20 dark:from-slate-900 dark:to-slate-950/10 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-sm text-left space-y-3 hover:shadow-md transition-shadow duration-300">
+              {/* Header row */}
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-1.5 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                  <Sparkles className="w-3.5 h-3.5 text-primary-green animate-pulse" />
+                  Explain My Bill
+                </h3>
+                <span className="text-[9px] font-bold text-primary-blue dark:text-primary-green border border-primary-blue/20 dark:border-primary-green/20 bg-blue-50 dark:bg-blue-950/30 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                  AI Intelligence
+                </span>
+              </div>
 
-          </div>
+              {/* Button */}
+              <button
+                onClick={handleExplainWithAI}
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-primary-blue to-blue-700 dark:from-primary-green dark:to-emerald-600 dark:text-slate-950 hover:opacity-90 hover:shadow-sm cursor-pointer active:scale-[0.98] transition-all"
+              >
+                <Sparkles className="w-3 h-3" />Explain with AI
+              </button>
+            </div>
+          </motion.div>
 
           {/* Right Column: Visuals & Recommendations (col span 8) */}
           <div className="lg:col-span-8 space-y-6">
@@ -1447,11 +1552,11 @@ export const BillAnalyzer: React.FC = () => {
             </div>
 
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ─── BILLING HISTORY TABLE ───────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm text-left space-y-4 print:hidden">
+      <div className="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/70 rounded-2xl p-5 shadow-sm text-left space-y-4 print:hidden">
         <div>
           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-primary-blue" />
@@ -1462,20 +1567,20 @@ export const BillAnalyzer: React.FC = () => {
           </p>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-855">
+        <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
           <table className="w-full border-collapse text-xs sm:text-sm text-left">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-955/50 border-b border-slate-150 dark:border-slate-850 text-slate-400 dark:text-slate-500 uppercase text-[9px] sm:text-[10px] font-bold tracking-wider">
-                <th className="px-4 py-2.5">Upload Date</th>
-                <th className="px-4 py-2.5">Consumer Name</th>
-                <th className="px-4 py-2.5">Billing Period</th>
-                <th className="px-4 py-2.5">Units (kWh)</th>
-                <th className="px-4 py-2.5">Amount (INR)</th>
-                <th className="px-4 py-2.5">Tariff Class</th>
-                <th className="px-4 py-2.5 text-center">Actions</th>
+              <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[9px] sm:text-[10px] font-bold tracking-wider">
+                <th className="px-4 py-3">Upload Date</th>
+                <th className="px-4 py-3">Consumer Name</th>
+                <th className="px-4 py-3">Billing Period</th>
+                <th className="px-4 py-3">Units (kWh)</th>
+                <th className="px-4 py-3">Amount (INR)</th>
+                <th className="px-4 py-3">Tariff Class</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-850 font-semibold text-slate-700 dark:text-slate-300">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold text-slate-700 dark:text-slate-300">
               {loadingHistory ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
@@ -1534,19 +1639,19 @@ export const BillAnalyzer: React.FC = () => {
                 history.map((record) => (
                   <tr 
                     key={record.id} 
-                    className={`hover:bg-slate-50/50 dark:hover:bg-slate-950/20 cursor-pointer transition-colors ${activeBill?.id === record.id ? "bg-slate-50/80 dark:bg-slate-955/40" : ""}`}
+                    className={`cursor-pointer transition-colors duration-150 ${activeBill?.id === record.id ? "bg-blue-50/60 dark:bg-blue-950/20 border-l-2 border-l-primary-blue dark:border-l-primary-green" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"}`}
                     onClick={() => {
                       setActiveBill(record);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   >
-                    <td className="px-4 py-3 font-mono">{new Date(record.uploadDate).toLocaleDateString()}</td>
-                    <td className="px-4 py-3">{record.parsedData.consumerName}</td>
-                    <td className="px-4 py-3">{record.parsedData.billingPeriod}</td>
-                    <td className="px-4 py-3 font-mono">{record.parsedData.unitsConsumed} kWh</td>
-                    <td className="px-4 py-3 font-mono text-slate-900 dark:text-white">₹{record.parsedData.totalAmount}</td>
+                    <td className={`px-4 py-3 font-mono text-[11px] ${activeBill?.id === record.id ? 'text-primary-blue dark:text-primary-green font-bold' : 'text-slate-500 dark:text-slate-400'}`}>{new Date(record.uploadDate).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{record.parsedData.consumerName}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{record.parsedData.billingPeriod}</td>
+                    <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">{record.parsedData.unitsConsumed} <span className="text-[10px] text-slate-400 dark:text-slate-500">kWh</span></td>
+                    <td className="px-4 py-3 font-mono font-bold text-slate-900 dark:text-white">₹{record.parsedData.totalAmount}</td>
                     <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 dark:border dark:border-slate-700 text-[9px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
                         {record.parsedData.tariffCategory}
                       </span>
                     </td>
@@ -1556,17 +1661,17 @@ export const BillAnalyzer: React.FC = () => {
                           onClick={() => {
                             setSelectedBillForModal(record);
                           }}
-                          className="p-1 text-slate-400 hover:text-primary-blue hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary-blue dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors cursor-pointer"
                           title="View analysis"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteRecord(record.id)}
-                          className="p-1 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
                           title="Delete record"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -1783,6 +1888,6 @@ export const BillAnalyzer: React.FC = () => {
         </div>
       )}
     </AnimatePresence>
-  </div>
+  </motion.div>
 );
 };

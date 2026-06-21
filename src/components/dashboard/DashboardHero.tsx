@@ -14,7 +14,7 @@ export const AnimatedNumber: React.FC<{
   duration?: number;
   formatter?: (v: number) => string;
 }> = ({ value, duration = 500, formatter = (v) => Math.round(v).toString() }) => {
-  const [displayValue, setDisplayValue] = useState(value);
+  const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
     let startTimestamp: number | null = null;
@@ -276,10 +276,18 @@ export const KpiCard: React.FC<{
   };
   const glowBgClass = glowColorMap[borderColorClass] || "bg-slate-400 dark:bg-slate-600";
 
+  const hoverGlowMap: Record<string, string> = {
+    "border-l-primary-blue": "hover:shadow-[0_0_25px_-5px_rgba(37,99,235,0.25)] hover:border-blue-500/30 dark:hover:border-blue-500/40",
+    "border-l-warning-orange": "hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.25)] hover:border-orange-500/30 dark:hover:border-orange-500/40",
+    "border-l-primary-green": "hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40",
+    "border-l-amber-500": "hover:shadow-[0_0_25px_-5px_rgba(245,158,11,0.25)] hover:border-amber-500/30 dark:hover:border-amber-500/40",
+  };
+  const hoverGlowClass = hoverGlowMap[borderColorClass] || "hover:shadow-md";
+
   return (
-    <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300`}>
+    <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 ${hoverGlowClass} transition-all duration-300 [backface-visibility:hidden] [transform-style:preserve-3d]`}>
       {/* Top right corner glowing wash */}
-      <div className={`absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-125 transition-transform duration-500`} />
+      <div className={`absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-35 dark:opacity-25 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-150 group-hover:opacity-55 transition-all duration-500`} />
 
       <div className="flex items-center justify-between relative z-10">
         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">

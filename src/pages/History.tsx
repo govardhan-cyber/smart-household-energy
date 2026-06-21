@@ -3,375 +3,438 @@ import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { reportsService } from "../utils/reportsService";
 import type { EnergyReport } from "../utils/reportsService";
-import { 
-  History as HistIcon, Search, Calendar, 
-  Trash2, Eye, X, ArrowUpDown, Download, Printer, Leaf
+import {
+  History as HistIcon, Search, Calendar,
+  Trash2, Eye, X, ArrowUpDown, Download, Printer, Leaf,
+  Zap, TrendingDown, Bolt, ChevronRight, BarChart3
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateBill, getSlabsForState } from "../utils/tariffCalculator";
 
+/* ── count-up hook ───────────────────────────────────────────────── */
+function useCountUp(target: number, duration = 1.2, delay = 0) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let start: number | null = null;
+    const step = (timestamp: number) => {
+      if (start === null) start = timestamp + delay * 1000;
+      const elapsed = Math.max(0, timestamp - start);
+      const progress = Math.min(elapsed / (duration * 1000), 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setDisplay(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    const raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, delay]);
+  return display;
+}
 
+/* ── helpers ─────────────────────────────────────────────────────── */
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+
+const formatShortDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+
+/* ── HeroStat chip with count-up + stagger slide-in ────────────────── */
+interface HeroStatProps {
+  icon: React.ElementType;
+  iconColor: string;
+  label: string;
+  raw: number;
+  prefix?: string;
+  suffix?: string;
+  delay?: number;
+}
+const HeroStat: React.FC<HeroStatProps> = ({
+  icon: Icon, iconColor, label, raw, prefix = "", suffix = "", delay = 0,
+}) => {
+  const counted = useCountUp(raw, 1.4, delay + 0.15);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
+      className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white"
+    >
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60">{label}</span>
+      </div>
+      <p className="text-lg font-extrabold leading-tight tabular-nums">
+        {prefix}{counted.toLocaleString()}
+        <span className="text-xs font-semibold text-white/60 ml-0.5">{suffix}</span>
+      </p>
+    </motion.div>
+  );
+};
+
+
+
+/* ── component ───────────────────────────────────────────────────── */
 export const History: React.FC = () => {
   const { user } = useAuth();
-  const [reports, setReports] = useState<EnergyReport[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "bill_desc" | "bill_asc" | "units_desc">("date_desc");
-  
-  // Selected report for detailed viewing in a Modal
+  const [reports, setReports]               = useState<EnergyReport[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [searchQuery, setSearchQuery]       = useState("");
+  const [sortBy, setSortBy]                 = useState<"date_desc"|"date_asc"|"bill_desc"|"bill_asc"|"units_desc">("date_desc");
   const [selectedReport, setSelectedReport] = useState<EnergyReport | null>(null);
 
+  /* CSV export */
   const handleModalExportCSV = (report: EnergyReport) => {
-    const headers = ["Appliance", "Quantity", "Usage (hrs/day)", "Wattage (W)", "Estimated Monthly kWh"];
+    const headers = ["Appliance","Quantity","Usage (hrs/day)","Wattage (W)","Estimated Monthly kWh"];
     const rows = report.appliances.map(app => {
       const kwh = Math.round(app.quantity * (app.watts / 1000) * app.hours * 30);
       return [app.name, app.quantity, app.hours, app.watts, kwh];
     });
-    
     rows.push([]);
-    rows.push(["Metric", "Value"]);
+    rows.push(["Metric","Value"]);
     rows.push(["Tariff Region/Scheme", report.tariffState ? report.tariffState.toUpperCase() : "AP"]);
     rows.push(["Total Monthly Units (kWh)", report.totalUnits.toString()]);
     rows.push(["Estimated Monthly Bill", `₹${report.estimatedBill}`]);
     rows.push(["Savings Potential", `₹${report.savingsPotential}`]);
-    
     const beforeCo2 = report.beforeCo2 ?? Math.round(report.totalUnits * 0.82 * 10) / 10;
     const beforeTrees = Math.round((beforeCo2 / 1.83) * 10) / 10;
     rows.push(["CO2 Emissions (Before)", `${beforeCo2} kg`]);
     rows.push(["Equivalent Tree Offset", `${beforeTrees} trees`]);
-
-    if (report.savedCo2 !== undefined) {
-      rows.push(["CO2 Avoided", `${report.savedCo2} kg`]);
-    }
-    if (report.savedTrees !== undefined) {
-      rows.push(["Additional Tree Offset", `${report.savedTrees} trees`]);
-    }
-
-    const csvContent = "data:text/csv;charset=utf-8," 
+    if (report.savedCo2 !== undefined) rows.push(["CO2 Avoided", `${report.savedCo2} kg`]);
+    if (report.savedTrees !== undefined) rows.push(["Additional Tree Offset", `${report.savedTrees} trees`]);
+    const csvContent = "data:text/csv;charset=utf-8,"
       + [headers.join(","), ...rows.map(e => e.map(val => `"${val}"`).join(","))].join("\n");
-      
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Energy_Report_${new Date(report.createdAt).toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", `Energy_Report_${new Date(report.createdAt).toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
+  /* data fetching */
   const fetchReports = async () => {
     if (!user) return;
-    
     const cacheKey = `she_reports_cache_${user.uid}`;
-    
-    // 1. Instantly load from cache if available to prevent loading state delays
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
-      try {
-        const parsed = JSON.parse(cachedData) as EnergyReport[];
-        setReports(parsed);
-        setLoading(false);
-      } catch (e) {
-        console.error("Failed to parse cached reports:", e);
-      }
-    } else {
-      setLoading(true);
-    }
-
-    // 2. Fetch fresh data from network in background
+      try { setReports(JSON.parse(cachedData) as EnergyReport[]); setLoading(false); }
+      catch (e) { console.error("Cache parse error:", e); }
+    } else { setLoading(true); }
     try {
       const data = await reportsService.getUserReports(user.uid);
       setReports(data);
-    } catch (e) {
-      console.error("Failed to load reports:", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error("Failed to load reports:", e); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchReports();
-  }, [user]);
+  useEffect(() => { fetchReports(); }, [user]);
 
   const handleDelete = async (reportId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this calculation record?")) return;
+    if (!window.confirm("Delete this calculation record?")) return;
     try {
       await reportsService.deleteReport(reportId);
       setReports(prev => prev.filter(r => r.id !== reportId));
-      if (selectedReport?.id === reportId) {
-        setSelectedReport(null);
-      }
-    } catch (error) {
-      console.error("Failed to delete report:", error);
-    }
+      if (selectedReport?.id === reportId) setSelectedReport(null);
+    } catch (error) { console.error("Delete failed:", error); }
   };
 
-  // Filter & Sort Logic
-  const filteredReports = reports.filter(r => {
-    const searchLower = searchQuery.toLowerCase();
-    const formattedDate = new Date(r.createdAt).toLocaleDateString().toLowerCase();
-    const highestConsumer = r.highestConsumer.toLowerCase();
-    return formattedDate.includes(searchLower) || highestConsumer.includes(searchLower) || r.totalUnits.toString().includes(searchLower) || r.estimatedBill.toString().includes(searchLower);
+  /* filter & sort */
+  const filtered = reports.filter(r => {
+    const q = searchQuery.toLowerCase();
+    return (
+      new Date(r.createdAt).toLocaleDateString().toLowerCase().includes(q) ||
+      r.highestConsumer.toLowerCase().includes(q) ||
+      r.totalUnits.toString().includes(q) ||
+      r.estimatedBill.toString().includes(q)
+    );
   });
 
-  const sortedReports = [...filteredReports].sort((a, b) => {
-    if (sortBy === "date_desc") {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    if (sortBy === "date_asc") {
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    }
-    if (sortBy === "bill_desc") {
-      return b.estimatedBill - a.estimatedBill;
-    }
-    if (sortBy === "bill_asc") {
-      return a.estimatedBill - b.estimatedBill;
-    }
-    if (sortBy === "units_desc") {
-      return b.totalUnits - a.totalUnits;
-    }
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "date_desc")  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (sortBy === "date_asc")   return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    if (sortBy === "bill_desc")  return b.estimatedBill - a.estimatedBill;
+    if (sortBy === "bill_asc")   return a.estimatedBill - b.estimatedBill;
+    if (sortBy === "units_desc") return b.totalUnits - a.totalUnits;
     return 0;
   });
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
-  };
+  /* summary stats */
+  const totalBill    = reports.reduce((s, r) => s + r.estimatedBill, 0);
+  const totalUnits   = reports.reduce((s, r) => s + r.totalUnits, 0);
+  const totalSavings = reports.reduce((s, r) => s + r.savingsPotential, 0);
+  const avgBill      = reports.length ? Math.round(totalBill / reports.length) : 0;
 
+  /* ── render ───────────────────────────────────────────────────── */
   return (
-    <div className="flex-1 bg-slate-50 dark:bg-slate-950 transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6 text-left">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <h1 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <HistIcon className="w-7 h-7 text-primary-blue dark:text-primary-green" />
-            My Energy History
-          </h1>
-          <p className="text-sm font-semibold text-slate-550 dark:text-slate-450 mt-1">
-            Access, view details, and manage your previously saved energy reports.
-          </p>
-        </div>
-      </div>
+    <div className="flex-1 bg-slate-50 dark:bg-slate-950 transition-colors duration-300 min-h-screen">
 
-      {/* Search & Sort Panel */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        {/* Search */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search reports by date, consumption, bill, or highest consumer..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-850 border border-slate-250 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary-blue/10 dark:text-white"
-          />
-        </div>
+      {/* ── Hero header ─────────────────────────────────────────── */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-600 to-primary-green py-12 px-4 sm:px-6 lg:px-8">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
+                <HistIcon className="w-3 h-3" />
+                Energy Reports
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white">My Energy History</h1>
+              <p className="text-sm text-blue-100/80">Access, compare, and manage your previously saved energy reports.</p>
+            </div>
 
-        {/* Sort selector */}
-        <div className="flex items-center gap-2 shrink-0">
-          <ArrowUpDown className="w-4 h-4 text-slate-400" />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-slate-50 dark:bg-slate-850 border border-slate-250 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none dark:text-white"
-          >
-            <option value="date_desc">Newest First</option>
-            <option value="date_asc">Oldest First</option>
-            <option value="bill_desc">Highest Bill</option>
-            <option value="bill_asc">Lowest Bill</option>
-            <option value="units_desc">Highest Consumption</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Records container */}
-      {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center">
-          <div className="w-10 h-10 border-4 border-slate-200 border-t-primary-blue rounded-full animate-spin"></div>
-          <p className="mt-3 text-xs text-slate-400 font-semibold">Loading energy reports...</p>
-        </div>
-      ) : sortedReports.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 py-16 px-4 text-center space-y-4 shadow-sm">
-          <HistIcon className="w-12 h-12 text-slate-350 dark:text-slate-700 mx-auto" />
-          <div className="space-y-1">
-            <h3 className="font-bold text-slate-900 dark:text-white">No calculation records found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
-              {searchQuery 
-                ? "We couldn't find any calculations matching your search parameters. Try altering your filter query." 
-                : "You haven't generated any energy report calculations yet. Visit the Dashboard to create your first report!"
-              }
-            </p>
+            {/* Quick stats in hero — animated */}
+            {reports.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+                <HeroStat icon={BarChart3}   iconColor="text-white"        label="Reports"   raw={reports.length}  prefix=""  suffix=""    delay={0}   />
+                <HeroStat icon={Zap}         iconColor="text-yellow-200"   label="Avg Bill"  raw={avgBill}         prefix="₹" suffix="/mo" delay={0.1} />
+                <HeroStat icon={Bolt}        iconColor="text-blue-200"     label="Total kWh" raw={totalUnits}      prefix=""  suffix=" kWh" delay={0.2} />
+                <HeroStat icon={TrendingDown} iconColor="text-emerald-200" label="Savings"   raw={totalSavings}    prefix="₹" suffix=""    delay={0.3} />
+              </div>
+            )}
           </div>
-          {!searchQuery && (
-            <div className="pt-2">
+        </div>
+      </div>
+
+      {/* ── Main content ────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 text-left">
+
+        {/* Search & sort bar */}
+        <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by date, appliance, bill amount, or consumption…"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary-blue/20 dark:text-white placeholder-slate-400"
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <ArrowUpDown className="w-4 h-4 text-slate-400" />
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none dark:text-white cursor-pointer"
+            >
+              <option value="date_desc">Newest First</option>
+              <option value="date_asc">Oldest First</option>
+              <option value="bill_desc">Highest Bill</option>
+              <option value="bill_asc">Lowest Bill</option>
+              <option value="units_desc">Highest Consumption</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Result count */}
+        {!loading && reports.length > 0 && (
+          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Showing {sorted.length} of {reports.length} records
+          </p>
+        )}
+
+        {/* States */}
+        {loading ? (
+          <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-primary-blue rounded-full animate-spin" />
+            <p className="text-xs text-slate-400 font-semibold">Loading energy reports…</p>
+          </div>
+
+        ) : sorted.length === 0 ? (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 py-20 px-6 text-center space-y-4 shadow-sm">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <HistIcon className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base">No reports found</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                {searchQuery
+                  ? "No records match your search. Try different keywords."
+                  : "You haven't saved any energy reports yet. Head to the Dashboard to run your first analysis!"}
+              </p>
+            </div>
+            {!searchQuery && (
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-1.5 h-10 px-5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm"
+                className="inline-flex items-center gap-1.5 h-10 px-5 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm"
               >
-                Start New Energy Audit
+                <Zap className="w-3.5 h-3.5" /> Start New Energy Audit
               </Link>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* History Table Wrapper */
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-450 uppercase tracking-wider h-12">
-                  <th className="px-6">Date Generated</th>
-                  <th className="px-6">Monthly Units</th>
-                  <th className="px-6">Estimated Bill</th>
-                  <th className="px-6">Highest Consumer</th>
-                  <th className="px-6">Savings Potential</th>
-                  <th className="px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-150 dark:divide-slate-800 text-xs font-semibold text-slate-655 dark:text-slate-350">
-                {sortedReports.map((report) => (
-                  <tr 
-                    key={report.id} 
-                    onClick={() => setSelectedReport(report)}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors h-14"
-                  >
-                    <td className="px-6 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                        <span>{formatDate(report.createdAt)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 whitespace-nowrap">
-                      <span className="font-bold text-slate-800 dark:text-slate-100">{report.totalUnits}</span> kWh
-                    </td>
-                    <td className="px-6 whitespace-nowrap text-primary-blue dark:text-primary-green font-bold">
-                      ₹{report.estimatedBill}
-                    </td>
-                    <td className="px-6 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-full bg-red-50 text-alert-red border border-red-100 dark:bg-red-950/20 dark:border-red-900/40 text-[10px] font-bold">
-                        {report.highestConsumer}
-                      </span>
-                    </td>
-                    <td className="px-6 whitespace-nowrap text-green-600 font-bold">
-                      ₹{report.savingsPotential}
-                    </td>
-                    <td className="px-6 whitespace-nowrap text-right" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setSelectedReport(report)}
-                          className="p-2 text-slate-400 hover:text-primary-blue hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => handleDelete(report.id!, e)}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
-                          title="Delete Calculation"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* DETAIL MODAL DIALOG */}
+        ) : (
+          /* ── Report cards grid ─────────────────────────────────── */
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {sorted.map((report, index) => {
+              const maxBill = Math.max(...sorted.map(r => r.estimatedBill));
+              const barWidth = maxBill > 0 ? Math.round((report.estimatedBill / maxBill) * 100) : 0;
+
+              return (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: index * 0.05 }}
+                  onClick={() => setSelectedReport(report)}
+                  className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-all duration-200 flex flex-col gap-4"
+                >
+                  {/* Card top: date + actions */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
+                        <Calendar className="w-4 h-4 text-primary-blue dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                          {formatShortDate(report.createdAt)}
+                        </p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-600">
+                          {new Date(report.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => setSelectedReport(report)}
+                        className="p-1.5 text-slate-400 hover:text-primary-blue dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors cursor-pointer"
+                        title="View Details"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={e => handleDelete(report.id!, e)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bill amount (hero value) */}
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Estimated Bill</p>
+                    <p className="text-2xl font-display font-extrabold text-primary-blue dark:text-primary-green">
+                      ₹{report.estimatedBill}
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">/mo</span>
+                    </p>
+                    {/* Animated bill bar — blue→green gradient */}
+                    <div className="mt-2 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${barWidth}%` }}
+                        transition={{ duration: 0.7, delay: index * 0.06 + 0.25, ease: "easeOut" }}
+                        className="h-full rounded-full bg-gradient-to-r from-primary-blue to-primary-green"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    {[
+                      { label: "Units",    value: `${report.totalUnits}`, unit: "kWh",   color: "text-slate-800 dark:text-slate-200" },
+                      { label: "Savings",  value: `₹${report.savingsPotential}`, unit: "", color: "text-emerald-600 dark:text-emerald-400" },
+                      { label: "Top User", value: report.highestConsumer, unit: "",      color: "text-rose-600 dark:text-rose-400" },
+                    ].map(({ label, value, unit, color }) => (
+                      <div key={label} className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+                        <p className={`text-xs font-extrabold truncate ${color}`}>{value}<span className="text-[9px] text-slate-400 ml-0.5">{unit}</span></p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* View link */}
+                  <div className="flex items-center justify-end text-[10px] font-bold text-primary-blue dark:text-primary-green opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
+                    View full report <ChevronRight className="w-3 h-3" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Detail Modal ─────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedReport && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedReport(null)}
               className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-            ></motion.div>
+            />
 
-            {/* Modal Content */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-850 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col z-10 text-left"
+              className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 text-left"
             >
               {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
+              <div className="bg-gradient-to-r from-primary-blue to-primary-green px-6 py-4 flex items-center justify-between text-white">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Energy Report Details</h3>
-                  <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Calculated on {formatDate(selectedReport.createdAt)}</p>
+                  <h3 className="text-base font-bold">Energy Report Details</h3>
+                  <p className="text-[11px] text-blue-100/80 mt-0.5">Calculated on {formatDate(selectedReport.createdAt)}</p>
                 </div>
-                <div className="flex items-center gap-2 no-print">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleModalExportCSV(selectedReport)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-250 dark:border-slate-800 hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-550 dark:text-slate-400 text-[10px] font-bold transition-all cursor-pointer"
-                    title="Export CSV data"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-[10px] font-bold transition-all cursor-pointer"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Export CSV</span>
+                    <Download className="w-3.5 h-3.5" /> CSV
                   </button>
                   <button
                     onClick={() => window.print()}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-250 dark:border-slate-800 hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-550 dark:text-slate-400 text-[10px] font-bold transition-all cursor-pointer"
-                    title="Print PDF report"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white text-[10px] font-bold transition-all cursor-pointer"
                   >
-                    <Printer className="w-3.5 h-3.5" />
-                    <span>Print PDF</span>
+                    <Printer className="w-3.5 h-3.5" /> PDF
                   </button>
-                  <button 
+                  <button
                     onClick={() => setSelectedReport(null)}
-                    className="p-1.5 rounded-xl border border-slate-250 dark:border-slate-800 hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+                    className="p-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white cursor-pointer"
                   >
-                    <X className="w-4.5 h-4.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Modal Body */}
               <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+
                 {/* Stats row */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Usage</span>
-                    <p className="text-xl font-display font-extrabold text-slate-800 dark:text-slate-250 mt-1">{selectedReport.totalUnits} kWh</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Monthly Bill</span>
-                    <p className="text-xl font-display font-extrabold text-primary-blue dark:text-primary-green mt-1">₹{selectedReport.estimatedBill}</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Savings Potential</span>
-                    <p className="text-xl font-display font-extrabold text-green-600 mt-1">₹{selectedReport.savingsPotential}</p>
-                  </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Total Usage",      value: `${selectedReport.totalUnits} kWh`, color: "text-slate-800 dark:text-slate-100" },
+                    { label: "Net Monthly Bill",  value: `₹${selectedReport.estimatedBill}`, color: "text-primary-blue dark:text-primary-green" },
+                    { label: "Savings Potential", value: `₹${selectedReport.savingsPotential}`, color: "text-emerald-600 dark:text-emerald-400" },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="bg-slate-50 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                      <p className={`text-lg font-display font-extrabold mt-1 ${color}`}>{value}</p>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Grid of Appliance Configurations */}
-                <div className="space-y-2.5">
-                  <h4 className="font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider text-[10px]">Appliance Configurations</h4>
-                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-150 dark:divide-slate-800">
-                    <div className="grid grid-cols-4 bg-slate-50 dark:bg-slate-850 px-4 py-2 font-bold text-slate-500">
+                {/* Appliance table */}
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">Appliance Configurations</h4>
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                    <div className="grid grid-cols-4 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 font-bold text-slate-400 text-[10px] uppercase tracking-wider">
                       <span>Appliance</span>
-                      <span className="text-center">Quantity</span>
-                      <span className="text-center">Hours / Day</span>
-                      <span className="text-right">Est. Monthly kWh</span>
+                      <span className="text-center">Qty</span>
+                      <span className="text-center">Hrs/Day</span>
+                      <span className="text-right">Monthly kWh</span>
                     </div>
                     {selectedReport.appliances.map((app, idx) => {
                       const kwh = Math.round(app.quantity * (app.watts / 1000) * app.hours * 30);
                       return (
-                        <div key={idx} className="grid grid-cols-4 px-4 py-2.5 font-semibold text-slate-750 dark:text-slate-300">
-                          <span>{app.name} <span className="text-[10px] text-slate-400 font-semibold">({app.watts}W)</span></span>
+                        <div key={idx} className="grid grid-cols-4 px-4 py-2.5 text-slate-700 dark:text-slate-300">
+                          <span className="font-semibold">{app.name} <span className="text-[10px] text-slate-400">({app.watts}W)</span></span>
                           <span className="text-center">{app.quantity}</span>
                           <span className="text-center">{app.hours} hrs</span>
                           <span className="text-right font-bold">{kwh} kWh</span>
@@ -381,51 +444,48 @@ export const History: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Slabs breakdown details */}
-                <div className="space-y-2.5">
+                {/* Slab breakdown */}
+                <div className="space-y-2">
                   {(() => {
                     const tState = selectedReport.tariffState || "ap";
-                    const fRate = selectedReport.customFlatRate || 7.5;
+                    const fRate  = selectedReport.customFlatRate || 7.5;
                     const billDetails = calculateBill(selectedReport.totalUnits, tState, fRate);
                     return (
                       <>
-                        <h4 className="font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider text-[10px]">
-                          {billDetails.stateName} Slab breakdown (Calculated for {selectedReport.totalUnits} units)
+                        <h4 className="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">
+                          {billDetails.stateName} Slab Breakdown ({selectedReport.totalUnits} units)
                         </h4>
-                        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/50 text-xs">
-                          <div className="grid grid-cols-3 bg-slate-50 dark:bg-slate-850 py-2 px-4 font-bold text-slate-500">
-                            <span>Consumption Slab</span>
-                            <span className="text-center">Tariff Rate</span>
+                        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                          <div className="grid grid-cols-3 bg-slate-50 dark:bg-slate-900 py-2.5 px-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider">
+                            <span>Slab</span>
+                            <span className="text-center">Rate</span>
                             <span className="text-right">Charges</span>
                           </div>
-                          <div className="divide-y divide-slate-150 dark:divide-slate-800">
+                          <div className="divide-y divide-slate-100 dark:divide-slate-800">
                             {getSlabsForState(tState, fRate).map((slab, idx) => {
                               const unitsInSlab = Math.max(0, Math.min(selectedReport.totalUnits - slab.prev, slab.max));
-                              const slabRateNum = parseFloat(slab.rate.replace("₹", ""));
-                              const slabCharge = unitsInSlab * slabRateNum;
-
+                              const slabCharge  = unitsInSlab * parseFloat(slab.rate.replace("₹", ""));
                               if (unitsInSlab === 0) return null;
-
                               return (
-                                <div key={idx} className="grid grid-cols-3 py-2 px-4 text-slate-655 dark:text-slate-350">
-                                  <span>{slab.limit} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">({unitsInSlab.toFixed(1)} units)</span></span>
+                                <div key={idx} className="grid grid-cols-3 py-2.5 px-4 text-slate-600 dark:text-slate-400">
+                                  <span>{slab.limit} <span className="text-[10px] text-slate-400">({unitsInSlab.toFixed(1)} u)</span></span>
                                   <span className="text-center">{slab.rate}</span>
                                   <span className="text-right font-semibold">₹{slabCharge.toFixed(2)}</span>
                                 </div>
                               );
                             })}
                           </div>
-                          <div className="bg-slate-50 dark:bg-slate-850 p-4 border-t border-slate-200 dark:border-slate-850 space-y-1.5 text-xs text-slate-600 dark:text-slate-350">
-                            <div className="flex justify-between">
-                              <span>Gross Energy Charge:</span>
+                          <div className="bg-slate-50 dark:bg-slate-900/80 p-4 border-t border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+                            <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                              <span>Gross Energy Charge</span>
                               <span className="font-semibold">₹{billDetails.grossEnergyCharge.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-primary-green">
-                              <span>Less Govt. Subsidy:</span>
-                              <span className="font-bold">-₹{billDetails.subsidy.toFixed(2)}</span>
+                            <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                              <span>Less Govt. Subsidy</span>
+                              <span className="font-bold">−₹{billDetails.subsidy.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1.5 border-t border-slate-150 dark:border-slate-850">
-                              <span>Net Energy Charges:</span>
+                            <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1.5 border-t border-slate-200 dark:border-slate-800">
+                              <span>Net Energy Charges</span>
                               <span className="text-primary-blue dark:text-primary-green">₹{billDetails.netEnergyCharge.toFixed(2)}</span>
                             </div>
                           </div>
@@ -435,24 +495,23 @@ export const History: React.FC = () => {
                   })()}
                 </div>
 
-                {/* Environmental Carbon Footprint Card */}
+                {/* Carbon footprint */}
                 {(() => {
-                  const units = selectedReport.totalUnits;
-                  const beforeCo2 = selectedReport.beforeCo2 ?? Math.round(units * 0.82 * 10) / 10;
+                  const units      = selectedReport.totalUnits;
+                  const beforeCo2  = selectedReport.beforeCo2 ?? Math.round(units * 0.82 * 10) / 10;
                   const beforeTrees = Math.round((beforeCo2 / 1.83) * 10) / 10;
-                  
                   return (
-                    <div className="bg-gradient-to-tr from-green-50 to-emerald-50 dark:from-emerald-950/20 dark:to-green-950/15 p-5 rounded-2xl border border-green-200 dark:border-green-900/40 space-y-2 text-left">
-                      <h4 className="text-xs font-bold text-green-700 dark:text-primary-green flex items-center gap-1.5 uppercase tracking-wider">
-                        <Leaf className="w-4 h-4 text-green-600 dark:text-primary-green" />
-                        Environmental Carbon Footprint
+                    <div className="bg-gradient-to-tr from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/20 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/40 space-y-2">
+                      <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                        <Leaf className="w-4 h-4" /> Environmental Carbon Footprint
                       </h4>
-                      <p className="text-xs text-slate-655 dark:text-slate-400">
-                        This energy configuration generates estimated CO2 emissions of <span className="font-bold text-slate-800 dark:text-white">{beforeCo2.toFixed(1)} kg</span> per month.
-                        It requires <span className="font-bold text-slate-800 dark:text-white">{beforeTrees.toFixed(0)} trees</span> to absorb these emissions.
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        This configuration generates{" "}
+                        <span className="font-bold text-slate-900 dark:text-white">{beforeCo2.toFixed(1)} kg CO₂/month</span>,
+                        requiring <span className="font-bold text-slate-900 dark:text-white">{beforeTrees.toFixed(0)} trees</span> to absorb.
                         {selectedReport.savedCo2 !== undefined && selectedReport.savedCo2 > 0 && (
-                          <span className="block mt-1 text-primary-green font-semibold">
-                            With recommended optimizations, you can avoid {selectedReport.savedCo2.toFixed(1)} kg of CO2, offsetting {selectedReport.savedTrees?.toFixed(0)} additional trees!
+                          <span className="block mt-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Optimizations could avoid {selectedReport.savedCo2.toFixed(1)} kg CO₂, offsetting {selectedReport.savedTrees?.toFixed(0)} more trees!
                           </span>
                         )}
                       </p>
@@ -462,10 +521,10 @@ export const History: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-4 border-t border-slate-150 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-900">
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-900/80">
                 <button
                   onClick={() => setSelectedReport(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-655 dark:text-slate-400 hover:bg-slate-150 dark:hover:bg-slate-800 transition-colors"
+                  className="px-5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Close
                 </button>

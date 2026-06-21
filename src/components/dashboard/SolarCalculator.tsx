@@ -3,7 +3,6 @@ import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap,
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
-import { motion } from "framer-motion";
 
 interface SolarCalculatorProps {
   tariffState: string;
@@ -46,7 +45,6 @@ const AnimatedNumber: React.FC<{
 };
 
 // Solar Readiness Score Component
-// Solar Readiness Score Component
 const SolarReadinessScore: React.FC<{ 
   score: number; 
   stateName: string; 
@@ -56,22 +54,26 @@ const SolarReadinessScore: React.FC<{
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
-    setAnimatedScore(0);
-    const duration = 1200;
-    const startTime = performance.now();
+    let startTimestamp: number | null = null;
+    const startValue = animatedScore;
+    const endValue = score;
+    if (startValue === endValue) return;
 
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+    let animationFrameId: number;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / 800, 1);
       const easedProgress = progress * (2 - progress);
-      setAnimatedScore(Math.round(easedProgress * score));
-
+      const current = startValue + easedProgress * (endValue - startValue);
+      setAnimatedScore(Math.round(current));
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationFrameId = window.requestAnimationFrame(step);
       }
     };
 
-    animate(performance.now());
+    animationFrameId = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(animationFrameId);
   }, [score]);
 
   let statusText = "Good Candidate";
@@ -86,7 +88,7 @@ const SolarReadinessScore: React.FC<{
     textExplanation = "Score >85 indicates outstanding setup.";
   } else if (score < 60) {
     statusText = "Low Feasibility";
-    badgeColor = "bg-rose-500/10 text-rose-600 dark:text-rose-450 border-rose-500/20";
+    badgeColor = "bg-rose-500/10 text-rose-600 dark:text-rose-455 border-rose-500/20";
     badgeText = "Low Feasibility";
     textExplanation = "Score <60 suggests lower generation.";
   }
@@ -95,22 +97,25 @@ const SolarReadinessScore: React.FC<{
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between text-left space-y-3 relative">
+    <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(245,158,11,0.2)] hover:border-amber-500/20 transition-all duration-300 flex flex-col justify-between text-left space-y-4 relative overflow-hidden group [backface-visibility:hidden] [transform-style:preserve-3d]">
+      {/* Top right corner glowing wash */}
+      <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+      
       {/* Top Row: Title block and circular gauge side-by-side */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-2">
-        <div className="flex gap-2">
-          <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl h-9 w-9 flex items-center justify-center shrink-0">
-            <Sun className="w-4.5 h-4.5 animate-spin" style={{ animationDuration: "15s" }} />
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-850 pb-3 relative z-10">
+        <div className="flex gap-2.5">
+          <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl h-9.5 w-9.5 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+            <Sun className="w-5 h-5 animate-spin" style={{ animationDuration: "20s" }} />
           </div>
           <div>
             <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block">
               SOLAR READINESS
             </span>
-            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase leading-tight mt-0.5">
+            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase leading-tight mt-1">
               {statusText}
             </h3>
-            <p className="text-[9.5px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
-              High potential for solar installation.
+            <p className="text-[9.5px] text-slate-500 dark:text-slate-450 mt-0.5 leading-tight">
+              High suitability for residential solar setup.
             </p>
           </div>
         </div>
@@ -123,7 +128,7 @@ const SolarReadinessScore: React.FC<{
               cy="32"
               r="26"
               className="stroke-slate-100 dark:stroke-slate-800"
-              strokeWidth="5.5"
+              strokeWidth="5"
               fill="transparent"
             />
             <circle
@@ -131,7 +136,7 @@ const SolarReadinessScore: React.FC<{
               cy="32"
               r="26"
               className="stroke-amber-500 dark:stroke-primary-green transition-all duration-300 ease-out"
-              strokeWidth="5.5"
+              strokeWidth="5"
               fill="transparent"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -150,43 +155,43 @@ const SolarReadinessScore: React.FC<{
       </div>
 
       {/* Middle Block: List and Potential Badge side-by-side */}
-      <div className="flex items-center justify-between gap-4 my-0.5">
+      <div className="flex items-center justify-between gap-4 my-1 relative z-10">
         {/* Left Side: Compact row items */}
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-2.5">
           {/* Roof Area */}
-          <div className="flex items-center gap-2">
-            <div className="p-1 bg-green-500/10 text-green-600 dark:text-primary-green rounded-md shrink-0">
+          <div className="flex items-center gap-2.5 group/item">
+            <div className="p-1.5 bg-green-500/10 text-green-600 dark:text-primary-green rounded-lg shrink-0 group-hover/item:scale-110 transition-transform">
               <Home className="w-3.5 h-3.5" />
             </div>
             <div>
               <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">Usable Area</span>
-              <span className="text-xs font-bold text-green-650 dark:text-primary-green mt-0.5 block">
+              <span className="text-xs font-bold text-green-650 dark:text-primary-green mt-1 block">
                 {roofArea} sq ft
               </span>
             </div>
           </div>
 
           {/* Solar Yield */}
-          <div className="flex items-center gap-2">
-            <div className="p-1 bg-blue-500/10 text-blue-500 rounded-md shrink-0">
+          <div className="flex items-center gap-2.5 group/item">
+            <div className="p-1.5 bg-blue-500/10 text-blue-500 rounded-lg shrink-0 group-hover/item:scale-110 transition-transform">
               <Zap className="w-3.5 h-3.5" />
             </div>
             <div>
               <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">Solar Yield</span>
-              <span className="text-xs font-bold text-blue-500 mt-0.5 block">
+              <span className="text-xs font-bold text-blue-500 mt-1 block">
                 {Math.round(recommendedKw * 120)} kWh/mo
               </span>
             </div>
           </div>
 
           {/* DISCOM */}
-          <div className="flex items-center gap-2">
-            <div className="p-1 bg-purple-500/10 text-purple-500 rounded-md shrink-0">
+          <div className="flex items-center gap-2.5 group/item">
+            <div className="p-1.5 bg-purple-500/10 text-purple-505 dark:text-purple-400 rounded-lg shrink-0 group-hover/item:scale-110 transition-transform">
               <Building2 className="w-3.5 h-3.5" />
             </div>
             <div>
               <span className="text-[9.5px] text-slate-400 dark:text-slate-55 block leading-none">DISCOM Provider</span>
-              <span className="text-xs font-bold text-purple-505 dark:text-purple-400 mt-0.5 block truncate max-w-[125px]" title={stateName}>
+              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-1 block truncate max-w-[125px]" title={stateName}>
                 {stateName}
               </span>
             </div>
@@ -194,26 +199,26 @@ const SolarReadinessScore: React.FC<{
         </div>
 
         {/* Right Side: Badge & description */}
-        <div className="flex flex-col items-center shrink-0 w-28 text-center space-y-0.5">
-          <span className={`text-[8.5px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${badgeColor}`}>
+        <div className="flex flex-col items-center shrink-0 w-28 text-center space-y-1">
+          <span className={`text-[8.5px] font-black px-2.5 py-1 rounded-full border uppercase tracking-wider ${badgeColor}`}>
             {badgeText}
           </span>
-          <p className="text-[9px] text-slate-450 dark:text-slate-500 font-semibold leading-tight mt-1">
+          <p className="text-[9px] text-slate-455 dark:text-slate-500 font-bold leading-normal mt-1">
             {textExplanation}
           </p>
         </div>
       </div>
 
       {/* Bottom Group: Alert & Footer grouped together to eliminate awkward vertical stretching gaps */}
-      <div className="space-y-2 mt-auto">
+      <div className="space-y-2.5 mt-auto relative z-10">
         {/* Bottom Block: Compact Good Fit Alert */}
-        <div className="p-2.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 rounded-xl flex items-center justify-between gap-2.5 text-left">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-lg shrink-0">
-              <Leaf className="w-3.5 h-3.5" />
+        <div className="p-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 rounded-2xl flex items-center justify-between gap-2.5 text-left hover:border-emerald-500/30 transition-all duration-300">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-xl shrink-0">
+              <Leaf className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-455 block">
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-405 block">
                 Why it's a good fit
               </span>
               <span className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
@@ -228,7 +233,7 @@ const SolarReadinessScore: React.FC<{
               }));
             }}
             type="button"
-            className="p-1 text-emerald-600 dark:text-primary-green hover:bg-emerald-500/15 rounded-md transition-all text-xs font-black shrink-0 cursor-pointer"
+            className="p-1 text-emerald-600 dark:text-primary-green hover:bg-emerald-500/15 rounded-lg transition-all text-xs font-black shrink-0 cursor-pointer"
             title="View Details"
           >
             ➔
@@ -236,7 +241,7 @@ const SolarReadinessScore: React.FC<{
         </div>
 
         {/* Footer Info Callout */}
-        <div className="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-400 dark:text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-850">
+        <div className="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-400 dark:text-slate-550 pt-2 border-t border-slate-100 dark:border-slate-850">
           <Info className="w-3 h-3" />
           <span>Score based on roof, yield, and DISCOM provider.</span>
         </div>
@@ -258,7 +263,11 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [selectedState, setSelectedState] = useState<string>(tariffState || "ap");
   const [solarTech, setSolarTech] = useState<"mono-perc" | "topcon">("topcon");
   const [selectedCity, setSelectedCity] = useState<string>("pune");
-  const [isCalculating, setIsCalculating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const [tariffIncrease, setTariffIncrease] = useState<number>(4); 
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
@@ -269,12 +278,6 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [roofOrientation, setRoofOrientation] = useState<"south" | "east" | "west">("south");
   const [shadedPanels, setShadedPanels] = useState<Record<number, boolean>>({}); 
 
-
-  useEffect(() => {
-    setIsCalculating(true);
-    const timer = setTimeout(() => setIsCalculating(false), 350);
-    return () => clearTimeout(timer);
-  }, [solarTech, selectedState, selectedCity, monthlyBill, roofArea]);
 
   // Map state selector codes to tariffService keys
   const getTariffKey = (stateCode: string) => {
@@ -627,9 +630,12 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     };
 
     return (
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden flex flex-col justify-between shadow-sm space-y-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden flex flex-col justify-between shadow-sm space-y-3 group hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.2)] hover:border-indigo-500/20 transition-all duration-300 [backface-visibility:hidden] [transform-style:preserve-3d]">
+        {/* Top right corner glowing wash */}
+        <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-indigo-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+        
         {/* Title */}
-        <div className="flex justify-between items-center text-left">
+        <div className="flex justify-between items-center text-left relative z-10">
           <div>
             <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">
               ROOFTOP PLACEMENT MAP
@@ -638,7 +644,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               Isometric Rooftop Planner
             </h4>
           </div>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${
             systemOutputPercent >= 90
               ? "bg-green-500/10 border-green-500/20 text-primary-green"
               : systemOutputPercent >= 70
@@ -650,7 +656,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
         </div>
 
         {/* SVG Canvas */}
-        <div className="flex-1 flex items-center justify-center py-1 bg-slate-50/55 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative min-h-[125px]">
+        <div className="flex-1 flex items-center justify-center py-1 bg-slate-50/55 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative min-h-[125px] overflow-hidden">
           {/* Sun Glow */}
           <div 
             className="absolute rounded-full pointer-events-none transition-all duration-500"
@@ -664,9 +670,9 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             }}
           />
 
-          <svg viewBox="0 0 400 180" className="w-full h-auto max-w-[340px]">
+          <svg viewBox="0 0 400 180" className="w-full h-auto max-w-[340px] relative z-10">
             {/* Sun */}
-            <circle cx={sunX} cy={sunY} r="8" fill="#FBBF24" className="transition-all duration-500" />
+            <circle cx={sunX} cy={sunY} r="8" fill="#FBBF24" className="transition-all duration-500 animate-pulse" />
             <circle cx={sunX} cy={sunY} r="12" fill="none" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" className="animate-spin transition-all duration-500" style={{ animationDuration: "12s" }} />
 
             {/* Sun Rays */}
@@ -725,10 +731,10 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   key={idx}
                   points={`${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`}
                   onClick={() => togglePanelShaded(idx)}
-                  className={`cursor-pointer transition-all duration-300 stroke-[1px] ${
+                  className={`cursor-pointer transition-all duration-300 stroke-[1.5px] ${
                     isShaded
-                      ? "fill-slate-800 dark:fill-slate-900 stroke-slate-650 hover:fill-slate-700"
-                      : "fill-indigo-650 hover:fill-indigo-500 stroke-indigo-400/50"
+                      ? "fill-slate-750 dark:fill-slate-850 stroke-slate-500 hover:fill-slate-650 hover:stroke-slate-400"
+                      : "fill-indigo-600 dark:fill-indigo-500 stroke-indigo-400 hover:fill-cyan-400 dark:hover:fill-cyan-400 hover:stroke-white"
                   }`}
                 />
               );
@@ -736,34 +742,34 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </svg>
 
           {/* Hint Overlay */}
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-slate-950/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full pointer-events-none tracking-wide select-none">
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-slate-950/80 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full pointer-events-none tracking-wide select-none">
             💡 CLICK PANELS TO TOGGLE SHADING
           </div>
         </div>
 
         {/* Controls */}
-        <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-850">
+        <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-850 relative z-10">
           <div className="flex justify-between items-center gap-4 text-left text-[11px] font-bold">
             {/* Tilt Control */}
             <div className="flex-1 flex flex-col gap-1">
               <span className="text-slate-400 uppercase text-[9px] tracking-wider">Roof Tilt</span>
-              <div className="flex bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/85">
                 <button
                   onClick={() => setRoofTilt("inclined")}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     roofTilt === "inclined"
-                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
+                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   Pitched (15°)
                 </button>
                 <button
                   onClick={() => setRoofTilt("flat")}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     roofTilt === "flat"
-                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
+                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   Flat (0°)
@@ -774,33 +780,33 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             {/* Orientation Control */}
             <div className="flex-1 flex flex-col gap-1">
               <span className="text-slate-400 uppercase text-[9px] tracking-wider">Orientation</span>
-              <div className="flex bg-slate-100 dark:bg-slate-950 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-800/50">
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/85">
                 <button
                   onClick={() => setRoofOrientation("south")}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     roofOrientation === "south"
-                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
+                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   South
                 </button>
                 <button
                   onClick={() => setRoofOrientation("east")}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     roofOrientation === "east"
-                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
+                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   East
                 </button>
                 <button
                   onClick={() => setRoofOrientation("west")}
-                  className={`flex-1 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                     roofOrientation === "west"
-                      ? "bg-white dark:bg-slate-850 text-slate-800 dark:text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
+                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
                   }`}
                 >
                   West
@@ -809,7 +815,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
           </div>
           
-          <div className="flex justify-between text-[9.5px] font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550 mt-0.5">
+          <div className="flex justify-between text-[9.5px] font-bold uppercase tracking-wider text-slate-455 dark:text-slate-555 mt-0.5">
             <span>Panels: {panelsNeeded} ({shadedCount} Shaded)</span>
             <span>Coverage: {spaceUtilizedPercent}%</span>
           </div>
@@ -828,9 +834,11 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     const yr25 = twentyFiveYearNetSavings + installationCost;
 
     return (
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-left">
-        <div>
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-left relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
+        <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+        
+        <div className="relative z-10">
+          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mb-1">
             LIFETIME CUMULATIVE RETURN
           </h4>
           <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase">
@@ -838,7 +846,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </h3>
         </div>
         
-        <div className="space-y-4 pt-2.5">
+        <div className="space-y-4 pt-2.5 relative z-10">
           {[
             { label: "Year 1", amount: yr1 },
             { label: "Year 5", amount: yr5 },
@@ -848,20 +856,22 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           ].sort((a, b) => a.amount - b.amount).map((item, idx) => (
             <div key={idx} className="relative">
               {item.isPayback ? (
-                <div className="flex flex-col gap-1 bg-green-500/10 dark:bg-green-500/20 p-3.5 rounded-2xl border border-green-500/20 my-1.5">
+                <div className="flex flex-col gap-1 bg-green-500/10 dark:bg-green-500/20 p-3.5 rounded-2xl border border-green-500/20 my-1.5 hover:border-green-500/40 transition-all">
                   <div className="flex justify-between items-center text-xs font-black text-green-600 dark:text-primary-green">
-                    <span>⚡ YOU RECOVER COST HERE</span>
-                    <span>Year {paybackPeriodVal.toFixed(1)}</span>
+                    <span>⚡ YOU RECOVER SETUP COST HERE</span>
+                    <span>Year <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /></span>
                   </div>
-                  <div className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal">
+                  <div className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal font-medium mt-0.5">
                     Upfront setup costs are completely recovered! Future savings represent net surplus profit.
                   </div>
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex justify-between text-[11px] font-bold">
                     <span className="text-slate-550 dark:text-slate-400">{item.label}</span>
-                    <span className="text-slate-900 dark:text-white">₹{Math.round(item.amount).toLocaleString('en-IN')}</span>
+                    <span className="text-slate-900 dark:text-white">
+                      ₹<AnimatedNumber value={item.amount} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                    </span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div 
@@ -870,7 +880,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                           ? "bg-gradient-to-r from-emerald-500 to-primary-green"
                           : "bg-gradient-to-r from-blue-500 to-cyan-400"
                       }`}
-                      style={{ width: `${Math.min(100, (item.amount / (yr25 || 1)) * 100)}%` }}
+                      style={{ width: isMounted ? `${Math.min(100, (item.amount / (yr25 || 1)) * 100)}%` : "0%" }}
                     />
                   </div>
                 </div>
@@ -888,23 +898,25 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
         
         {/* Left Column: Interactive Inputs */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden group">
+            {/* Top right corner glowing wash */}
+            <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
             
             {/* Header */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
-                <Sun className="w-6 h-6 animate-spin-slow" />
+            <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 relative z-10">
+              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform duration-300">
+                <Sun className="w-6 h-6 animate-spin" style={{ animationDuration: "15s" }} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Solar Savings Planner (2026 Edition)</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Solar Savings Planner</h3>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
                   Configure your rooftop space, monthly bill, and solar cell technology.
                 </p>
               </div>
             </div>
 
             {/* State & City Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
               {/* Location State */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
@@ -915,25 +927,28 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     { code: "ap", label: "Andhra Pradesh", short: "AP" },
                     { code: "ts", label: "Telangana", short: "TS" },
                     { code: "ka", label: "Karnataka", short: "KA" }
-                  ].map(st => (
-                    <button
-                      key={st.code}
-                      onClick={() => setSelectedState(st.code)}
-                      type="button"
-                      className={`py-2.5 px-1 text-xs font-bold rounded-2xl border transition-all duration-205 flex flex-col items-center justify-center gap-1.5 ${
-                        selectedState === st.code
-                          ? "border-primary-blue bg-blue-500/5 text-primary-blue shadow-[0_0_15px_rgba(59,130,246,0.25)] dark:border-primary-green dark:bg-green-500/5 dark:text-primary-green dark:shadow-[0_0_15px_rgba(16,185,129,0.25)]"
-                          : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-slate-350 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      <MapPin className={`w-4 h-4 transition-colors ${
-                        selectedState === st.code
-                          ? "text-primary-blue dark:text-primary-green"
-                          : "text-slate-400 dark:text-slate-500"
-                      }`} />
-                      <span className="text-[10px] tracking-wide uppercase font-black">{st.short}</span>
-                    </button>
-                  ))}
+                  ].map(st => {
+                    const isActive = selectedState === st.code;
+                    return (
+                      <button
+                        key={st.code}
+                        onClick={() => setSelectedState(st.code)}
+                        type="button"
+                        className={`py-2.5 px-1 text-xs font-bold rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 ${
+                          isActive
+                            ? "border-primary-blue bg-blue-500/5 text-primary-blue shadow-[0_4px_20px_-5px_rgba(59,130,246,0.25)] dark:border-primary-green dark:bg-green-500/5 dark:text-primary-green dark:shadow-[0_4px_20px_-5px_rgba(16,185,129,0.25)]"
+                            : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-705 text-slate-655 dark:text-slate-400"
+                        }`}
+                      >
+                        <MapPin className={`w-4 h-4 transition-colors duration-300 ${
+                          isActive
+                            ? "text-primary-blue dark:text-primary-green animate-bounce"
+                            : "text-slate-450 dark:text-slate-500"
+                        }`} />
+                        <span className="text-[10px] tracking-wide uppercase font-black">{st.short}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -945,7 +960,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-primary-blue dark:focus:border-primary-green"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-primary-blue dark:focus:border-primary-green hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-200"
                 >
                   <option value="pune">Pune (Maharashtra)</option>
                   <option value="bangalore">Bangalore (Karnataka)</option>
@@ -956,7 +971,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Panel Technology Selection */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative z-10">
               <label className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
                 Solar Cell Technology
               </label>
@@ -964,20 +979,27 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 <button
                   onClick={() => setSolarTech("topcon")}
                   type="button"
-                  className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between ${
+                  className={`p-4 rounded-2xl border text-left transition-all duration-300 relative flex flex-col justify-between cursor-pointer hover:scale-[1.02] active:scale-[0.98] group ${
                     solarTech === "topcon"
-                      ? "border-primary-green bg-green-500/5 dark:bg-green-950/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                      : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50"
+                      ? "border-primary-green bg-green-500/5 dark:bg-green-950/10 shadow-[0_4px_20px_-5px_rgba(16,185,129,0.25)]"
+                      : "border-slate-200 bg-white dark:border-slate-850 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
-                  <div className="absolute top-2 right-2 bg-green-500 text-slate-950 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                  <div className={`absolute top-2 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider transition-all ${
+                    solarTech === "topcon"
+                      ? "bg-green-500 text-slate-950 animate-pulse"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
                     Recommended ⭐
                   </div>
                   <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-white">TOPCon Premium</div>
+                    <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 mt-2.5">
+                      <span>TOPCon Premium</span>
+                      {solarTech === "topcon" && <ShieldCheck className="w-3.5 h-3.5 text-primary-green" />}
+                    </div>
                     <div className="text-[10px] text-slate-550 dark:text-slate-450 mt-2 space-y-1">
-                      <div>Efficiency: <span className="font-bold text-slate-700 dark:text-slate-300">26%</span></div>
-                      <div>Lifespan: <span className="font-bold text-slate-700 dark:text-slate-300">30 Years</span></div>
+                      <div>Efficiency: <span className="font-bold text-slate-750 dark:text-slate-200">26%</span></div>
+                      <div>Lifespan: <span className="font-bold text-slate-750 dark:text-slate-200">30 Years</span></div>
                       <div className="text-amber-500 font-bold">★★★★★</div>
                     </div>
                   </div>
@@ -985,17 +1007,20 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 <button
                   onClick={() => setSolarTech("mono-perc")}
                   type="button"
-                  className={`p-4 rounded-2xl border text-left transition-all duration-200 relative flex flex-col justify-between ${
+                  className={`p-4 rounded-2xl border text-left transition-all duration-300 relative flex flex-col justify-between cursor-pointer hover:scale-[1.02] active:scale-[0.98] group ${
                     solarTech === "mono-perc"
-                      ? "border-primary-blue bg-blue-500/5 dark:bg-blue-950/10 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                      : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50"
+                      ? "border-primary-blue bg-blue-500/5 dark:bg-blue-950/10 shadow-[0_4px_20px_-5px_rgba(59,130,246,0.25)]"
+                      : "border-slate-200 bg-white dark:border-slate-850 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-white">Mono-PERC Standard</div>
+                    <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 mt-2.5">
+                      <span>Mono-PERC Standard</span>
+                      {solarTech === "mono-perc" && <ShieldCheck className="w-3.5 h-3.5 text-primary-blue" />}
+                    </div>
                     <div className="text-[10px] text-slate-550 dark:text-slate-455 mt-2 space-y-1">
-                      <div>Efficiency: <span className="font-bold text-slate-700 dark:text-slate-300">22.5%</span></div>
-                      <div>Lifespan: <span className="font-bold text-slate-700 dark:text-slate-300">25 Years</span></div>
+                      <div>Efficiency: <span className="font-bold text-slate-755 dark:text-slate-200">22.5%</span></div>
+                      <div>Lifespan: <span className="font-bold text-slate-755 dark:text-slate-200">25 Years</span></div>
                       <div className="text-amber-500 font-bold">★★★★☆</div>
                     </div>
                   </div>
@@ -1004,7 +1029,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Input 1: Monthly Electricity Bill (₹) */}
-            <div className="space-y-4 pt-2 relative">
+            <div className="space-y-4 pt-2 relative z-10">
               <div className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-350">
                 <span className="flex items-center gap-1">
                   Average Monthly Bill
@@ -1021,7 +1046,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <div className="relative pt-6 pb-2">
                 {/* Floating Bubble */}
                 <div 
-                  className="absolute top-0 bg-primary-blue text-white px-2 py-0.5 rounded-lg text-[10px] font-bold transform -translate-x-1/2 whitespace-nowrap shadow-md transition-all duration-75 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-primary-blue"
+                  className="absolute top-0 bg-primary-blue text-white px-2.5 py-1 rounded-xl text-[10px] font-bold transform -translate-x-1/2 whitespace-nowrap shadow-[0_4px_12px_rgba(59,130,246,0.3)] transition-all duration-75 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-primary-blue"
                   style={{ left: `${billPercent}%` }}
                 >
                   ₹{monthlyBill.toLocaleString('en-IN')}
@@ -1048,7 +1073,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Input 2: Roof Space Area (sq ft) */}
-            <div className="space-y-4 pt-2 relative">
+            <div className="space-y-4 pt-2 relative z-10">
               <div className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-350">
                 <span className="flex items-center gap-1">
                   Available Roof Space Area
@@ -1064,7 +1089,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <div className="relative pt-6 pb-2">
                 {/* Floating Bubble */}
                 <div 
-                  className="absolute top-0 bg-amber-500 text-white px-2.5 py-0.5 rounded-lg text-[10px] font-bold transform -translate-x-1/2 whitespace-nowrap shadow-md transition-all duration-75 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-amber-500"
+                  className="absolute top-0 bg-amber-500 text-white px-2.5 py-1 rounded-xl text-[10px] font-bold transform -translate-x-1/2 whitespace-nowrap shadow-[0_4px_12px_rgba(245,158,11,0.3)] transition-all duration-75 after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-amber-500"
                   style={{ left: `${roofPercent}%` }}
                 >
                   {roofArea} sq ft
@@ -1091,8 +1116,8 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Sizing Logic Explanation */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1">
-              <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">How Sizing Works:</span>
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1 relative z-10">
+              <span className="font-bold text-slate-850 dark:text-slate-350 block mb-1">How Sizing Works:</span>
               <p>
                 To offset a bill of <span className="font-semibold text-slate-700 dark:text-slate-300">₹<AnimatedNumber value={monthlyBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></span> in {getFullStateName(selectedState)}, your house requires a <span className="font-semibold text-slate-705 dark:text-slate-300"><AnimatedNumber value={kwNeededByUsage} formatter={(v) => v.toFixed(1)} /> kW</span> system.
               </p>
@@ -1102,19 +1127,19 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Detailed Net Metering breakdown */}
-            <div className="p-4 bg-blue-50/10 dark:bg-slate-950/20 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-505 dark:text-slate-400 space-y-2">
-              <span className="font-bold text-slate-850 dark:text-slate-300 block">Net Metering Billing Breakdown:</span>
-              <div className="grid grid-cols-2 gap-y-1 text-left">
-                <div>Estimated Monthly Consumption:</div>
-                <div className="font-semibold text-slate-850 dark:text-slate-200 text-right"><AnimatedNumber value={kwhNeeded} /> kWh (units)</div>
-                <div>Estimated Monthly Solar Generation:</div>
-                <div className="font-semibold text-slate-850 dark:text-slate-200 text-right"><AnimatedNumber value={monthlyGeneration} /> kWh / month</div>
-                <div>New Net Grid Consumption:</div>
-                <div className="font-semibold text-slate-850 dark:text-slate-200 text-right"><AnimatedNumber value={newUnits} /> kWh / month</div>
-                <div>Marginal Slab Savings percentage:</div>
-                <div className="font-semibold text-primary-green text-right"><AnimatedNumber value={billCoveragePercent} />%</div>
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5">Monthly Bill with Solar Panels:</div>
-                <div className="font-semibold text-primary-blue dark:text-primary-green text-right border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5">₹<AnimatedNumber value={newBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></div>
+            <div className="p-4 bg-blue-50/10 dark:bg-slate-955/25 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-505 dark:text-slate-400 space-y-2 relative z-10">
+              <span className="font-bold text-slate-855 dark:text-slate-300 block">Net Metering Billing Breakdown:</span>
+              <div className="grid grid-cols-2 gap-y-1.5 text-left font-medium">
+                <div className="text-slate-450 dark:text-slate-400">Estimated Monthly Consumption:</div>
+                <div className="font-bold text-slate-800 dark:text-slate-205 text-right"><AnimatedNumber value={kwhNeeded} /> kWh (units)</div>
+                <div className="text-slate-450 dark:text-slate-400">Estimated Monthly Solar Generation:</div>
+                <div className="font-bold text-slate-800 dark:text-slate-205 text-right"><AnimatedNumber value={monthlyGeneration} /> kWh / month</div>
+                <div className="text-slate-450 dark:text-slate-400">New Net Grid Consumption:</div>
+                <div className="font-bold text-slate-800 dark:text-slate-250 text-right"><AnimatedNumber value={newUnits} /> kWh / month</div>
+                <div className="text-slate-450 dark:text-slate-400">Marginal Slab Savings percentage:</div>
+                <div className="font-extrabold text-primary-green text-right"><AnimatedNumber value={billCoveragePercent} />%</div>
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5 text-slate-700 dark:text-slate-300">Monthly Bill with Solar Panels:</div>
+                <div className="font-black text-primary-blue dark:text-primary-green text-right border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5">₹<AnimatedNumber value={newBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></div>
               </div>
               <div className="text-[10px] text-slate-400 dark:text-slate-550 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                 *Calculated using actual DISCOM slab rates in the {getFullStateName(selectedState)} database.
@@ -1122,8 +1147,8 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Financial Modeling Assumptions (Always Open) */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20">
-              <div className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-350 border-b border-slate-200 dark:border-slate-800">
+            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 relative z-10">
+              <div className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-305 border-b border-slate-200 dark:border-slate-800">
                 <span className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-slate-400" />
                   Financial Modeling Assumptions
@@ -1143,20 +1168,20 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     step="0.5"
                     value={tariffIncrease}
                     onChange={(e) => setTariffIncrease(parseFloat(e.target.value))}
-                    className="premium-slider w-full cursor-pointer"
+                    className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
                     style={{
                       background: activeTheme === "dark"
                         ? `linear-gradient(to right, #10b981 0%, #10b981 ${(tariffIncrease / 15) * 100}%, #1e293b ${(tariffIncrease / 15) * 100}%, #1e293b 100%)`
                         : `linear-gradient(to right, #2563eb 0%, #2563eb ${(tariffIncrease / 15) * 100}%, #e2e8f0 ${(tariffIncrease / 15) * 100}%, #e2e8f0 100%)`
                     }}
                   />
-                  <span className="text-[10px] text-slate-400 block">Typical range: 3% to 6% per year as utility costs rise.</span>
+                  <span className="text-[10px] text-slate-400 block font-medium">Typical range: 3% to 6% per year as utility costs rise.</span>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
                     <span>Annual Module Degradation</span>
-                    <span className="text-amber-500 font-bold">{panelDegradation}%</span>
+                    <span className="text-amber-505 font-bold text-amber-500">{panelDegradation}%</span>
                   </div>
                   <input
                     type="range"
@@ -1165,14 +1190,14 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     step="0.1"
                     value={panelDegradation}
                     onChange={(e) => setPanelDegradation(parseFloat(e.target.value))}
-                    className="premium-slider w-full cursor-pointer"
+                    className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
                     style={{
                       background: activeTheme === "dark"
                         ? `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b 100%)`
                         : `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 ${((panelDegradation - 0.1) / 1.9) * 100}%, #e2e8f0 100%)`
                     }}
                   />
-                  <span className="text-[10px] text-slate-400 block">Premium panels (TOPCon) degrade slower (~0.4% - 0.8%) than Mono-PERC (~0.8% - 1.2%).</span>
+                  <span className="text-[10px] text-slate-400 block font-medium">Premium panels (TOPCon) degrade slower (~0.4% - 0.8%) than Mono-PERC (~0.8% - 1.2%).</span>
                 </div>
 
                 <div className="space-y-2">
@@ -1187,25 +1212,25 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     step="0.25"
                     value={maintenanceRate}
                     onChange={(e) => setMaintenanceRate(parseFloat(e.target.value))}
-                    className="premium-slider w-full cursor-pointer"
+                    className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
                     style={{
                       background: activeTheme === "dark"
                         ? `linear-gradient(to right, #10b981 0%, #10b981 ${(maintenanceRate / 5) * 100}%, #1e293b ${(maintenanceRate / 5) * 100}%, #1e293b 100%)`
                         : `linear-gradient(to right, #2563eb 0%, #2563eb ${(maintenanceRate / 5) * 100}%, #e2e8f0 ${(maintenanceRate / 5) * 100}%, #e2e8f0 100%)`
                     }}
                   />
-                  <span className="text-[10px] text-slate-400 block">Inverter servicing, panel cleaning, and wiring maintenance.</span>
+                  <span className="text-[10px] text-slate-400 block font-medium">Inverter servicing, panel cleaning, and wiring maintenance.</span>
                 </div>
               </div>
             </div>
 
             {/* AI Solar Advisor Widget */}
-            <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 text-left">
+            <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 text-left relative z-10">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🤖</span>
                 <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Ask Solar AI Advisor</h4>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-405 leading-normal">
                 Click a question below to consult the AI agent about your solar recommendation:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-bold">
@@ -1223,7 +1248,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                         detail: { message: `${q} Based on my Solar Planner recommendation: a ${recommendedKw.toFixed(1)} kW system, costs ₹${installationCost.toLocaleString('en-IN')}, saves ₹${firstYearSavings.toLocaleString('en-IN')}/year, payback in ${paybackPeriodVal.toFixed(1)} years.` } 
                       }));
                     }}
-                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary-blue dark:hover:border-primary-green hover:shadow-sm text-left transition-all leading-normal text-slate-700 dark:text-slate-300"
+                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary-blue dark:hover:border-primary-green hover:shadow-[0_4px_12px_rgba(59,130,246,0.15)] text-slate-700 dark:text-slate-300 text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] leading-normal"
                   >
                     {q}
                   </button>
@@ -1234,17 +1259,18 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </div>
 
           {/* Panel details sub-section */}
-          <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm">
-            <span className="font-bold text-slate-850 dark:text-slate-300 block mb-1">Rooftop Module Details:</span>
-            <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400">
+          <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] transition-all duration-300">
+            <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-5 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+            <span className="font-bold text-slate-855 dark:text-slate-300 block mb-1 relative z-10">Rooftop Module Details:</span>
+            <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400 relative z-10">
               <div>Modules Needed:</div>
-              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelsNeeded} panels ({panelWattage}W)</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">{panelsNeeded} panels ({panelWattage}W)</div>
               <div>Single Panel Dimensions:</div>
-              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">{panelSizeLabel}</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">{panelSizeLabel}</div>
               <div>Single Panel Weight:</div>
-              <div className="font-semibold text-slate-800 dark:text-slate-200 text-right">~{panelWeight} kg</div>
+              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">~{panelWeight} kg</div>
               <div>Internal Efficiency:</div>
-              <div className="font-semibold text-primary-green text-right">
+              <div className="font-extrabold text-primary-green text-right">
                 {panelEfficiency.toFixed(1)}%
               </div>
             </div>
@@ -1253,39 +1279,29 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
         {/* Right Column: ROI Outputs */}
         <div className="lg:col-span-6 space-y-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6 relative"
-          >
-            {/* Loading Overlay */}
-            {isCalculating && (
-              <div className="absolute inset-0 z-20 bg-white/70 dark:bg-slate-900/75 backdrop-blur-[1px] flex flex-col items-center justify-center space-y-3 transition-opacity">
-                <div className="w-8 h-8 border-3 border-slate-200 border-t-primary-blue dark:border-t-primary-green rounded-full animate-spin"></div>
-                <span className="text-xs font-bold text-slate-550 dark:text-slate-400">Recalculating solar metrics...</span>
-              </div>
-            )}
+          <div className="space-y-6 relative">
 
             {/* 1. Centerpiece Hero Result Card */}
             <div 
-              style={{
-                background: "linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(56, 189, 248, 0.15))"
-              }}
-              className="p-6 rounded-3xl border border-green-200/40 dark:border-green-950/20 flex flex-col justify-between min-h-[220px] shadow-sm relative overflow-hidden text-left"
+              className="p-6 rounded-3xl border border-emerald-500/20 dark:border-emerald-500/30 flex flex-col justify-between min-h-[220px] bg-gradient-to-br from-emerald-500/10 via-sky-500/10 to-teal-500/5 dark:from-emerald-950/20 dark:via-sky-950/20 dark:to-teal-950/10 shadow-sm relative overflow-hidden text-left group hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/40 transition-all duration-300"
             >
-              <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <span>☀</span> Solar Recommendation
+              {/* Glowing decorative background elements */}
+              <div className="absolute -right-6 -top-6 w-32 h-32 blur-2xl opacity-30 dark:opacity-20 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-125 transition-all duration-500" />
+              <div className="absolute -left-10 -bottom-10 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-sky-500 pointer-events-none group-hover:scale-125 transition-all duration-500" />
+              
+              <div className="space-y-1 relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-primary-green flex items-center gap-1.5">
+                  <Sun className="w-3.5 h-3.5 animate-spin-slow" />
+                  <span>Solar Recommendation</span>
                 </span>
-                <h3 className="text-3xl font-display font-black text-slate-900 dark:text-white mt-1.5">
-                  {recommendedKw.toFixed(1)} kW System
+                <h3 className="text-3xl font-display font-black text-slate-900 dark:text-white mt-1.5 tracking-tight">
+                  <AnimatedNumber value={recommendedKw} formatter={(v) => v.toFixed(1)} /> kW System
                 </h3>
-                <div className="text-base font-extrabold text-green-600 dark:text-primary-green mt-2.5">
-                  ₹{firstYearSavings.toLocaleString('en-IN')} Saved Every Year
+                <div className="text-lg font-black text-emerald-600 dark:text-primary-green mt-2.5 flex items-center gap-1">
+                  ₹<AnimatedNumber value={firstYearSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /> Saved Every Year
                 </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Payback in {paybackPeriodVal.toFixed(1)} Years
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
+                  Payback in <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /> Years
                 </div>
               </div>
               
@@ -1296,7 +1312,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   }));
                 }}
                 type="button"
-                className="mt-4 px-6 h-11 bg-primary-green hover:bg-primary-green/90 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98] w-fit shadow-md hover:shadow-lg"
+                className="mt-4 px-6 h-11 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider transition-all hover:scale-105 active:scale-95 w-fit shadow-md hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer relative z-10"
               >
                 Install Solar
               </button>
@@ -1314,27 +1330,34 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* 3. Feasibility Review Callout */}
-            <div className={`p-5 rounded-3xl border ${conclusion.colorClass} space-y-4 text-left shadow-sm`}>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550">
+            <div className={`p-5 rounded-3xl border ${conclusion.colorClass} space-y-4 text-left shadow-sm relative overflow-hidden group`}>
+              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+              <div className="flex justify-between items-center relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-555">
                   Feasibility Review
                 </span>
-                <span className="text-xs font-black px-2.5 py-0.5 rounded-full border border-green-600/30 bg-green-500/10 text-green-600 dark:text-primary-green uppercase tracking-wide">
+                <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wide ${conclusion.colorClass}`}>
                   {conclusion.badge}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-xs font-semibold">
+              <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-xs font-semibold relative z-10">
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Financial Score</span>
-                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">{Math.round(100 - (paybackPeriodVal * 3))}%</span>
+                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">
+                    <AnimatedNumber value={Math.round(100 - (paybackPeriodVal * 3))} />%
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Expected Profit</span>
-                  <span className="text-sm font-extrabold text-primary-green">₹{twentyFiveYearNetSavings.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-extrabold text-primary-green">
+                    ₹<AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Break-Even</span>
-                  <span className="text-sm font-extrabold text-primary-blue dark:text-blue-400">{paybackPeriodVal.toFixed(1)} Years</span>
+                  <span className="text-sm font-extrabold text-primary-blue dark:text-blue-400">
+                    <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /> Years
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold">Risk Level</span>
@@ -1345,36 +1368,44 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
             {/* 4. Stripe/Tesla style metric grid */}
             <div className="grid grid-cols-2 gap-4 text-left">
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[110px] shadow-sm relative group hover:border-slate-350 dark:hover:border-slate-700 transition-colors">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">💰 Investment</span>
-                <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight mt-2">
-                  ₹{installationCost.toLocaleString('en-IN')}
+              {/* Card 1: Investment */}
+              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
+                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">💰 Investment</span>
+                <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight mt-2 relative z-10">
+                  ₹<AnimatedNumber value={installationCost} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </p>
-                <span className="text-[9px] text-slate-450 dark:text-slate-500 block">After PM Surya Ghar Subsidy</span>
+                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">After PM Surya Ghar Subsidy</span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[110px] shadow-sm relative group hover:border-slate-350 dark:hover:border-slate-700 transition-colors">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">📈 Annual Return</span>
-                <p className="text-xl font-display font-black text-primary-green leading-tight mt-2">
-                  ₹{firstYearSavings.toLocaleString('en-IN')}
+              {/* Card 2: Annual Return */}
+              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] hover:border-emerald-500/20 transition-all duration-300">
+                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">📈 Annual Return</span>
+                <p className="text-xl font-display font-black text-primary-green leading-tight mt-2 relative z-10">
+                  ₹<AnimatedNumber value={firstYearSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block">Year 1 savings estimate</span>
+                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">Year 1 savings estimate</span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[110px] shadow-sm relative group hover:border-slate-350 dark:hover:border-slate-700 transition-colors">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">⚡ Monthly Savings</span>
-                <p className="text-xl font-display font-black text-primary-blue dark:text-blue-400 leading-tight mt-2">
-                  ₹{Math.round(firstYearSavings / 12).toLocaleString('en-IN')}
+              {/* Card 3: Monthly Savings */}
+              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-cyan-500/20 transition-all duration-300">
+                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-cyan-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">⚡ Monthly Savings</span>
+                <p className="text-xl font-display font-black text-primary-blue dark:text-blue-400 leading-tight mt-2 relative z-10">
+                  ₹<AnimatedNumber value={Math.round(firstYearSavings / 12)} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block">Estimated grid bill cut</span>
+                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">Estimated grid bill cut</span>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[110px] shadow-sm relative group hover:border-slate-350 dark:hover:border-slate-700 transition-colors">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">🏆 ROI</span>
-                <p className="text-xl font-display font-black text-amber-500 leading-tight mt-2">
-                  {installationCost > 0 ? ((twentyFiveYearNetSavings + installationCost) / installationCost).toFixed(1) : "0.0"}x
+              {/* Card 4: ROI */}
+              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)] hover:border-amber-500/20 transition-all duration-300">
+                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">🏆 ROI</span>
+                <p className="text-xl font-display font-black text-amber-500 leading-tight mt-2 relative z-10">
+                  <AnimatedNumber value={installationCost > 0 ? ((twentyFiveYearNetSavings + installationCost) / installationCost) : 0.0} formatter={(v) => v.toFixed(1)} />x
                 </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block">25-Year cumulative yield</span>
+                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">25-Year cumulative yield</span>
               </div>
             </div>
 
@@ -1382,67 +1413,68 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             {renderLifetimeTimeline()}
 
             {/* 6. Environmental Offset Card */}
-            <div className="bg-gradient-to-br from-green-500/5 via-emerald-500/10 to-teal-500/5 p-6 rounded-3xl border border-green-500/20 space-y-4 text-left shadow-sm">
-              <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-br from-green-500/5 via-emerald-500/10 to-teal-500/5 dark:from-emerald-950/10 dark:via-emerald-950/20 dark:to-teal-950/10 p-6 rounded-3xl border border-green-500/20 dark:border-green-500/30 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.2)] transition-all duration-300">
+              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-25 dark:opacity-15 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+              <div className="flex items-center gap-2 relative z-10">
                 <span className="text-lg">🌱</span>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-400">Carbon Reduction</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-650 dark:text-primary-green">Carbon Reduction</span>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 relative z-10">
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold">Annual Offset</span>
                   <p className="text-xl font-black text-slate-900 dark:text-white">
-                    {co2Reduction.toFixed(1)} Tons CO₂
+                    <AnimatedNumber value={co2Reduction} formatter={(v) => v.toFixed(1)} /> Tons CO₂
                   </p>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold">Tree Equivalent</span>
-                  <p className="text-xl font-black text-primary-green">
-                    🌳 {treesEquivalent} Trees
+                  <p className="text-xl font-black text-primary-green flex items-center gap-1">
+                    🌳 <AnimatedNumber value={treesEquivalent} /> Trees
                   </p>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-550 dark:text-slate-450 leading-normal border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
+              <p className="text-[10px] text-slate-550 dark:text-slate-450 leading-normal border-t border-slate-100 dark:border-slate-800/80 pt-2.5 relative z-10">
                 Calculated using grid displacement factors. Offsets your domestic coal power generation footprint over 25 years.
               </p>
             </div>
 
             {/* No Solar vs Solar Installed Side-by-Side Comparison */}
-            <div className="bg-slate-50 dark:bg-slate-950/45 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-4 text-left shadow-sm">
-              <h4 className="text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider">
+            <div className="bg-slate-50 dark:bg-slate-955/45 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] transition-all duration-300">
+              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-5 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+              <h4 className="text-xs font-black text-slate-905 dark:text-white uppercase tracking-wider relative z-10">
                 25-Year Lifetime Cost Comparison
               </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-105 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">No Solar (Grid Only)</span>
+              <div className="grid grid-cols-2 gap-4 relative z-10">
+                <div className="space-y-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">No Solar (Grid Only)</span>
                   <p className="text-base font-extrabold text-slate-850 dark:text-white mt-1">
-                    ₹{Math.round(totalNoSolarCost25Years).toLocaleString('en-IN')}
+                    ₹<AnimatedNumber value={totalNoSolarCost25Years} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                   </p>
-                  <span className="text-[9px] text-slate-400 block">Bills inflated at {tariffIncrease}% p.a.</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-550 block">Bills inflated at {tariffIncrease}% p.a.</span>
                 </div>
-                <div className="space-y-1 p-3.5 rounded-2xl bg-green-500/5 dark:bg-green-950/5 border border-primary-green/20">
-                  <span className="text-[10px] font-bold text-primary-green uppercase">Solar Installed</span>
+                <div className="space-y-1 p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-primary-green uppercase font-black">Solar Installed</span>
                   <p className="text-base font-extrabold text-primary-green mt-1">
-                    ₹{Math.round(totalSolarCost25Years).toLocaleString('en-IN')}
+                    ₹<AnimatedNumber value={totalSolarCost25Years} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                   </p>
-                  <span className="text-[9px] text-slate-400 block">System cost + bills + {maintenanceRate}% maintenance.</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-555 block">System cost + bills + {maintenanceRate}% maint.</span>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl flex items-center justify-between text-xs">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl flex items-center justify-between text-xs relative z-10 hover:border-emerald-500/20 transition-colors">
                 <span className="font-semibold text-slate-550 dark:text-slate-400">Total Net Lifetime Savings:</span>
                 <span className="font-extrabold text-primary-green text-sm">
-                  ₹{Math.round(twentyFiveYearNetSavings).toLocaleString('en-IN')}
+                  ₹<AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </span>
               </div>
             </div>
-
 
             {/* Security details note */}
             <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
               <ShieldCheck className="w-4 h-4 text-green-500" />
               <span>Slab calculations match active {getFullStateName(selectedState)} net metering rules.</span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 

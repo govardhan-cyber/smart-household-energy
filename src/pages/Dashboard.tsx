@@ -1135,42 +1135,59 @@ export const Dashboard: React.FC = () => {
               )}
 
               {/* Step Progress Bar (Full Width) */}
-          <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
-            <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
+          <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 py-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
+            <div className="flex items-center w-full max-w-4xl mx-auto">
               {[
-                { step: 1, label: "Appliances" },
-                { step: 2, label: "Usage" },
-                { step: 3, label: "Analysis" },
-                { step: 4, label: "Recommendations" }
+                { step: 1, label: "Appliances",     sub: "Select devices",   icon: "⚡" },
+                { step: 2, label: "Usage",          sub: "Set hours & days", icon: "📅" },
+                { step: 3, label: "Analysis",       sub: "Review usage",     icon: "📊" },
+                { step: 4, label: "Recommendations",sub: "Save energy",      icon: "🌿" }
               ].map((s, idx, arr) => {
                 const isCompleted = currentStep > s.step;
-                const isActive = currentStep === s.step;
+                const isActive    = currentStep === s.step;
                 return (
                   <React.Fragment key={s.step}>
-                    <div className="flex flex-col items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                        isCompleted
-                          ? "bg-emerald-500 text-white shadow-sm ring-2 ring-emerald-500/20"
+                    {/* Step node */}
+                    <div className="flex flex-col items-center gap-2 shrink-0">
+                      {/* Circle */}
+                      <div className={`relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-black
+                        ${isCompleted
+                          ? "bg-emerald-500 text-white shadow-md step-completed"
                           : isActive
-                          ? "bg-primary-blue text-white shadow-md ring-4 ring-primary-blue/20 dark:ring-primary-green/20 dark:bg-primary-green dark:text-slate-950 animate-pulse-custom"
-                          : "bg-slate-100 text-slate-450 dark:bg-slate-800 dark:text-slate-555"
-                      }`}>
-                        {isCompleted ? <Check className="w-5 h-5" /> : s.step}
+                          ? "bg-primary-blue dark:bg-primary-green text-white shadow-lg step-active"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
+                        }`}
+                      >
+                        {/* Glow ring for active */}
+                        {isActive && (
+                          <span className="absolute inset-0 rounded-full bg-primary-blue/20 dark:bg-primary-green/20 animate-ping" />
+                        )}
+                        {isCompleted
+                          ? <Check className="w-5 h-5 step-check" />
+                          : <span className={`text-base leading-none ${isActive ? "step-icon-float" : ""}`}>{s.icon}</span>
+                        }
                       </div>
-                      <span className={`text-xs sm:text-sm font-bold mt-2 transition-all duration-300 ${
-                        isActive
-                          ? "text-primary-blue dark:text-primary-green"
-                          : isCompleted
-                          ? "text-slate-700 dark:text-slate-350"
-                          : "text-slate-400 dark:text-slate-555"
-                      }`}>
-                        {s.label}
-                      </span>
+
+                      {/* Labels */}
+                      <div className="flex flex-col items-center leading-tight">
+                        <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 ${
+                          isActive    ? "text-primary-blue dark:text-primary-green"
+                          : isCompleted ? "text-slate-700 dark:text-slate-300"
+                          : "text-slate-400 dark:text-slate-500"
+                        }`}>
+                          {s.label}
+                        </span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-600 hidden sm:block step-label" style={{ animationDelay: "0.1s" }}>
+                          {s.sub}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Connector */}
                     {idx < arr.length - 1 && (
-                      <div className="flex-1 h-0.5 mx-4 bg-slate-100 dark:bg-slate-800 relative">
-                        <div className={`absolute top-0 left-0 h-full bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 transition-all duration-500 ${
-                          currentStep > s.step ? "w-full" : "w-0"
+                      <div className="flex-1 h-[2px] mx-3 rounded-full bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                        <div className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-primary-blue dark:from-primary-green dark:to-emerald-400 transition-all duration-700 ease-in-out ${
+                          currentStep > s.step ? "w-full connector-shimmer" : "w-0"
                         }`} />
                       </div>
                     )}
@@ -1193,7 +1210,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-6"
+                      className="space-y-6 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
                     >
                       <ApplianceSelector
                         appliances={appliances}
@@ -1210,6 +1227,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
+                      className="[backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
                     >
                       <ConsumptionCalculator
                         activeAppliances={activeAppliances}
@@ -1233,7 +1251,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-6"
+                      className="space-y-6 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
                     >
                       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div>
@@ -1537,7 +1555,7 @@ export const Dashboard: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full pt-4"
+              className="w-full pt-4 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
             >
               <Charts 
                 chartData={chartData} 
@@ -1560,7 +1578,7 @@ export const Dashboard: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              className="space-y-8 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
             >
               <SavingsAdvisor
                 analysisResult={analysisResult}

@@ -519,12 +519,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         </div>
 
         {/* Right Column: Past Audits Log History */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-950/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
               Audit Logs History
             </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5">
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
               Sync past audit reports directly with your account.
             </p>
           </div>
@@ -566,22 +566,22 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                   <div
                     key={audit.id}
                     onClick={() => handleSelectPastAudit(audit)}
-                    className={`p-3 rounded-2xl border transition-all text-left flex items-center justify-between gap-3 cursor-pointer ${
+                    className={`p-3 rounded-2xl border transition-all duration-200 text-left flex items-center justify-between gap-3 cursor-pointer ${
                       isActive
-                        ? "border-primary-blue bg-blue-50/10 dark:border-primary-green dark:bg-green-950/10"
-                        : "border-slate-150 bg-slate-50/30 hover:border-slate-250 hover:bg-slate-50 dark:border-slate-850 dark:bg-slate-950/10 dark:hover:border-slate-800"
+                        ? "border-primary-blue bg-blue-50 dark:border-primary-green/60 dark:bg-emerald-950/30 dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
+                        : "border-slate-150 bg-slate-50/40 hover:border-slate-300 hover:bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
                     }`}
                   >
                     <div className="flex items-center gap-3 truncate">
-                      {/* Colored Score Circle Indicator */}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 ${scoreColor} shadow-sm`}>
+                      {/* Colored Score Badge */}
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-extrabold flex-shrink-0 ${scoreColor} shadow-sm dark:ring-2 dark:ring-white/10`}>
                         {audit.result.score}
                       </div>
                       <div className="truncate space-y-0.5">
-                        <h4 className="text-xs font-bold text-slate-850 dark:text-slate-200">
+                        <h4 className={`text-xs font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
                           Score: {audit.result.score} ({audit.result.status})
                         </h4>
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide">
+                        <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                           {dateStr}
                         </p>
                       </div>
@@ -591,12 +591,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                       {/* Delete button */}
                       <button
                         onClick={(e) => handleDeleteAudit(e, audit.id || "")}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 dark:hover:text-red-400 transition-colors"
                         title="Delete log"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className={`w-4 h-4 ${isActive ? 'text-primary-blue dark:text-primary-green' : 'text-slate-400 dark:text-slate-600'}`} />
                     </div>
                   </div>
                 );
@@ -606,18 +606,18 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
 
           {/* Environmental Savings Tip Badge */}
           {auditResult && (
-            <div className="bg-gradient-to-tr from-green-50/50 to-emerald-50/50 dark:from-emerald-950/20 dark:to-green-950/10 p-5 rounded-2xl border border-green-250/50 dark:border-green-900/30 text-left space-y-2.5">
-              <span className="text-[10px] font-black text-green-700 dark:text-primary-green uppercase tracking-wider flex items-center gap-1.5">
-                <Leaf className="w-3.5 h-3.5 text-green-600 dark:text-primary-green animate-bounce" />
+            <div className="bg-gradient-to-tr from-green-50 to-emerald-50/60 dark:from-emerald-950/40 dark:to-green-900/10 p-5 rounded-2xl border border-green-200/60 dark:border-emerald-800/40 text-left space-y-2.5 dark:shadow-[inset_0_0_24px_rgba(16,185,129,0.05)]">
+              <span className="text-[10px] font-black text-green-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Leaf className="w-3.5 h-3.5 text-green-600 dark:text-emerald-400 animate-bounce" />
                 Audit Eco Impact
               </span>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
                 Implementing the above recommendations can offset up to{" "}
-                <span className="font-black text-slate-850 dark:text-white">
+                <span className="font-black text-slate-900 dark:text-white">
                   {Math.round(auditResult.recommendations.reduce((sum, r) => sum + r.yearlySavings, 0) / 7.5 * 0.82)} kg
                 </span>{" "}
                 of carbon emissions annually, equivalent to planting{" "}
-                <span className="font-black text-slate-850 dark:text-white">
+                <span className="font-black text-slate-900 dark:text-white">
                   {Math.max(1, Math.round(auditResult.recommendations.reduce((sum, r) => sum + r.yearlySavings, 0) / 7.5 * 0.82 / 22))}
                 </span>{" "}
                 trees every year.
