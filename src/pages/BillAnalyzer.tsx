@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, Upload, CheckCircle2, AlertTriangle, Eye, Trash2, 
   Download, Printer, Sparkles, Leaf, Target, Calendar,
-  Award, X
+  Award, X, Zap, IndianRupee, TrendingUp
 } from "lucide-react";
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip
@@ -1080,61 +1080,118 @@ export const BillAnalyzer: React.FC = () => {
 
       {/* ─── DYNAMIC METRICS SECTION ────────────────────────────────────────── */}
       {activeBill && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print mb-6">
           
           {/* Card 1: Extracted Consumption */}
-          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-blue text-left">
-            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-blue-400 dark:bg-blue-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
-            <div className="relative z-10">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Consumption</span>
-              <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-1">
-                {activeBill.parsedData.unitsConsumed} kWh
+          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-blue shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            {/* Top right corner glowing wash */}
+            <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-blue-400 dark:bg-blue-600 group-hover:scale-125 transition-transform duration-500" />
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
+                Extracted Consumption
+              </span>
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+                <Zap className="w-5 h-5 text-primary-blue dark:text-blue-400" />
               </div>
-              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+            </div>
+            
+            <div className="mt-4 relative z-10">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+                  {activeBill.parsedData.unitsConsumed}
+                </span>
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-550">
+                  kWh
+                </span>
+              </div>
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 {activeBill.parsedData.billingPeriod || "Monthly period"}
               </p>
             </div>
           </div>
 
           {/* Card 2: Extracted Bill Amount */}
-          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-amber-500 text-left">
-            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-amber-400 dark:bg-amber-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
-            <div className="relative z-10">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Extracted Bill Amount</span>
-              <div className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-                ₹{activeBill.parsedData.totalAmount}
+          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            {/* Top right corner glowing wash */}
+            <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-amber-400 dark:bg-amber-600 group-hover:scale-125 transition-transform duration-500" />
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">
+                Extracted Bill Amount
+              </span>
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+                <IndianRupee className="w-5 h-5 text-amber-500" />
               </div>
-              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+            </div>
+            
+            <div className="mt-4 relative z-10">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-display font-black text-amber-600 dark:text-amber-400 leading-none">
+                  ₹{activeBill.parsedData.totalAmount}
+                </span>
+              </div>
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 Tariff: {activeBill.parsedData.tariffCategory || "Domestic"}
               </p>
             </div>
           </div>
 
           {/* Card 3: Energy Efficiency Score */}
-          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-primary-green text-left">
-            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-emerald-400 dark:bg-emerald-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
-            <div className="relative z-10">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Energy Efficiency Score</span>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">{calcs?.score}</span>
-                <span className="text-[10px] text-slate-400">/100</span>
-                <span className="ml-auto text-[10px] sm:text-xs px-2 py-0.5 rounded bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-primary-green font-bold uppercase">{calcs?.grade} Grade</span>
+          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary-green shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            {/* Top right corner glowing wash */}
+            <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-emerald-400 dark:bg-emerald-600 group-hover:scale-125 transition-transform duration-500" />
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">
+                Energy Efficiency Score
+              </span>
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+                <Award className="w-5 h-5 text-primary-green dark:text-green-400" />
               </div>
-              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+            </div>
+            
+            <div className="mt-4 relative z-10">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+                  {calcs?.score}
+                </span>
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
+                  /100
+                </span>
+                {calcs?.grade && (
+                  <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-primary-green uppercase tracking-wider">
+                    {calcs.grade} Grade
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 BEE Grade Rating
               </p>
             </div>
           </div>
 
           {/* Card 4: Cost Forecast */}
-          <div className="relative overflow-hidden group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm border-l-4 border-l-cyan-500 text-left">
-            <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-cyan-400 dark:bg-cyan-600 blur-2xl opacity-25 dark:opacity-15 pointer-events-none group-hover:scale-125 group-hover:opacity-35 transition-all duration-500" />
-            <div className="relative z-10">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase block">Cost Forecast (Next Month)</span>
-              <div className="text-lg sm:text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">
-                ₹{calcs?.forecastAmount}
+          <div className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-cyan-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            {/* Top right corner glowing wash */}
+            <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-cyan-400 dark:bg-cyan-600 group-hover:scale-125 transition-transform duration-500" />
+            
+            <div className="flex items-center justify-between relative z-10">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">
+                Cost Forecast (Next Month)
+              </span>
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
-              <p className="text-[10px] sm:text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase">
+            </div>
+            
+            <div className="mt-4 relative z-10">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-display font-black text-cyan-600 dark:text-cyan-400 leading-none">
+                  ₹{calcs?.forecastAmount}
+                </span>
+              </div>
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed uppercase">
                 Confidence Index: {calcs?.confidence}%
               </p>
             </div>
