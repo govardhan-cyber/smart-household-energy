@@ -6,7 +6,7 @@ import { createWorker } from "tesseract.js";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, Upload, CheckCircle2, AlertTriangle, Eye, Trash2, 
-  Download, Printer, Sparkles, Leaf, Target, Calendar,
+  Download, Printer, Sparkles, Leaf, Calendar,
   Award, X, Zap, IndianRupee, TrendingUp
 } from "lucide-react";
 import { 
@@ -85,8 +85,8 @@ export const BillAnalyzer: React.FC = () => {
   const [selectedBillForModal, setSelectedBillForModal] = useState<BillRecord | null>(null);
   
   // Custom Settings for Score
-  const [familySize, setFamilySize] = useState<number>(4);
-  const [houseType, setHouseType] = useState<"apartment" | "independent" | "villa">("apartment");
+  const familySize = 4;
+  const houseType = "apartment" as string;
   
   // Toast notifications
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -1268,42 +1268,7 @@ export const BillAnalyzer: React.FC = () => {
               </div>
             </div>
 
-            {/* Score Calculator Inputs */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm text-left space-y-3 print:hidden">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-150 dark:border-slate-855 pb-2">
-                <Target className="w-4 h-4 text-primary-green" />
-                Custom Score Inputs
-              </h3>
-              
-              <div className="space-y-3 text-xs sm:text-sm font-semibold">
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Family Size:</span>
-                    <span className="text-primary-green font-bold">{familySize} Members</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="8"
-                    value={familySize}
-                    onChange={(e) => setFamilySize(parseInt(e.target.value))}
-                    className="w-full h-1 bg-slate-150 dark:bg-slate-850 rounded-lg appearance-none cursor-pointer accent-primary-green"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-slate-500">House Type:</span>
-                  <select
-                    value={houseType}
-                    onChange={(e) => setHouseType(e.target.value as any)}
-                    className="w-full h-9 px-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-transparent text-slate-700 dark:text-white text-xs sm:text-sm outline-none"
-                  >
-                    <option value="apartment">Apartment / Flat</option>
-                    <option value="independent">Independent House</option>
-                    <option value="villa">Luxury Villa / Bungalow</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* Right Column: Visuals & Recommendations (col span 8) */}
