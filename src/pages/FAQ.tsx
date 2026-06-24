@@ -55,7 +55,7 @@ export const FAQ: React.FC = () => {
   const toggleExpand = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
   return (
-    <div className="flex-1 bg-slate-50 dark:bg-slate-950 transition-colors duration-300 min-h-screen">
+    <div className="flex-1 bg-transparent transition-colors duration-300 min-h-screen">
 
       {/* ── Hero Header ───────────────────────────────────────────── */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-600 to-primary-green py-14 px-4 sm:px-6 lg:px-8">

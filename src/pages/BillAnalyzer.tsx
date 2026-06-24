@@ -1059,7 +1059,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
               Upload Utility Bill
             </h3>
             
-            <label className="border-2 border-dashed border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm hover:bg-slate-50/60 dark:hover:bg-slate-955/20 hover:border-primary-blue/40 dark:hover:border-primary-green/40 transition-all duration-300 group relative overflow-hidden shadow-inner">
+            <label className="border-2 border-dashed border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm hover:bg-slate-50/60 dark:hover:bg-slate-950/20 hover:border-primary-blue/40 dark:hover:border-primary-green/40 transition-all duration-300 group relative overflow-hidden shadow-inner">
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -1102,7 +1102,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             </label>
 
             {errorMessage && (
-              <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 dark:bg-red-955/20 dark:border-red-900/30 dark:text-red-400 rounded-xl text-xs font-bold flex items-center gap-1.5 justify-center">
+              <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400 rounded-xl text-xs font-bold flex items-center gap-1.5 justify-center">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 {errorMessage}
               </div>
@@ -1110,7 +1110,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
 
             {/* Selected File Card */}
             {file && (
-              <div className="bg-slate-50/50 dark:bg-slate-955/30 p-3 rounded-xl border border-slate-150 dark:border-slate-855 flex items-center justify-between gap-3 text-left">
+              <div className="bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-xl border border-slate-150 dark:border-slate-850 flex items-center justify-between gap-3 text-left">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="p-1.5 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 text-primary-blue dark:text-primary-green shrink-0">
                     <FileText className="w-4 h-4" />
@@ -1135,7 +1135,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {file && status === "idle" && (
               <button
                 onClick={handleUploadAndScan}
-                className="w-full h-11 bg-primary-blue text-white dark:bg-primary-green dark:text-slate-955 font-black uppercase tracking-widest text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full h-11 bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 font-black uppercase tracking-widest text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
               >
                 Scan & Analyze Bill
               </button>
@@ -1913,7 +1913,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   <ul className="space-y-2 bg-slate-50/30 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-350 leading-relaxed font-semibold">
                     {selectedBillForModal.parsedData.energyInsights.map((insight, idx) => (
                       <li key={idx} className="flex gap-2 items-start">
-                        <span className="p-0.5 px-1.5 rounded bg-green-50 dark:bg-green-955/20 text-primary-green text-[9px] font-bold shrink-0 mt-0.5">
+                        <span className="p-0.5 px-1.5 rounded bg-green-50 dark:bg-green-950/20 text-primary-green text-[9px] font-bold shrink-0 mt-0.5">
                           0{idx + 1}
                         </span>
                         <p className="text-slate-650 dark:text-slate-300">{insight}</p>
@@ -1935,13 +1935,13 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                       >
                         <div className="flex justify-between items-start gap-2">
                           <h5 className="font-bold text-slate-800 dark:text-white text-xs">{rec.title}</h5>
-                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 dark:bg-green-955/20 text-primary-green whitespace-nowrap">
+                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 dark:bg-green-950/20 text-primary-green whitespace-nowrap">
                             ₹{rec.savings}/mo
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-500 leading-normal">{rec.desc || "Reduce usage time or upgrade appliance to save energy."}</p>
                         <div className="flex items-center gap-1.5 pt-1 text-[8px] font-bold uppercase tracking-wider">
-                          <span className={`px-1.5 py-0.5 rounded ${rec.difficulty === "Easy" ? "bg-green-50 text-green-700 dark:bg-green-955/20 dark:text-primary-green" : rec.difficulty === "Medium" ? "bg-amber-50 text-amber-700 dark:bg-amber-955/20 dark:text-amber-400" : "bg-red-50 text-red-700 dark:bg-red-955/20 dark:text-red-400"}`}>
+                          <span className={`px-1.5 py-0.5 rounded ${rec.difficulty === "Easy" ? "bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-primary-green" : rec.difficulty === "Medium" ? "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400" : "bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400"}`}>
                             Diff: {rec.difficulty}
                           </span>
                           <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">

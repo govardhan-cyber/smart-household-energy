@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ChatBot } from "./components/ChatBot";
+import { ThreeBackground } from "./components/ThreeBackground";
 import { initTariffCalculator } from "./utils/tariffCalculator";
 
 // Page lazy imports for bundle size optimization
@@ -45,10 +46,11 @@ const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
+          <ThreeBackground className="fixed inset-0 z-0 pointer-events-none" />
           <Navbar />
           
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col relative z-10">
             <React.Suspense fallback={<LoadingFallback />}>
               <Routes>
                 {/* Public Routes */}

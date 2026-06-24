@@ -4,7 +4,7 @@ import { Zap, Heart } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300 py-10 mt-auto">
+    <footer className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 transition-colors duration-300 py-10 mt-auto relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand block */}

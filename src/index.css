@@ -21,7 +21,24 @@
   --color-slate-655: #475569;
   --color-slate-750: #334155;
   --color-slate-850: #1E293B;
+  --color-slate-950: #0B0F19;
+  --color-slate-955: #0B0F19;
   --color-red-650: #EF4444;
+  --color-red-950: #450A0A;
+  --color-red-955: #450A0A;
+  --color-green-950: #064E3B;
+  --color-green-955: #064E3B;
+  --color-emerald-950: #064E3B;
+  --color-emerald-955: #064E3B;
+  --color-amber-950: #78350F;
+  --color-amber-955: #78350F;
+
+  --color-blue-650: #2563EB;
+  --color-emerald-450: #34d399;
+  --color-emerald-455: #10b981;
+  --color-emerald-650: #059669;
+  --color-emerald-655: #047857;
+  --color-slate-905: #0f172a;
 
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
@@ -44,11 +61,13 @@
   background-color: #F8FAFC;
   color: #0F172A;
   transition: background-color 0.3s ease, color 0.3s ease;
+  --slider-track-bg: #e2e8f0;
 }
 
 :root.dark {
   background-color: #0B0F19;
   color: #F8FAFC;
+  --slider-track-bg: #1e293b;
 }
 
 body {
@@ -357,4 +376,89 @@ body {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
   animation: shimmer-sweep 2s ease-in-out infinite;
 }
+
+/* ── Premium Background Redesign Utilities ───────────────── */
+@keyframes aurora-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float-orb-1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(40px, -60px) scale(1.15); }
+}
+
+@keyframes float-orb-2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1.05); }
+  50% { transform: translate(-30px, 40px) scale(0.9); }
+}
+
+@keyframes float-orb-3 {
+  0%, 100% { transform: translate(0px, 0px) scale(0.95); }
+  50% { transform: translate(25px, 25px) scale(1.08); }
+}
+
+.animate-aurora {
+  background-size: 200% 200%;
+  animation: aurora-shift 22s ease infinite;
+}
+
+.animate-float-orb-1 {
+  animation: float-orb-1 18s ease-in-out infinite alternate;
+}
+
+.animate-float-orb-2 {
+  animation: float-orb-2 22s ease-in-out infinite alternate;
+}
+
+.animate-float-orb-3 {
+  animation: float-orb-3 16s ease-in-out infinite alternate;
+}
+
+/* High-fidelity procedural SVG noise pattern */
+.grain-noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ── Wind Turbine & Smart House Animations ── */
+@keyframes spin-wind {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.wind-turbine-blades {
+  transform-origin: center;
+  animation: spin-wind 15s linear infinite;
+}
+
+.wind-turbine-blades-fast {
+  transform-origin: center;
+  animation: spin-wind 10s linear infinite;
+}
+
+.wind-turbine-blades-slow {
+  transform-origin: center;
+  animation: spin-wind 20s linear infinite;
+}
+
+@keyframes window-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.glowing-window {
+  animation: window-glow 4s ease-in-out infinite;
+}
+
+@keyframes wave-drift {
+  0%, 100% { transform: translateY(0px) scaleY(1); }
+  50% { transform: translateY(-4px) scaleY(1.03); }
+}
+
+.animated-wave {
+  animation: wave-drift 8s ease-in-out infinite alternate;
+}
+
+
 

@@ -7,6 +7,8 @@ import {
   Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ThreeDCard } from "../ThreeDCard";
+
 
 // ─── 0. REUSABLE ANIMATED NUMBER COMPONENT ──────────────────────────────────
 export const AnimatedNumber: React.FC<{
@@ -285,32 +287,34 @@ export const KpiCard: React.FC<{
   const hoverGlowClass = hoverGlowMap[borderColorClass] || "hover:shadow-md";
 
   return (
-    <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1 ${hoverGlowClass} transition-all duration-300 [backface-visibility:hidden] [transform-style:preserve-3d]`}>
-      {/* Top right corner glowing wash */}
-      <div className={`absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-35 dark:opacity-25 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-150 group-hover:opacity-55 transition-all duration-500`} />
+    <ThreeDCard maxTilt={8} className="h-full">
+      <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group ${hoverGlowClass} transition-all duration-300 w-full h-full [backface-visibility:hidden] [transform-style:preserve-3d]`}>
+        {/* Top right corner glowing wash */}
+        <div className={`absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-35 dark:opacity-25 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-150 group-hover:opacity-55 transition-all duration-500`} />
 
-      <div className="flex items-center justify-between relative z-10">
-        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          {title}
-        </span>
-        <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
-          {icon}
-        </div>
-      </div>
-      <div className="mt-4 relative z-10">
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
-            <AnimatedNumber value={value} formatter={formatter} />
+        <div className="flex items-center justify-between relative z-10">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            {title}
           </span>
-          {!isCurrency && !isPercent && (
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-550">kWh</span>
-          )}
+          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+            {icon}
+          </div>
         </div>
-        <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
-          {subtext}
-        </p>
+        <div className="mt-4 relative z-10">
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+              <AnimatedNumber value={value} formatter={formatter} />
+            </span>
+            {!isCurrency && !isPercent && (
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-550">kWh</span>
+            )}
+          </div>
+          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
+            {subtext}
+          </p>
+        </div>
       </div>
-    </div>
+    </ThreeDCard>
   );
 };
 

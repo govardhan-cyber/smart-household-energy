@@ -146,7 +146,7 @@ export const Profile: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex-1 bg-slate-50 dark:bg-slate-950/10 transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 text-left"
+      className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 text-left"
     >
       {/* Title Header Banner Card */}
       <motion.div 
@@ -177,7 +177,7 @@ export const Profile: React.FC = () => {
             initial={{ opacity: 0, height: 0, y: -10 }}
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={{ opacity: 0, height: 0, y: -10 }}
-            className="flex items-start gap-2.5 p-4 rounded-xl bg-red-50 dark:bg-red-955/20 border border-red-200 dark:border-red-900/50 text-red-655 dark:text-red-450 text-xs overflow-hidden shadow-sm"
+            className="flex items-start gap-2.5 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-655 dark:text-red-450 text-xs overflow-hidden shadow-sm"
           >
             <AlertCircle className="w-4.5 h-4.5 shrink-0 text-red-500" />
             <span className="font-semibold">{error}</span>
@@ -293,7 +293,7 @@ export const Profile: React.FC = () => {
                   initial={{ opacity: 0, height: 0, y: -10 }}
                   animate={{ opacity: 1, height: "auto", y: 0 }}
                   exit={{ opacity: 0, height: 0, y: -10 }}
-                  className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-955/10 border border-green-200 dark:border-green-900/50 text-green-700 dark:text-green-400 text-xs rounded-xl font-bold overflow-hidden"
+                  className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 text-green-700 dark:text-green-400 text-xs rounded-xl font-bold overflow-hidden"
                 >
                   <CheckCircle2 className="w-4.5 h-4.5 shrink-0 text-green-500" />
                   <span>Your profile information was updated successfully!</span>
@@ -389,7 +389,7 @@ export const Profile: React.FC = () => {
                   initial={{ opacity: 0, height: 0, y: -10 }}
                   animate={{ opacity: 1, height: "auto", y: 0 }}
                   exit={{ opacity: 0, height: 0, y: -10 }}
-                  className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-955/10 border border-green-200 dark:border-green-900/50 text-green-700 dark:text-green-400 text-xs rounded-xl font-bold overflow-hidden"
+                  className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/10 border border-green-200 dark:border-green-900/50 text-green-700 dark:text-green-400 text-xs rounded-xl font-bold overflow-hidden"
                 >
                   <CheckCircle2 className="w-4.5 h-4.5 shrink-0 text-green-500" />
                   <span>Your password was changed successfully!</span>
@@ -412,7 +412,7 @@ export const Profile: React.FC = () => {
                     required
                     disabled={loading}
                     placeholder="••••••••"
-                    className="block w-full px-4 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-955/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-warning-orange/20 focus:border-warning-orange transition-all text-xs"
+                    className="block w-full px-4 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-warning-orange/20 focus:border-warning-orange transition-all text-xs"
                   />
                 </div>
 

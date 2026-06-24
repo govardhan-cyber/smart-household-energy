@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateRecommendations = exports.calculateSolarROI = exports.calculateBillForecast = exports.calculateBillScore = exports.calculateEnergyScore = exports.validateAndSaveReport = void 0;
+exports.validateAndSaveReport = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -8,14 +8,15 @@ admin.initializeApp();
  * HTTPS Callable function to validate energy calculations server-side.
  * This prevents client-side tampering of savings potentials or bills before committing.
  */
-exports.validateAndSaveReport = functions.https.onCall(async (data, context) => {
+exports.validateAndSaveReport = functions.https.onCall(async (request) => {
     // 1. Authenticate Request
-    if (!context.auth) {
+    if (!request.auth) {
         throw new functions.https.HttpsError("unauthenticated", "The function must be called while authenticated.");
     }
+    const data = request.data;
     const { userId, appliances, totalUnits } = data;
     // Verify user owns the resource being created
-    if (context.auth.uid !== userId) {
+    if (request.auth.uid !== userId) {
         throw new functions.https.HttpsError("permission-denied", "You do not have permission to log reports for this user profile.");
     }
     // 2. Validate calculations server-side
@@ -47,13 +48,7 @@ exports.validateAndSaveReport = functions.https.onCall(async (data, context) => 
         msg: "Report successfully validated server-side and recorded to Firestore.",
     };
 });
-var scoring_1 = require("./scoring");
-Object.defineProperty(exports, "calculateEnergyScore", { enumerable: true, get: function () { return scoring_1.calculateEnergyScore; } });
-Object.defineProperty(exports, "calculateBillScore", { enumerable: true, get: function () { return scoring_1.calculateBillScore; } });
-var forecasting_1 = require("./forecasting");
-Object.defineProperty(exports, "calculateBillForecast", { enumerable: true, get: function () { return forecasting_1.calculateBillForecast; } });
-var solar_1 = require("./solar");
-Object.defineProperty(exports, "calculateSolarROI", { enumerable: true, get: function () { return solar_1.calculateSolarROI; } });
-var recommendations_1 = require("./recommendations");
-Object.defineProperty(exports, "generateRecommendations", { enumerable: true, get: function () { return recommendations_1.generateRecommendations; } });
+// Note: ./scoring, ./forecasting, ./solar, and ./recommendations modules
+// were planned but not yet implemented. Remove these exports when
+// the function source is ready for production deployment.
 //# sourceMappingURL=index.js.map

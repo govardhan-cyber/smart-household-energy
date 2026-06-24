@@ -204,7 +204,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
     const offset = circumference - (score / 100) * circumference;
 
     return (
-      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-955/10 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/10 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl relative overflow-hidden">
         <div className="relative w-36 h-36 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90">
             {/* Background circle */}
@@ -460,7 +460,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     
                     {/* Primary Highlight Insight */}
                     {auditResult.insights.length > 0 ? (
-                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-slate-955/10 dark:to-green-955/10 border border-slate-150 dark:border-slate-800/60 rounded-2xl text-left shadow-inner">
+                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-slate-950/10 dark:to-green-950/10 border border-slate-150 dark:border-slate-800/60 rounded-2xl text-left shadow-inner">
                         <div className="flex items-start gap-2.5">
                           <div className="p-1 rounded-lg bg-amber-500/10 text-amber-500 mt-0.5">
                             <AlertTriangle className="w-4 h-4" />
@@ -648,7 +648,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         </div>
 
         {/* Right Column: Past Audits Log History */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-955/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
               Audit Logs History
@@ -665,7 +665,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">Loading logs...</span>
               </div>
             ) : pastAudits.length === 0 ? (
-              <div className="py-8 px-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/20 dark:bg-slate-955/10 space-y-3">
+              <div className="py-8 px-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/20 dark:bg-slate-950/10 space-y-3">
                 <Award className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">No saved audits found</h4>

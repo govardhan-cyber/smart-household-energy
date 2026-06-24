@@ -1171,7 +1171,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* Detailed Net Metering breakdown */}
-            <div className="p-4 bg-blue-50/10 dark:bg-slate-955/25 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-505 dark:text-slate-400 space-y-2 relative z-10">
+            <div className="p-4 bg-blue-50/10 dark:bg-slate-950/25 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-505 dark:text-slate-400 space-y-2 relative z-10">
               <span className="font-bold text-slate-855 dark:text-slate-300 block">Net Metering Billing Breakdown:</span>
               <div className="grid grid-cols-2 gap-y-1.5 text-left font-medium">
                 <div className="text-slate-450 dark:text-slate-400">Estimated Monthly Consumption:</div>
@@ -1487,7 +1487,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* No Solar vs Solar Installed Side-by-Side Comparison */}
-            <div className="bg-slate-50 dark:bg-slate-955/45 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] transition-all duration-300">
+            <div className="bg-slate-50 dark:bg-slate-950/45 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] transition-all duration-300">
               <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-5 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
               <h4 className="text-xs font-black text-slate-905 dark:text-white uppercase tracking-wider relative z-10">
                 25-Year Lifetime Cost Comparison
@@ -1548,7 +1548,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </p>
             </div>
           </div>
-          <div className="self-start sm:self-center px-3 py-1 bg-amber-50 dark:bg-amber-955/40 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider">
+          <div className="self-start sm:self-center px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider">
             2026 Guidelines
           </div>
         </div>

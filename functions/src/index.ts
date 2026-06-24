@@ -32,19 +32,20 @@ interface ReportPayload {
  * This prevents client-side tampering of savings potentials or bills before committing.
  */
 export const validateAndSaveReport = functions.https.onCall(
-  async (data: ReportPayload, context) => {
+  async (request: functions.https.CallableRequest) => {
     // 1. Authenticate Request
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "The function must be called while authenticated."
       );
     }
 
+    const data = request.data as ReportPayload;
     const { userId, appliances, totalUnits } = data;
 
     // Verify user owns the resource being created
-    if (context.auth.uid !== userId) {
+    if (request.auth.uid !== userId) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "You do not have permission to log reports for this user profile."
@@ -94,9 +95,8 @@ export const validateAndSaveReport = functions.https.onCall(
   }
 );
 
-export { calculateEnergyScore, calculateBillScore } from "./scoring";
-export { calculateBillForecast } from "./forecasting";
-export { calculateSolarROI } from "./solar";
-export { generateRecommendations } from "./recommendations";
+// Note: ./scoring, ./forecasting, ./solar, and ./recommendations modules
+// were planned but not yet implemented. Remove these exports when
+// the function source is ready for production deployment.
 
 
