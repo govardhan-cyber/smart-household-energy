@@ -8,6 +8,7 @@ import {
   Lightbulb, ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -250,7 +251,17 @@ export const SurveyData: React.FC = () => {
   });
 
   return (
-    <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8 text-left">
+    <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 text-left">
+      {/* 3-Column Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+        
+        {/* Left Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <LiveGridStatusWidget />
+        </aside>
+
+        {/* Center Main Content Column */}
+        <main className="col-span-1 2xl:col-span-8 space-y-8 w-full">
       
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
@@ -999,6 +1010,14 @@ export const SurveyData: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+        </main>
+
+        {/* Right Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <CarbonSavingsWidget />
+        </aside>
+
+      </div>
     </div>
   );
 };

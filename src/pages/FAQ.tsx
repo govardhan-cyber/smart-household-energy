@@ -52,85 +52,91 @@ export const FAQ: React.FC = () => {
     return matchSearch && matchCat;
   });
 
-  const toggleExpand = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 min-h-screen">
 
-      {/* ── Hero Header ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-600 to-primary-green py-14 px-4 sm:px-6 lg:px-8">
-        {/* Decorative blobs */}
-        <div className="absolute -top-16 -left-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.03] rounded-full blur-2xl pointer-events-none" />
+      {/* ── Hero Header (Card Style with Curved Edges) ── */}
+      <div className="mx-4 sm:mx-6 lg:mx-8 xl:mx-12 mt-6">
+        <div className="relative overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-650 to-emerald-500 py-16 px-6 sm:px-8 lg:px-12 rounded-[2rem] border border-white/15 shadow-xl">
+          {/* Decorative blobs */}
+          <div className="absolute -top-16 -left-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -right-16 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.03] rounded-full blur-2xl pointer-events-none" />
 
-        <div className="relative max-w-4xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full">
-            <Zap className="w-3 h-3 text-yellow-300" />
-            Help Center
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white leading-tight">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-sm text-blue-100/80 max-w-xl mx-auto leading-relaxed">
-            Everything you need to know about calculations, AP LT-I tariff slabs, data privacy, and energy-saving tips.
-          </p>
+          <div className="relative max-w-4xl mx-auto text-center space-y-5">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
+              <Zap className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
+              Help Center
+            </div>
+            <h1 className="text-3xl sm:text-4.5xl font-display font-extrabold text-white leading-tight tracking-tight">
+              Frequently Asked Questions
+            </h1>
+            <p className="text-sm text-blue-100/90 max-w-2xl mx-auto leading-relaxed">
+              Everything you need to know about calculations, AP LT-I tariff slabs, data privacy, and energy-saving tips.
+            </p>
 
-          {/* Search bar inside hero */}
-          <div className="relative max-w-xl mx-auto mt-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search questions…"
-              className="w-full pl-11 pr-4 py-3.5 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl text-sm font-medium text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-            />
+            {/* Search bar inside hero */}
+            <div className="relative max-w-xl mx-auto mt-6">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search questions…"
+                className="w-full pl-11 pr-4 py-3.5 bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 focus:border-white/40 focus:bg-white/15 rounded-2xl text-sm font-medium text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/25 transition-all shadow-inner"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Main Content ──────────────────────────────────────────── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-left">
+      {/* ── Main Content ── */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-10 space-y-8 text-left">
 
         {/* Category filter pills */}
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map(({ key, label, icon: Icon, bg, active }) => {
-            const isActive = activeCategory === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setActiveCategory(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? `${active} shadow-sm scale-[1.03]`
-                    : `${bg} text-slate-500 dark:text-slate-400 hover:scale-[1.02]`
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-                <span className={`ml-0.5 text-[10px] font-black ${isActive ? "opacity-80" : "opacity-50"}`}>
-                  {key === "all" ? faqs.length : faqs.filter(f => f.category === key).length}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex justify-center w-full">
+          <div className="inline-flex flex-wrap justify-center gap-2 p-1.5 bg-slate-100/40 dark:bg-slate-900/30 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-sm">
+            {CATEGORIES.map(({ key, label, icon: Icon, bg, active }) => {
+              const isActive = activeCategory === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveCategory(key)}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? `${active} shadow-md scale-[1.03]`
+                      : `${bg} text-slate-500 dark:text-slate-400 hover:bg-slate-200/55 dark:hover:bg-slate-800/55 hover:scale-[1.02] active:scale-[0.97]`
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                  <span className={`ml-1 text-[10px] font-black ${isActive ? "opacity-90" : "opacity-50"}`}>
+                    {key === "all" ? faqs.length : faqs.filter(f => f.category === key).length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Results count */}
-        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        <p className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
           {filtered.length} {filtered.length === 1 ? "question" : "questions"} found
         </p>
 
-        {/* FAQ List */}
+        {/* FAQ Grid list */}
         {filtered.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-14 text-center space-y-3">
-            <HelpCircle className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto" />
-            <p className="text-sm font-bold text-slate-400">No questions match your search.</p>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-14 text-center space-y-3 shadow-sm">
+            <HelpCircle className="w-10 h-10 text-slate-350 dark:text-slate-700 mx-auto" />
+            <p className="text-sm font-bold text-slate-450 dark:text-slate-550">No questions match your search.</p>
             <p className="text-xs text-slate-400">Try different keywords or clear the search field.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             {filtered.map((faq, index) => {
               const isExpanded = expandedId === faq.id;
               const accent = CATEGORY_ACCENT[faq.category];
@@ -140,10 +146,18 @@ export const FAQ: React.FC = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.04 }}
-                  className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden shadow-sm transition-all duration-300 ${
+                  className={`bg-white/45 dark:bg-slate-900/45 backdrop-blur-md border rounded-2xl overflow-hidden shadow-sm transition-all duration-300 ${
                     isExpanded
-                      ? `${accent.border} shadow-md`
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md"
+                      ? `${accent.border} bg-white/90 dark:bg-slate-900/90 shadow-md ring-1 ring-offset-0 ${
+                          faq.category === "usage"
+                            ? "ring-blue-100/50 dark:ring-blue-950/50"
+                            : faq.category === "billing"
+                            ? "ring-violet-100/50 dark:ring-violet-950/50"
+                            : faq.category === "privacy"
+                            ? "ring-emerald-100/50 dark:ring-emerald-950/50"
+                            : "ring-amber-100/50 dark:ring-amber-950/50"
+                        }`
+                      : "border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md hover:scale-[1.01] hover:-translate-y-0.5"
                   }`}
                 >
                   {/* Question row */}
@@ -151,14 +165,14 @@ export const FAQ: React.FC = () => {
                     onClick={() => toggleExpand(faq.id)}
                     className="w-full flex items-start gap-4 p-5 text-left focus:outline-none group cursor-pointer"
                   >
-                    {/* Index number */}
+                    {/* Index dot indicator */}
                     <span className="shrink-0 w-6 h-6 mt-0.5 flex items-center justify-center">
-                      <span className={`w-2 h-2 rounded-full ${accent.dot} ${isExpanded ? "scale-125" : ""} transition-transform duration-200`} />
+                      <span className={`w-2 h-2 rounded-full ${accent.dot} ${isExpanded ? "scale-150" : ""} transition-transform duration-200`} />
                     </span>
 
                     <div className="flex-1 min-w-0 space-y-1">
                       {/* Category badge */}
-                      <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${accent.badge}`}>
+                      <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full ${accent.badge}`}>
                         {accent.badgeText}
                       </span>
                       {/* Question text */}
@@ -209,7 +223,7 @@ export const FAQ: React.FC = () => {
         )}
 
         {/* Footer tip */}
-        <div className="flex items-start gap-3 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-5">
+        <div className="flex items-start gap-3 bg-gradient-to-r from-blue-50 to-emerald-50 dark:from-blue-900/10 dark:to-emerald-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-5">
           <Sparkles className="w-5 h-5 text-primary-blue dark:text-primary-green shrink-0 mt-0.5 animate-pulse" />
           <div>
             <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Still have questions?</p>

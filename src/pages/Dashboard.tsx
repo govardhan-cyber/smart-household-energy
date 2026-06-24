@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 import { reportsService } from "../utils/reportsService";
 import type { EnergyReport } from "../utils/reportsService";
 import { calculateBill, defaultAppliances, getSlabsForState, getApplianceDecayRate } from "../utils/tariffCalculator";
@@ -8,22 +7,20 @@ import type { ApplianceItem, TariffResult } from "../utils/tariffCalculator";
 import { 
   Zap, ChevronRight,
   ShieldCheck, Sparkles, Check, AlertTriangle, Leaf, Printer, Download,
-  IndianRupee, Sun, Wind, Lightbulb, Snowflake
+  Sun, Wind, Lightbulb, Snowflake
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 
-import { useNavigate } from "react-router-dom";
+
 import { ApplianceSelector } from "../components/dashboard/ApplianceSelector";
 import { ConsumptionCalculator } from "../components/dashboard/ConsumptionCalculator";
 import { SavingsAdvisor } from "../components/dashboard/SavingsAdvisor";
 import { Charts } from "../components/dashboard/Charts";
 import { SolarCalculator } from "../components/dashboard/SolarCalculator";
 import { AIHomeAudit } from "../components/dashboard/AIHomeAudit";
-import { 
-  DashboardHero, KpiCard, EnergyHealthScore, InsightCard, 
-  QuickActionPanel, DashboardWelcomeState 
-} from "../components/dashboard/DashboardHero";
+import { DashboardWelcomeState } from "../components/dashboard/DashboardHero";
+import { PremiumDashboard } from "../components/dashboard/PremiumDashboard";
 
 
 // Count-up/down animation component for premium feel
@@ -63,7 +60,7 @@ const AnimatedNumber: React.FC<{
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+
   
   // Detect theme state for Recharts components
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(
@@ -776,145 +773,7 @@ export const Dashboard: React.FC = () => {
     };
   }).sort((a, b) => b.kwh - a.kwh);
   const COLORS = ["#1E40AF", "#16A34A", "#0F766E", "#F97316", "#EF4444", "#8B5CF6", "#EC4899", "#F59E0B"];  // Calculate health score dynamically
-  const getEnergyHealthScoreValue = () => {
-    if (activeAppliances.length === 0) return 100;
 
-    let score = 100;
-
-    // A. Monthly consumption penalty (max 30 pts)
-    if (liveTotalUnits > 250) {
-      const excess = liveTotalUnits - 250;
-      const penalty = Math.min(30, (excess / 250) * 15);
-      score -= penalty;
-    } else {
-      const savings = 250 - liveTotalUnits;
-      const bonus = Math.min(5, (savings / 250) * 10);
-      score += bonus;
-    }
-
-    // B. Savings opportunity penalty (max 30 pts)
-    const billCharge = liveBill.netEnergyCharge || 1;
-    const savingsRatio = liveSavingsPotential / billCharge;
-    if (savingsRatio > 0.05) {
-      const savingsPenalty = Math.min(30, savingsRatio * 50);
-      score -= savingsPenalty;
-    }
-
-    // C. Solar offset bonus (max 15 pts)
-    if (solarOffsetPercent > 0) {
-      const solarBonus = Math.min(15, (solarOffsetPercent / 100) * 15);
-      score += solarBonus;
-    }
-
-    // D. Appliance specific runtime penalties (max 25 pts)
-    const ac = appliances.find(a => a.id === "ac" && a.quantity > 0);
-    if (ac && ac.hours > 6) {
-      score -= 10;
-    }
-
-    const lights = appliances.find(a => a.id === "lights" && a.quantity > 0);
-    if (lights && lights.watts > 12) {
-      score -= 5;
-    }
-
-    const fridge = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-    if (fridge && fridge.quantity > 1) {
-      score -= 5;
-    }
-
-    return Math.max(10, Math.min(100, Math.round(score)));
-  };
-
-  const healthScore = getEnergyHealthScoreValue();
-
-  // Generate top 3 insights
-  const getTopInsights = () => {
-    if (activeAppliances.length === 0) return [];
-
-    const insights = [];
-    const avgRate = liveTotalUnits > 0 ? (liveBill.netEnergyCharge / liveTotalUnits) : 6.5;
-
-    // AC Insight
-    const acApp = appliances.find(a => a.id === "ac" && a.quantity > 0);
-    if (acApp) {
-      const acSavedKwh = acApp.quantity * (acApp.watts / 1000) * (acApp.hours > 2 ? 2 : acApp.hours * 0.5) * 30;
-      const acSavingsPerMonth = acSavedKwh * avgRate;
-      const acAnnualSavings = acSavingsPerMonth * 12;
-      insights.push({
-        id: "ac",
-        title: "AC Optimization Opportunity",
-        description: `Your AC runs for ${acApp.hours} hrs/day. Reducing runtime by 2 hours could save ~₹${Math.round(acAnnualSavings).toLocaleString("en-IN")}/year.`,
-        difficulty: acApp.hours > 6 ? "Medium" as const : "Easy" as const,
-        impact: `₹${Math.round(acAnnualSavings).toLocaleString("en-IN")}/yr`,
-        icon: <Wind className="w-5 h-5 text-alert-red" />
-      });
-    }
-
-    // Fridge Insight
-    const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-    if (fridgeApp) {
-      const fridgeUnits = fridgeApp.quantity * (fridgeApp.watts / 1000) * fridgeApp.hours * 30;
-      const fridgeSavedUnits = fridgeUnits * 0.15;
-      const fridgeSavingsPerMonth = fridgeSavedUnits * avgRate;
-      const fridgeAnnualSavings = fridgeSavingsPerMonth * 12;
-      insights.push({
-        id: "fridge",
-        title: "Upgrade Refrigerator",
-        description: `Switching to a 5-star energy rated refrigerator could save you ₹${Math.round(fridgeAnnualSavings).toLocaleString("en-IN")}/year.`,
-        difficulty: "Medium" as const,
-        impact: `₹${Math.round(fridgeAnnualSavings).toLocaleString("en-IN")}/yr`,
-        icon: <Snowflake className="w-5 h-5 text-primary-green" />
-      });
-    }
-
-    // Solar Insight
-    if (solarOffsetPercent > 0) {
-      insights.push({
-        id: "solar",
-        title: "Roof Solar Potential Active",
-        description: `Your roof space supports a ${recommendedKw} kW system. It is estimated to offset ${solarOffsetPercent}% of your electricity demand.`,
-        difficulty: "Hard" as const,
-        impact: `${solarOffsetPercent}% Offset`,
-        icon: <Sun className="w-5 h-5 text-amber-500" />
-      });
-    }
-
-    // Lights Upgrade Insight
-    const lightsApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
-    if (lightsApp && lightsApp.watts > 12) {
-      const lightsUnits = lightsApp.quantity * (lightsApp.watts / 1000) * lightsApp.hours * 30;
-      const lightsSavedUnits = lightsUnits * 0.75;
-      const lightsSavingsPerMonth = lightsSavedUnits * avgRate;
-      const lightsAnnualSavings = lightsSavingsPerMonth * 12;
-      insights.push({
-        id: "lights",
-        title: "Switch Bulbs to LEDs",
-        description: `Your current lighting wattage profile (${lightsApp.watts}W) is high. Upgrading to 9W LEDs could save ₹${Math.round(lightsAnnualSavings).toLocaleString("en-IN")}/year.`,
-        difficulty: "Easy" as const,
-        impact: `₹${Math.round(lightsAnnualSavings).toLocaleString("en-IN")}/yr`,
-        icon: <Lightbulb className="w-5 h-5 text-primary-green" />
-      });
-    }
-
-    // Standby Power Insight
-    if (liveTotalUnits > 100) {
-      const standbyUnits = liveTotalUnits * 0.05;
-      const standbySavingsPerMonth = standbyUnits * avgRate;
-      const standbyAnnualSavings = standbySavingsPerMonth * 12;
-      insights.push({
-        id: "standby",
-        title: "Eliminate Standby Loads",
-        description: `Standby power draws ~5% of your energy. Unplugging appliances when not in use saves ₹${Math.round(standbyAnnualSavings).toLocaleString("en-IN")}/year.`,
-        difficulty: "Easy" as const,
-        impact: `₹${Math.round(standbyAnnualSavings).toLocaleString("en-IN")}/yr`,
-        icon: <Zap className="w-5 h-5 text-slate-550 dark:text-slate-450" />
-      });
-    }
-
-    return insights.slice(0, 3);
-  };
-
-  const topInsights = getTopInsights();
 
   // Audit triggers
   const handleStartAudit = () => {
@@ -994,21 +853,10 @@ export const Dashboard: React.FC = () => {
     type: isAboveBenchmark ? ("negative" as const) : ("positive" as const)
   };
 
-  const heroTrends = [momTrend, vsAvgTrend];
+
 
   return (
-    <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8">
-      
-      {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
-        
-        {/* Left Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <LiveGridStatusWidget />
-        </aside>
-
-        {/* Center Main Content Column */}
-        <main className="col-span-1 2xl:col-span-8 space-y-8 w-full">
+    <div className="flex-1 bg-transparent transition-colors duration-300 pt-4 pb-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-4">
           {/* Tab Selector */}
       <div className="flex justify-center no-print relative z-10">
         <div className="flex backdrop-blur-md bg-slate-200/50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/30 dark:border-slate-800/50 shadow-inner relative">
@@ -1158,91 +1006,20 @@ export const Dashboard: React.FC = () => {
               <DashboardWelcomeState onStartAudit={handleStartAudit} />
             ) : (
               <>
-                {/* New Hero Section */}
-                <DashboardHero
-                userName={user?.fullName}
-                savingsOpportunity={liveSavingsPotential}
-                solarOffsetPercent={solarOffsetPercent}
-                trends={heroTrends}
-                onRunAudit={handleRunAudit}
-              />
-
-              {/* KPI Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print">
-                <KpiCard
-                  title="Monthly Consumption"
-                  value={liveTotalUnits}
-                  subtext="Based on active audit configuration"
-                  icon={<Zap className="w-5 h-5 text-primary-blue dark:text-blue-400" />}
-                  borderColorClass="border-l-primary-blue"
-                />
-                <KpiCard
-                  title="Estimated Bill"
-                  value={liveBill.netEnergyCharge}
-                  subtext={`Calculated using ${liveBill.stateName.toUpperCase()} rates`}
-                  icon={<IndianRupee className="w-5 h-5 text-warning-orange" />}
-                  borderColorClass="border-l-warning-orange"
-                  isCurrency={true}
-                />
-                <KpiCard
-                  title="Potential Savings"
-                  value={liveSavingsPotential}
-                  subtext="Apply smart appliance settings"
-                  icon={<Sparkles className="w-5 h-5 text-primary-green animate-pulse" />}
-                  borderColorClass="border-l-primary-green"
-                  isCurrency={true}
-                />
-                <KpiCard
-                  title="Solar Offset"
-                  value={solarOffsetPercent}
-                  subtext={`With recommended ${recommendedKw} kW system`}
-                  icon={<Sun className="w-5 h-5 text-amber-500" />}
-                  borderColorClass="border-l-amber-500"
-                  isPercent={true}
-                />
-              </div>
-
-              {/* Health Score & Quick Action Panel Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 no-print">
-                <EnergyHealthScore 
-                  score={healthScore} 
-                  reports={reports}
-                  totalUnits={liveTotalUnits}
+                {/* Premium Dashboard Overview */}
+                <PremiumDashboard
+                  userName={user?.fullName}
                   savingsPotential={liveSavingsPotential}
-                  solarOffsetPercent={solarOffsetPercent}
-                  appliances={appliances}
-                />
-                <QuickActionPanel
-                  onRunAudit={handleRunAudit}
-                  onGoToSolar={() => setActiveTab("solar")}
-                  onGoToSettings={() => navigate("/settings")}
+                  totalUnits={liveTotalUnits}
+                  bill={liveBill}
+                  activeAppliances={activeAppliances}
                   reports={reports}
+                  onRunAudit={handleRunAudit}
+                  tariffState={user?.tariffState || "ap"}
+                  momTrend={momTrend}
+                  vsAvgTrend={vsAvgTrend}
+                  solarOffsetPercent={solarOffsetPercent}
                 />
-              </div>
-
-              {/* Top Insights Recommendations Grid */}
-              {topInsights.length > 0 && (
-                <div className="space-y-4 no-print">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest flex items-center gap-1.5 text-left">
-                      <Sparkles className="w-3.5 h-3.5 text-yellow-500 dark:text-yellow-400" />
-                      Smart Energy Insights
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {topInsights.map((ins, idx) => (
-                      <InsightCard
-                        key={idx}
-                        icon={ins.icon}
-                        title={ins.title}
-                        description={ins.description}
-                        impact={ins.impact}
-                        difficulty={ins.difficulty}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Step Progress Bar (Full Width) */}
           <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 py-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
@@ -1722,14 +1499,6 @@ export const Dashboard: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-        </main>
-        
-        {/* Right Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <CarbonSavingsWidget analysisResult={analysisResult} />
-        </aside>
-
-      </div>
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (

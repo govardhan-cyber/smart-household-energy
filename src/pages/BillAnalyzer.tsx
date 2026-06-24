@@ -13,6 +13,7 @@ import {
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip
 } from "recharts";
+import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -832,8 +833,18 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 print:p-0 print:bg-white print:text-black"
+      className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen print:p-0 print:bg-white print:text-black"
     >
+      {/* 3-Column Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+        
+        {/* Left Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <LiveGridStatusWidget />
+        </aside>
+
+        {/* Center Main Content Column */}
+        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full text-left print:p-0">
       
       {/* ─── TITLE HEADER ────────────────────────────────────────────────────── */}
       <motion.div 
@@ -1968,6 +1979,14 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
         </div>
       )}
     </AnimatePresence>
-  </motion.div>
+        </main>
+
+        {/* Right Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <CarbonSavingsWidget />
+        </aside>
+
+      </div>
+    </motion.div>
 );
 };

@@ -8,6 +8,7 @@ import {
 import { loadTariffs, saveTariff, type TariffState } from "../utils/tariffService";
 import { reloadTariffCalculator } from "../utils/tariffCalculator";
 import { motion, AnimatePresence } from "framer-motion";
+import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 
 // Custom Toggle Switch Component
 const ToggleSwitch: React.FC<{
@@ -322,13 +323,25 @@ export const Settings: React.FC = () => {
     { id: "electronics" as const, label: "Electronics", icon: Cpu },
     { id: "comfort" as const, label: "Comfort", icon: Wind },
     { id: "water" as const, label: "Water", icon: Droplet }
-  ];  return (
+  ];
+
+  return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6 text-left"
+      className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-6 text-left"
     >
+      {/* 3-Column Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+        
+        {/* Left Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <LiveGridStatusWidget />
+        </aside>
+
+        {/* Center Main Content Column */}
+        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full max-w-4xl mx-auto">
       {/* Premium Header Card */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-650 to-indigo-700 dark:from-primary-green dark:via-emerald-650 dark:to-teal-800 rounded-3xl p-6 sm:p-8 shadow-lg shadow-primary-blue/10 dark:shadow-none text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 group">
         <div className="absolute -right-24 -top-24 w-64 h-64 blur-3xl opacity-20 rounded-full bg-white pointer-events-none group-hover:scale-125 transition-transform duration-700" />
@@ -949,6 +962,14 @@ export const Settings: React.FC = () => {
           </motion.button>
         </div>
       </form>
+        </main>
+
+        {/* Right Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <CarbonSavingsWidget />
+        </aside>
+
+      </div>
     </motion.div>
   );
 };

@@ -1,0 +1,920 @@
+import React, { useMemo, useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Zap, IndianRupee, ChevronRight, Lightbulb,
+  Snowflake, Fan, Tv, Refrigerator, WashingMachine,
+  Thermometer, Wind, Droplet, Monitor, Sparkles, ArrowRight,
+  TrendingDown, TrendingUp, Sun
+} from "lucide-react";
+import type { ApplianceItem, TariffResult } from "../../utils/tariffCalculator";
+import type { EnergyReport } from "../../utils/reportsService";
+import { KpiCard } from "./DashboardHero";
+import { LiveGridStatusWidget, CarbonSavingsWidget } from "./SidebarWidgets";
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+export interface PremiumDashboardProps {
+  userName?: string;
+  savingsPotential: number;
+  totalUnits: number;
+  bill: TariffResult;
+  activeAppliances: ApplianceItem[];
+  reports: EnergyReport[];
+  onRunAudit: () => void;
+  tariffState?: string;
+  momTrend?: { label: string; value: string; trend: "up" | "down" | "neutral"; type: "positive" | "negative" | "neutral" };
+  vsAvgTrend?: { label: string; value: string; trend: "up" | "down" | "neutral"; type: "positive" | "negative" | "neutral" };
+  solarOffsetPercent?: number;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function kwhPerMonth(a: ApplianceItem): number {
+  return (a.watts * a.hours * 30 * (a.quantity ?? 1)) / 1000;
+}
+
+// ── Appliance icon ─────────────────────────────────────────────────────────────
+function AppIcon({ name, cls = "w-6 h-6" }: { name: string; cls?: string }) {
+  const n = name.toLowerCase();
+  if (n.includes("air") || n.includes(" ac") || n.includes("conditioner")) return <Snowflake className={cls} />;
+  if (n.includes("fan")) return <Fan className={cls} />;
+  if (n.includes("tv") || n.includes("tele")) return <Tv className={cls} />;
+  if (n.includes("fridge") || n.includes("refrig")) return <Refrigerator className={cls} />;
+  if (n.includes("wash")) return <WashingMachine className={cls} />;
+  if (n.includes("water") || n.includes("geyser") || n.includes("heat")) return <Droplet className={cls} />;
+  if (n.includes("light") || n.includes("bulb") || n.includes("led")) return <Lightbulb className={cls} />;
+  if (n.includes("monitor") || n.includes("laptop") || n.includes("computer")) return <Monitor className={cls} />;
+  if (n.includes("wind") || n.includes("cooler")) return <Wind className={cls} />;
+  return <Zap className={cls} />;
+}
+
+// ── Color palette ─────────────────────────────────────────────────────────────
+const COLORS = [
+  { bg: "bg-blue-50 dark:bg-blue-950/20",       icon: "text-blue-500 dark:text-blue-400",       bar: "bg-blue-500 dark:bg-blue-500",       border: "border-blue-100 dark:border-blue-900/30"     },
+  { bg: "bg-emerald-50 dark:bg-emerald-950/20", icon: "text-emerald-600 dark:text-emerald-400",   bar: "bg-emerald-500 dark:bg-emerald-500", border: "border-emerald-100 dark:border-emerald-900/30" },
+  { bg: "bg-orange-50 dark:bg-orange-950/20",   icon: "text-orange-500 dark:text-orange-400",   bar: "bg-orange-500 dark:bg-orange-500",   border: "border-orange-100 dark:border-orange-900/30"   },
+  { bg: "bg-purple-50 dark:bg-purple-950/20",   icon: "text-purple-500 dark:text-purple-400",   bar: "bg-purple-500 dark:bg-purple-500",   border: "border-purple-100 dark:border-purple-900/30"   },
+  { bg: "bg-slate-50 dark:bg-slate-800/40",     icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-slate-100 dark:border-slate-800/60"     },
+];
+
+// ── 1. Hero Card ───────────────────────────────────────────────────────────────
+function HeroCard({
+  userName, savingsPotential, onRunAudit, momTrend, vsAvgTrend,
+}: {
+  userName?: string;
+  savingsPotential: number;
+  onRunAudit: () => void;
+  momTrend?: PremiumDashboardProps["momTrend"];
+  vsAvgTrend?: PremiumDashboardProps["vsAvgTrend"];
+}) {
+  const hr = new Date().getHours();
+  const greeting = hr < 12 ? "Good Morning" : hr < 17 ? "Good Afternoon" : hr < 20 ? "Good Evening" : "Good Night";
+  const greetingEmoji = hr < 12 ? "☀️" : hr < 17 ? "🌤️" : hr < 20 ? "🌆" : "🌙";
+
+  const firstName = userName?.split(" ")[0] ?? "User";
+
+  const mom = momTrend ?? { label: "vs last month", value: "8%", trend: "down" as const, type: "positive" as const };
+  const avg = vsAvgTrend ?? { label: "vs similar homes", value: "24%", trend: "up" as const, type: "negative" as const };
+  const badges = [mom, avg];
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 14 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 280, damping: 24 } },
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative rounded-3xl overflow-hidden h-[320px] group shadow-lg hover:shadow-xl transition-all duration-500 border border-white/60 dark:border-slate-700/50"
+    >
+      {/* ── Full-card background: sky gradient + house image ── */}
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-850 dark:to-indigo-950/60" />
+
+      {/* Ambient glows */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
+      <div className="absolute -bottom-16 right-1/3 w-56 h-56 bg-amber-300/20 dark:bg-amber-500/8 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
+
+      {/* House illustration — covers whole card with a smooth gradient fade to ensure text legibility */}
+      <div className="absolute inset-0 w-full overflow-hidden pointer-events-none z-0">
+        {/* Smooth gradient mask from left (opaque sky/slate) to right (transparent) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-sky-100/90 via-sky-100/40 to-transparent dark:from-slate-900/90 dark:via-slate-900/45 dark:to-transparent z-10" />
+        <motion.img
+          src="/smart-house.png"
+          alt="Smart Home"
+          className="absolute right-0 bottom-0 h-full w-auto max-w-none object-contain object-right-bottom"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-sky-100/30 to-transparent dark:from-slate-900/30 dark:to-transparent z-10" />
+      </div>
+
+      {/* ── Left: content panel — always above image ── */}
+      <motion.div
+        className="relative z-20 h-full flex flex-col justify-between p-7 sm:p-8 w-full sm:max-w-[50%] lg:max-w-[52%]"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        {/* Top: Greeting */}
+        <motion.div variants={item} className="space-y-0.5">
+          <p className="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span>{greetingEmoji}</span>
+            <span>{greeting}</span>
+          </p>
+          <h1 className="text-3xl sm:text-[2rem] font-black tracking-tight leading-tight">
+            <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">
+              {firstName}
+            </span>
+            {"  "}
+            <motion.span
+              animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
+              transition={{ duration: 1.6, delay: 0.7, repeat: Infinity, repeatDelay: 4.5, ease: "easeInOut" }}
+              style={{ display: "inline-block", transformOrigin: "70% 70%" }}
+            >👋</motion.span>
+          </h1>
+        </motion.div>
+
+        {/* Middle: Savings amount */}
+        <motion.div variants={item} className="space-y-1">
+          <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
+            Your home could save
+          </p>
+          <div className="flex items-baseline gap-1.5">
+            <motion.span
+              className="text-[2.6rem] sm:text-5xl font-black leading-none bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 bg-clip-text text-transparent tabular-nums"
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 220, damping: 18 }}
+            >
+              ₹{savingsPotential.toLocaleString("en-IN")}
+            </motion.span>
+            <span className="text-base sm:text-lg font-bold text-slate-400 dark:text-slate-500 leading-none">/mo</span>
+          </div>
+        </motion.div>
+
+        {/* Badges */}
+        <motion.div className="flex flex-wrap gap-2" variants={item}>
+          {badges.map((b: any, i: number) => {
+            let badgeStyle = "bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 backdrop-blur-sm";
+            if (b.type === "positive") {
+              badgeStyle = "bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800/60 backdrop-blur-sm";
+            } else if (b.type === "negative") {
+              badgeStyle = "bg-red-50/90 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200/80 dark:border-red-800/60 backdrop-blur-sm";
+            } else if (b.type === "neutral") {
+              badgeStyle = "bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200/80 dark:border-amber-800/60 backdrop-blur-sm";
+            }
+            return (
+              <motion.span
+                key={i}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.42 + i * 0.09, type: "spring", stiffness: 220, damping: 22 }}
+                whileHover={{ scale: 1.05 }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border shadow-sm cursor-default select-none transition-transform duration-200 ${badgeStyle}`}
+              >
+                {b.trend === "down" ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+                <span>{b.value} {b.label}</span>
+              </motion.span>
+            );
+          })}
+        </motion.div>
+
+        {/* CTA Button */}
+        <motion.div variants={item}>
+          <motion.button
+            whileHover={{
+              scale: 1.04,
+              boxShadow: "0 12px 28px -6px rgba(37,99,235,0.40), 0 6px 12px -4px rgba(37,99,235,0.25)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onRunAudit}
+            className="relative inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-400 dark:hover:to-teal-500 text-white dark:text-slate-900 text-xs uppercase tracking-widest font-extrabold rounded-2xl shadow-lg cursor-pointer overflow-hidden group/btn transition-all duration-300"
+          >
+            {/* Shimmer sweep */}
+            <motion.span
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+              initial={{ x: "-100%" }}
+              animate={{ x: "200%" }}
+              transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
+            />
+            <Zap className="w-3.5 h-3.5 relative z-10 group-hover/btn:animate-pulse" />
+            <span className="relative z-10">Run Energy Audit</span>
+            <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+
+// ── 2. Biggest Consumer Card ───────────────────────────────────────────────────
+function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number; savings: number }) {
+  const roundedPct = Math.round(pct);
+  
+  // Custom colors depending on the appliance for a personalized premium feel
+  const getApplianceTheme = (appName: string) => {
+    const n = appName.toLowerCase();
+    if (n.includes("air") || n.includes(" ac") || n.includes("conditioner")) {
+      return {
+        glow: "bg-blue-500/10 dark:bg-blue-600/8",
+        border: "border-blue-100 dark:border-blue-900/35",
+        text: "text-blue-600 dark:text-blue-400",
+        stroke: "#3b82f6",
+        track: "stroke-blue-100 dark:stroke-blue-955/40",
+      };
+    }
+    if (n.includes("fan")) {
+      return {
+        glow: "bg-emerald-500/10 dark:bg-emerald-600/8",
+        border: "border-emerald-100 dark:border-emerald-900/35",
+        text: "text-emerald-600 dark:text-emerald-400",
+        stroke: "#10b981",
+        track: "stroke-emerald-100 dark:stroke-emerald-955/40",
+      };
+    }
+    if (n.includes("fridge") || n.includes("refrig")) {
+      return {
+        glow: "bg-cyan-500/10 dark:bg-cyan-600/8",
+        border: "border-cyan-100 dark:border-cyan-900/35",
+        text: "text-cyan-600 dark:text-cyan-400",
+        stroke: "#06b6d4",
+        track: "stroke-cyan-100 dark:stroke-cyan-955/40",
+      };
+    }
+    return {
+      glow: "bg-amber-500/10 dark:bg-amber-600/8",
+      border: "border-amber-100 dark:border-amber-900/35",
+      text: "text-amber-600 dark:text-amber-455",
+      stroke: "#f59e0b",
+      track: "stroke-amber-100 dark:stroke-amber-950/40",
+    };
+  };
+
+  const theme = getApplianceTheme(name);
+
+  // SVG Gauge calculations
+  const radius = 30;
+  const strokeWidth = 5;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, roundedPct)) / 100) * circumference;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+      className="relative bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[320px] group hover:shadow-md dark:hover:shadow-blue-955/20 transition-all duration-300 overflow-hidden"
+    >
+      {/* Decorative Glow Blob */}
+      <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 ${theme.glow} rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700`} />
+      
+      {/* Blueprint Grid Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.015] pointer-events-none bg-[linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
+
+      <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+        {/* Top/Middle Section */}
+        <div className="flex flex-col space-y-1.5">
+          {/* Header */}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-1.5 bg-orange-500/8 dark:bg-orange-500/12 px-3 py-1 rounded-full border border-orange-500/20 dark:border-orange-500/30 shadow-sm">
+              <Zap className="w-3 h-3 text-orange-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase text-orange-600 dark:text-orange-400 tracking-wider">Top Consumer</span>
+            </div>
+          </div>
+
+          {/* Dial & Appliance Info */}
+          <div className="flex flex-col items-center justify-center">
+            {/* SVG Circular Gauge */}
+            <div className="relative flex items-center justify-center w-20 h-20 mb-1.5">
+              <svg className="w-full h-full transform -rotate-90">
+                {/* Background Track */}
+                <circle
+                  cx="40"
+                  cy="40"
+                  r={radius}
+                  className={`${theme.track}`}
+                  strokeWidth={strokeWidth}
+                  fill="transparent"
+                />
+                {/* Colored Progress Circle */}
+                <motion.circle
+                  cx="40"
+                  cy="40"
+                  r={radius}
+                  stroke={theme.stroke}
+                  strokeWidth={strokeWidth}
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  initial={{ strokeDashoffset: circumference }}
+                  animate={{ strokeDashoffset }}
+                  transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+                  strokeLinecap="round"
+                />
+              </svg>
+              
+              {/* Centered Appliance Icon inside Dial */}
+              <div className="absolute w-12 h-12 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                <div className={`${theme.text} group-hover:scale-110 transition-transform duration-300`}>
+                  <AppIcon name={name} cls="w-5.5 h-5.5" />
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center space-y-0.5">
+              <h4 className="font-black text-slate-900 dark:text-white text-lg sm:text-xl tracking-tight leading-snug">{name}</h4>
+              <span className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-black border bg-slate-500/5 dark:bg-slate-500/10 text-slate-455 dark:text-slate-400 border-slate-500/10">
+                {roundedPct}% of total usage
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="flex flex-col items-center pt-3 border-t border-slate-100/50 dark:border-slate-800/35 space-y-1 w-full">
+          <p className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-wider">Potential Savings</p>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl sm:text-3.5xl font-black bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent leading-none font-display">
+              ₹{Math.round(savings).toLocaleString("en-IN")}
+            </span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555">/month</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── 3. Appliance Breakdown ────────────────────────────────────────────────────
+function ApplianceBreakdown({ items }: {
+  items: { name: string; pct: number; cost: number; colorIdx: number }[];
+}) {
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 transition-colors duration-300">
+      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-5">Appliance Usage Breakdown</h3>
+
+      {/* Appliance tiles */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3 mb-4">
+        {items.map((item, i) => {
+          const col = COLORS[item.colorIdx % COLORS.length];
+          return (
+            <motion.div
+              key={item.name}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.06 }}
+              whileHover={{ y: -3, boxShadow: "0 6px 16px -4px rgba(0,0,0,0.10)" }}
+              className={`${col.bg} ${col.border} border rounded-xl p-2 sm:p-3 flex flex-col items-center gap-1 cursor-default transition-all duration-200`}
+            >
+              <div className={col.icon}>
+                <AppIcon name={item.name} cls="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <span className="text-[9px] sm:text-[10px] font-semibold text-slate-550 dark:text-slate-400 text-center leading-tight line-clamp-2 mt-0.5">
+                {item.name}
+              </span>
+              <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200">{Math.round(item.pct)}%</span>
+              <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                ₹{Math.round(item.cost)}/mo
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Multicolor usage bar */}
+      <div className="flex rounded-full overflow-hidden h-2.5 gap-px">
+        {items.map((item) => (
+          <div
+            key={item.name}
+            className={`${COLORS[item.colorIdx % COLORS.length].bar} h-full transition-all duration-500`}
+            style={{ width: `${item.pct}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 4. Power Flow Panel ───────────────────────────────────────────────────────
+function PowerFlowPanel({ totalUnits }: { totalUnits: number }) {
+  const [gridPower, setGridPower] = useState(0.42);
+  const [solarPower, setSolarPower] = useState(0.35);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGridPower(prev => {
+        const drift = (Math.random() - 0.5) * 0.03;
+        return Math.round(Math.min(0.95, Math.max(0.15, prev + drift)) * 100) / 100;
+      });
+      setSolarPower(prev => {
+        const drift = (Math.random() - 0.5) * 0.04;
+        return Math.round(Math.min(1.80, Math.max(0.10, prev + drift)) * 100) / 100;
+      });
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
+  const totalDemand = Math.round((gridPower + solarPower) * 100) / 100;
+
+  return (
+    <div className="relative bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-950/60 dark:to-blue-950/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 hover:shadow-md transition-all duration-300 overflow-hidden">
+      {/* Decorative Blur Glows */}
+      <div className="absolute -left-10 -top-10 w-36 h-36 bg-blue-500/8 dark:bg-blue-600/6 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -right-10 -bottom-10 w-36 h-36 bg-indigo-500/8 dark:bg-indigo-600/6 rounded-full blur-2xl pointer-events-none" />
+      
+      {/* Blueprint Grid Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.015] pointer-events-none bg-[linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
+
+      <div className="relative z-10 flex flex-col gap-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative flex shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            </div>
+            <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Live Household Power Flow</h3>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Grid Active
+          </span>
+        </div>
+
+        {/* Nodes and Flow Layout */}
+        <div className="flex items-center justify-between gap-4 w-full">
+          {/* Left Column: Power Sources (Grid & Solar) */}
+          <div className="flex flex-col gap-6 shrink-0 z-10">
+            {/* Grid Node */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-600/15 border border-blue-500/25 dark:border-blue-500/35 flex items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-500 dark:text-blue-400">
+                  <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  <line x1="5" y1="6" x2="19" y2="6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <line x1="12" y1="10" x2="6" y2="6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+                  <line x1="12" y1="10" x2="18" y2="6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+                  <circle cx="5" cy="6" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
+                  <circle cx="19" cy="6" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
+                  <circle cx="3" cy="12" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
+                  <circle cx="21" cy="12" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Grid Import</p>
+                <p className="text-sm font-black text-blue-600 dark:text-blue-400 mt-0.5 tracking-tight font-display">{gridPower.toFixed(2)} kW</p>
+              </div>
+            </div>
+
+            {/* Solar Node */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-600/15 border border-amber-500/25 dark:border-amber-500/35 flex items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Glowing Sun rays & circle */}
+                  <circle cx="17" cy="7" r="3" className="fill-amber-400 dark:fill-amber-300 stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" />
+                  <line x1="17" y1="2" x2="17" y2="3" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="21" y1="3" x2="22" y2="2" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="22" y1="7" x2="21" y2="7" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="13" y1="11" x2="12" y2="12" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
+                  
+                  {/* Solar Panel grid */}
+                  <rect x="3" y="10" width="14" height="11" rx="1.5" transform="rotate(-10 3 10)" className="stroke-emerald-600 dark:stroke-emerald-400 fill-emerald-50/20 dark:fill-emerald-950/20" strokeWidth="1.6" />
+                  <line x1="4.5" y1="13.5" x2="17.5" y2="11.2" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
+                  <line x1="5.5" y1="18.5" x2="18.5" y2="16.2" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
+                  <line x1="11" y1="10.5" x2="13.2" y2="21.5" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Solar Output</p>
+                <p className="text-sm font-black text-emerald-600 dark:text-emerald-500 mt-0.5 tracking-tight font-display">{solarPower.toFixed(2)} kW</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Center Column: Animated Curved Flow Paths */}
+          <div className="flex-1 h-28 relative">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 100 80" preserveAspectRatio="none">
+              <defs>
+                {/* Glow filter */}
+                <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              
+              {/* Grid to Home Path */}
+              <path
+                d="M 0 20 C 50 20, 50 40, 100 40"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="1.8"
+                strokeOpacity="0.15"
+              />
+              <path
+                d="M 0 20 C 50 20, 50 40, 100 40"
+                fill="none"
+                stroke="#60a5fa"
+                strokeWidth="1.5"
+                strokeDasharray="4,6"
+                strokeOpacity="0.8"
+                style={{ animation: "flow-dash 1.2s linear infinite" }}
+              />
+
+              {/* Solar to Home Path */}
+              <path
+                d="M 0 60 C 50 60, 50 40, 100 40"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="1.8"
+                strokeOpacity="0.15"
+              />
+              <path
+                d="M 0 60 C 50 60, 50 40, 100 40"
+                fill="none"
+                stroke="#34d399"
+                strokeWidth="1.5"
+                strokeDasharray="4,6"
+                strokeOpacity="0.8"
+                style={{ animation: "flow-dash 1.2s linear infinite" }}
+              />
+
+              {/* Glowing animated particles along paths */}
+              <circle r="3.2" fill="#60a5fa" filter="url(#glow-pf)">
+                <animateMotion dur="2.4s" repeatCount="indefinite" path="M 0 20 C 50 20, 50 40, 100 40" />
+              </circle>
+              <circle r="3.2" fill="#60a5fa" filter="url(#glow-pf)">
+                <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M 0 20 C 50 20, 50 40, 100 40" />
+              </circle>
+
+              <circle r="3.2" fill="#10b981" filter="url(#glow-pf)">
+                <animateMotion dur="2.0s" repeatCount="indefinite" path="M 0 60 C 50 60, 50 40, 100 40" />
+              </circle>
+              <circle r="3.2" fill="#10b981" filter="url(#glow-pf)">
+                <animateMotion dur="2.0s" begin="1.0s" repeatCount="indefinite" path="M 0 60 C 50 60, 50 40, 100 40" />
+              </circle>
+            </svg>
+          </div>
+
+          {/* Right Column: Home Destination */}
+          <div className="flex items-center gap-3 shrink-0 z-10">
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Home Load</p>
+              <p className="text-base font-black text-slate-800 dark:text-white mt-0.5 tracking-tight font-display">{totalDemand.toFixed(2)} kW</p>
+              <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 leading-none">
+                Cum. {Math.round(totalUnits)} kWh
+              </span>
+            </div>
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-600/15 border border-indigo-500/25 dark:border-indigo-500/35 flex flex-col items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* House Body */}
+                <rect x="6" y="11" width="12" height="11" rx="1" className="stroke-indigo-500 dark:stroke-indigo-400 fill-indigo-50/40 dark:fill-indigo-950/30" strokeWidth="1.6" />
+                {/* Roof */}
+                <path d="M4 11L12 4L20 11" className="stroke-indigo-600 dark:stroke-indigo-400" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                {/* Door */}
+                <rect x="10" y="16" width="4" height="6" rx="0.5" className="stroke-indigo-500 dark:stroke-indigo-400 fill-indigo-100 dark:fill-indigo-900" strokeWidth="1" />
+                {/* Glowing Windows */}
+                <rect x="8" y="13" width="2.5" height="2.5" rx="0.5" className="fill-amber-300 dark:fill-amber-400 glowing-window" />
+                <rect x="13.5" y="13" width="2.5" height="2.5" rx="0.5" className="fill-amber-300 dark:fill-amber-400 glowing-window" />
+                {/* WiFi Waves */}
+                <path d="M9 3C10.5 1.8 13.5 1.8 15 3" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M10.5 5C11.3 4.2 12.7 4.2 13.5 5" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="12" cy="7" r="1" className="fill-emerald-500 dark:fill-emerald-400" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Inline styles for custom flowing path animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes flow-dash {
+          to {
+            stroke-dashoffset: -20;
+          }
+        }
+      `}} />
+    </div>
+  );
+}
+
+// ── 5. AI Recommendations ─────────────────────────────────────────────────────
+function AIRecommendationsPanel({
+  recs, totalSavings,
+}: {
+  recs: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string }[];
+  totalSavings: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.45, delay: 0.12 }}
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-all duration-300"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">EnergyAI Recommendations</h3>
+        </div>
+        <Sparkles className="w-4 h-4 text-blue-300 dark:text-blue-500/50" />
+      </div>
+
+      {/* Rec rows */}
+      <div className="flex-1 space-y-2.5">
+        {recs.map((rec, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.08 }}
+            whileHover={{ scale: 1.015, translateY: -1 }}
+            className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20 border border-slate-100/70 dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-850 hover:border-blue-100/60 dark:hover:border-blue-900/40 hover:shadow-sm transition-all duration-200 cursor-default group"
+          >
+            <div className={`w-9 h-9 rounded-xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0`}>
+              <div className={rec.color}>{rec.icon}</div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">{rec.title}</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-snug line-clamp-2">{rec.sub}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="text-sm font-black text-emerald-600 dark:text-emerald-450">₹{rec.saving.toLocaleString("en-IN")}</div>
+              <div className="text-[9px] text-slate-400 dark:text-slate-550 leading-none">/month</div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Total savings box */}
+      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30">
+        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-450 mb-1.5">Total Potential Savings</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-black text-slate-900 dark:text-white">₹{totalSavings.toLocaleString("en-IN")}</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">/month</span>
+          </div>
+          <span className="text-2xl">🌱</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── 6. Tip Strip ──────────────────────────────────────────────────────────────
+function TipStrip({ tip }: { tip: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.3 }}
+      className="flex items-center gap-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl px-4 sm:px-5 py-3 cursor-default hover:bg-blue-100/60 dark:hover:bg-blue-950/30 transition-colors group"
+    >
+      <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/35 flex items-center justify-center shrink-0">
+        <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+      </div>
+      <p className="flex-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
+        <span className="font-bold text-blue-700 dark:text-blue-400">Tip for today: </span>
+        {tip}
+      </p>
+      <ChevronRight className="w-4 h-4 text-blue-400 dark:text-blue-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+    </motion.div>
+  );
+}
+
+// ── Main Export ───────────────────────────────────────────────────────────────
+export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
+  userName,
+  savingsPotential,
+  totalUnits,
+  bill,
+  activeAppliances,
+  onRunAudit,
+  momTrend,
+  vsAvgTrend,
+  tariffState,
+  solarOffsetPercent,
+}) => {
+  // ── Compute per-appliance data ──────────────────────────────────────────────
+  const applianceData = useMemo(() => {
+    if (!activeAppliances.length) return [];
+    const totalKwh = activeAppliances.reduce((s, a) => s + kwhPerMonth(a), 0) || 1;
+    const ratePerUnit = (bill.netEnergyCharge || 1) / totalKwh;
+
+    const enriched = activeAppliances.map((a, i) => {
+      const kwh = kwhPerMonth(a);
+      return { name: a.name, kwh, cost: kwh * ratePerUnit, pct: (kwh / totalKwh) * 100, _orig: i };
+    });
+    enriched.sort((a, b) => b.cost - a.cost);
+
+    const top4 = enriched.slice(0, 4);
+    const rest = enriched.slice(4);
+    const result: { name: string; pct: number; cost: number; colorIdx: number }[] = top4.map((a, i) => ({
+      name: a.name, pct: a.pct, cost: a.cost, colorIdx: i,
+    }));
+
+    if (rest.length > 0) {
+      result.push({
+        name: "Others",
+        pct: rest.reduce((s, a) => s + a.pct, 0),
+        cost: rest.reduce((s, a) => s + a.cost, 0),
+        colorIdx: 4,
+      });
+    }
+    return result;
+  }, [activeAppliances, bill.netEnergyCharge]);
+
+  // Biggest consumer (first individual appliance, not Others)
+  const biggest = applianceData[0] ?? { name: "Air Conditioner", pct: 0, cost: 0 };
+  const biggestSavings = biggest.cost * 0.52;
+
+  // ── AI Recommendations ──────────────────────────────────────────────────────
+  const recs = useMemo(() => {
+    const has = (k: string) => activeAppliances.some(a => a.name.toLowerCase().includes(k));
+    const sp = savingsPotential;
+    const list: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string }[] = [];
+
+    if (has("air") || has(" ac") || has("conditioner"))
+      list.push({
+        icon: <Thermometer className="w-4 h-4" />,
+        title: "Set AC temperature to 24°C",
+        sub: "Increasing temperature by 6°C can save up to 36% cooling energy.",
+        saving: Math.round(sp * 0.36),
+        color: "text-blue-600 dark:text-blue-400",
+        bg: "bg-blue-50/60 dark:bg-blue-950/30",
+        border: "border-blue-100 dark:border-blue-900/40"
+      });
+    if (has("fan"))
+      list.push({
+        icon: <Wind className="w-4 h-4" />,
+        title: "Use BLDC fans instead of normal fans",
+        sub: "BLDC fans consume 50% less electricity compared to standard ones.",
+        saving: Math.round(sp * 0.18),
+        color: "text-emerald-600 dark:text-emerald-400",
+        bg: "bg-emerald-50/60 dark:bg-emerald-950/30",
+        border: "border-emerald-100 dark:border-emerald-900/40"
+      });
+    if (has("wash"))
+      list.push({
+        icon: <WashingMachine className="w-4 h-4" />,
+        title: "Run washing machine in eco mode",
+        sub: "Reduces water consumption and saves up to 20% electricity.",
+        saving: Math.round(sp * 0.08),
+        color: "text-purple-600 dark:text-purple-400",
+        bg: "bg-purple-50/60 dark:bg-purple-950/30",
+        border: "border-purple-100 dark:border-purple-900/40"
+      });
+    if (list.length < 3 && (has("refrig") || has("fridge")))
+      list.push({
+        icon: <Refrigerator className="w-4 h-4" />,
+        title: "Set refrigerator to optimal 4°C",
+        sub: "Maintains food quality while reducing energy use by up to 12%.",
+        saving: Math.round(sp * 0.08),
+        color: "text-cyan-600 dark:text-cyan-400",
+        bg: "bg-cyan-50/60 dark:bg-cyan-950/30",
+        border: "border-cyan-100 dark:border-cyan-900/40"
+      });
+    if (list.length < 3 && (has("light") || has("bulb") || has("led")))
+      list.push({
+        icon: <Lightbulb className="w-4 h-4" />,
+        title: "Switch to LED lighting",
+        sub: "LEDs use 75% less energy and last significantly longer.",
+        saving: Math.round(sp * 0.10),
+        color: "text-amber-600 dark:text-amber-400",
+        bg: "bg-amber-50/60 dark:bg-amber-950/30",
+        border: "border-amber-100 dark:border-amber-900/40"
+      });
+    while (list.length < 3)
+      list.push({
+        icon: <Zap className="w-4 h-4" />,
+        title: "Avoid standby phantom loads",
+        sub: "Unplugging standby electronics saves up to 10% phantom draw.",
+        saving: Math.round(sp * 0.06),
+        color: "text-orange-600 dark:text-orange-400",
+        bg: "bg-orange-50/60 dark:bg-orange-950/30",
+        border: "border-orange-100 dark:border-orange-900/40"
+      });
+
+    return list.slice(0, 3);
+  }, [activeAppliances, savingsPotential]);
+
+  // ── Tip of the day ──────────────────────────────────────────────────────────
+  const tips = [
+    "Unplug devices when not in use. It can save up to ₹30/month.",
+    "Use natural light during the day to reduce lighting costs.",
+    "Clean your AC filter monthly to maintain peak efficiency.",
+    "Set your geyser on a timer to avoid unnecessary heating.",
+    "Enable power saver mode on electronics when not actively used.",
+  ];
+  const tip = tips[new Date().getDate() % tips.length];
+
+  // ── Solar system calculation ───────────────────────────────────────────────
+  const kwNeededByUsage = totalUnits / 120;
+  const recommendedKw = Math.max(1, Math.round(Math.min(kwNeededByUsage, 3) * 2) / 2);
+
+  // ── Carbon Savings Widget data calculation ─────────────────────────────────
+  const estimatedSavedCo2 = Math.round((totalUnits * 0.15) * 0.82 * 10) / 10;
+  const estimatedSavedTrees = Math.round((estimatedSavedCo2 / 1.83) * 10) / 10;
+  const carbonSavingsData = { savedCo2: estimatedSavedCo2, savedTrees: estimatedSavedTrees };
+
+  return (
+    <div className="w-full py-0 space-y-4">
+      {/* 3-Column Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6 items-start relative w-full">
+        
+        {/* Left Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <LiveGridStatusWidget />
+        </aside>
+
+        {/* Center Main Content Column */}
+        <main className="col-span-1 2xl:col-span-8 space-y-5 w-full">
+          {/* Row 1: Hero + Biggest Consumer */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-stretch">
+            <div className="sm:col-span-2">
+              <HeroCard
+                userName={userName}
+                savingsPotential={savingsPotential}
+                onRunAudit={onRunAudit}
+                momTrend={momTrend}
+                vsAvgTrend={vsAvgTrend}
+              />
+            </div>
+            <div className="sm:col-span-1">
+              <BiggestConsumerCard
+                name={biggest.name}
+                pct={biggest.pct}
+                savings={biggestSavings}
+              />
+            </div>
+          </div>
+
+          {/* Row 2: KPI cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print">
+            <KpiCard
+              title="Monthly Consumption"
+              value={totalUnits}
+              subtext="Based on active audit configuration"
+              icon={<Zap className="w-5 h-5 text-primary-blue dark:text-blue-400" />}
+              borderColorClass="border-l-primary-blue"
+            />
+            <KpiCard
+              title="Estimated Bill"
+              value={bill.netEnergyCharge}
+              subtext={`Calculated using ${(tariffState || "AP").toUpperCase()} rates`}
+              icon={<IndianRupee className="w-5 h-5 text-warning-orange" />}
+              borderColorClass="border-l-warning-orange"
+              isCurrency={true}
+            />
+            <KpiCard
+              title="Potential Savings"
+              value={savingsPotential}
+              subtext="Apply smart appliance settings"
+              icon={<Sparkles className="w-5 h-5 text-primary-green animate-pulse" />}
+              borderColorClass="border-l-primary-green"
+              isCurrency={true}
+            />
+            <KpiCard
+              title="Solar Offset"
+              value={solarOffsetPercent || 0}
+              subtext={`With recommended ${recommendedKw} kW system`}
+              icon={<Sun className="w-5 h-5 text-amber-500" />}
+              borderColorClass="border-l-amber-500"
+              isPercent={true}
+            />
+          </div>
+
+          {/* Row 3: Appliance breakdown + AI Recommendations */}
+          {applianceData.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Left col: Appliance + Power Flow */}
+              <div className="lg:col-span-2 space-y-5">
+                <ApplianceBreakdown items={applianceData} />
+                <PowerFlowPanel totalUnits={totalUnits} />
+              </div>
+              {/* Right col: AI Recommendations */}
+              <div className="lg:col-span-1">
+                <AIRecommendationsPanel recs={recs} totalSavings={savingsPotential} />
+              </div>
+            </div>
+          )}
+
+          {/* Row 4: Tip strip */}
+          <TipStrip tip={tip} />
+        </main>
+
+        {/* Right Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <CarbonSavingsWidget analysisResult={carbonSavingsData} />
+        </aside>
+
+      </div>
+    </div>
+  );
+};

@@ -47,10 +47,10 @@ const App: React.FC = () => {
     <Router>
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
-          <ThreeBackground className="fixed inset-0 z-0 pointer-events-none" />
+          <ThreeBackground className="fixed inset-0 pointer-events-none" />
           <Navbar />
           
-          <main className="flex-1 flex flex-col relative z-10">
+          <main className="flex-1 flex flex-col relative">
             <React.Suspense fallback={<LoadingFallback />}>
               <Routes>
                 {/* Public Routes */}
