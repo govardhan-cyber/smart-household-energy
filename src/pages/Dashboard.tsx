@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 import { reportsService } from "../utils/reportsService";
 import type { EnergyReport } from "../utils/reportsService";
 import { calculateBill, defaultAppliances, getSlabsForState, getApplianceDecayRate } from "../utils/tariffCalculator";
@@ -996,8 +997,19 @@ export const Dashboard: React.FC = () => {
   const heroTrends = [momTrend, vsAvgTrend];
 
   return (
-    <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
-      {/* Tab Selector */}
+    <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8">
+      
+      {/* 3-Column Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+        
+        {/* Left Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <LiveGridStatusWidget />
+        </aside>
+
+        {/* Center Main Content Column */}
+        <main className="col-span-1 2xl:col-span-8 space-y-8 w-full">
+          {/* Tab Selector */}
       <div className="flex justify-center no-print relative z-10">
         <div className="flex backdrop-blur-md bg-slate-200/50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/30 dark:border-slate-800/50 shadow-inner relative">
           <motion.button
@@ -1710,6 +1722,14 @@ export const Dashboard: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        </main>
+        
+        {/* Right Sidebar Column - Sticky */}
+        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
+          <CarbonSavingsWidget analysisResult={analysisResult} />
+        </aside>
+
+      </div>
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
@@ -1717,7 +1737,7 @@ export const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border shadow-xl text-xs font-bold ${
+            className={`fixed bottom-5 right-5 z-[100] flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border shadow-xl text-xs font-bold ${
               toast.type === "success"
                 ? "bg-green-50 dark:bg-green-950/80 border-green-250 dark:border-green-900 text-green-600 dark:text-green-450"
                 : toast.type === "error"
