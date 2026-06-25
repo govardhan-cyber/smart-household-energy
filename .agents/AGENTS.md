@@ -10,3 +10,13 @@
     - Sticky Dashboard sidebars and premium dark mode support.
   - **Recovery Instruction**:
     - If the user says "recover version 7", run `git checkout version-7`.
+
+- **Version 8**: Points to git tag `version-8` (Commit `d2ea8e1`).
+  - **Features**:
+    - High-fidelity print overrides for PDF reports (dashboards, history logs, and bill analysis).
+    - Flex layout flattening during printing to prevent container height collapses and empty page rendering.
+    - Automatic exclusion of the global ThreeBackground canvas and animated SVGs during print, resolving preview load lag and background overlay issues.
+    - Successful deployment to Firebase Hosting on the Spark plan by isolating hosting resource uploads.
+  - **Recovery Instruction**:
+    - If the user says "recover version 8", run `git checkout version-8`.
+
