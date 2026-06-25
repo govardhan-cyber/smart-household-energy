@@ -173,7 +173,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="space-y-8 text-left max-w-5xl mx-auto"
+      className="space-y-8 text-left w-full mx-auto"
     >
       {/* Top Banner Card: Interactive Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-650 to-indigo-700 dark:from-primary-green dark:via-emerald-650 dark:to-teal-800 rounded-3xl p-6 sm:p-8 shadow-lg shadow-primary-blue/10 dark:shadow-none text-white flex flex-col md:flex-row md:items-center justify-between gap-6 group">

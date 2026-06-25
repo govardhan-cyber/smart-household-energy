@@ -269,7 +269,7 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      className="relative bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[320px] group hover:shadow-md dark:hover:shadow-blue-955/20 transition-all duration-300 overflow-hidden"
+      className="relative card-client bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[320px] group hover:shadow-md dark:hover:shadow-blue-955/20 transition-all duration-300 overflow-hidden"
     >
       {/* Decorative Glow Blob */}
       <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 ${theme.glow} rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700`} />
@@ -368,8 +368,8 @@ function ApplianceBreakdown({ items }: {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.06 }}
-              whileHover={{ y: -3, boxShadow: "0 6px 16px -4px rgba(0,0,0,0.10)" }}
-              className={`${col.bg} ${col.border} border rounded-xl p-2 sm:p-3 flex flex-col items-center gap-1 cursor-default transition-all duration-200`}
+              whileHover={{ boxShadow: "0 8px 24px -4px rgba(0,0,0,0.12)" }}
+              className={`card-client ${col.bg} ${col.border} border rounded-xl p-2 sm:p-3 flex flex-col items-center gap-1 cursor-default transition-all duration-200`}
             >
               <div className={col.icon}>
                 <AppIcon name={item.name} cls="w-5 h-5 sm:w-6 sm:h-6" />

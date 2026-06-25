@@ -835,8 +835,28 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       animate="visible"
       className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen print:p-0 print:bg-white print:text-black"
     >
+      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left print-background-content">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-blue-900 flex items-center gap-2">
+              <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
+              SMART HOUSEHOLD ENERGY PORTAL
+            </h1>
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              Electricity Bill OCR Extraction & Slab Tariff Analysis Report
+            </p>
+          </div>
+          <div className="text-right text-xs text-slate-550 font-mono">
+            <div>Report Generated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <div>Account: {user?.email || "Govardhan"}</div>
+            <div>Security Status: Verified & Audited</div>
+          </div>
+        </div>
+      </div>
+
       {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full print-background-content">
         
         {/* Left Sidebar Column - Sticky */}
         <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
@@ -1161,7 +1181,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print mb-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6 print:grid-cols-2 print:gap-4 print-background-content"
         >
           
           {/* Card 1: Extracted Consumption */}
@@ -1606,7 +1626,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Recommendations savings cards (Card 7) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 print:hidden relative overflow-hidden group"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 relative overflow-hidden group print:border-slate-300 print:shadow-none"
             >
               <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full pointer-events-none bg-amber-400 dark:bg-indigo-500 group-hover:scale-150 transition-transform duration-500" />
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 relative z-10">
@@ -1614,7 +1634,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                 Personalized Energy Saving Recommendations
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 print:grid-cols-3 print:gap-3">
                 {calcs?.recommendations.map((rec, i) => (
                   <motion.div 
                     key={i} 
@@ -1777,7 +1797,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       {/* ─── BILL DETAILS MODAL DIALOG ────────────────────────────────────────── */}
     <AnimatePresence>
       {selectedBillForModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 print-modal-parent">
           {/* Backdrop */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -1794,6 +1814,25 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl border border-slate-200 dark:border-slate-850 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col z-10 text-left"
           >
+            {/* ─── PRINT ONLY MODAL HEADER ────────────────────────────────────────── */}
+            <div className="hidden print:flex flex-col w-full border-b border-slate-200 pb-3 mb-4 text-left p-6 bg-white dark:bg-slate-900 z-10">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h1 className="text-xl font-black tracking-tight text-blue-900 flex items-center gap-2">
+                    <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
+                    SMART HOUSEHOLD ENERGY PORTAL
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-1 font-medium">
+                    Electricity Bill OCR Extraction & Slab Tariff Analysis Report
+                  </p>
+                </div>
+                <div className="text-right text-xs text-slate-500 font-mono">
+                  <div>Report Generated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                  <div>Account: {user?.email || "Govardhan"}</div>
+                  <div>Security Status: Verified & Audited</div>
+                </div>
+              </div>
+            </div>
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
               <div>

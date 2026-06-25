@@ -3,7 +3,7 @@ import {
   Wind, Flame, Tv, Fan, Laptop, Lightbulb, Zap, Plus, Minus,
   Refrigerator, WashingMachine, Microwave, CookingPot, Coffee, Blender,
   Monitor, Router, Gamepad2, Printer, Filter, Thermometer, Droplet, GlassWater,
-  ChevronDown, ChevronUp, SlidersHorizontal
+  ChevronDown, SlidersHorizontal, AlertTriangle
 } from "lucide-react";
 import type { ApplianceItem } from "../../utils/tariffCalculator";
 import { getApplianceDecayRate } from "../../utils/tariffCalculator";
@@ -40,7 +40,7 @@ const getIconComponent = (iconName: string) => {
 const getApplianceColorClasses = (appId: string) => {
   switch (appId) {
     case "ac":
-      return "bg-gradient-to-br from-blue-500/10 to-sky-500/10 text-blue-600 dark:text-blue-400 border-blue-100/30 dark:border-blue-900/20";
+      return "bg-gradient-to-br from-blue-500/10 to-sky-500/10 text-blue-600 dark:text-blue-400 border-blue-150/30 dark:border-blue-900/20";
     case "fridge":
       return "bg-gradient-to-br from-cyan-500/10 to-teal-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-100/30 dark:border-cyan-900/20";
     case "fan":
@@ -144,14 +144,14 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
       {/* Title */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white text-left">Configure appliances usage</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 text-left mt-1">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white text-left font-display">Configure appliances usage</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-left mt-1 font-medium">
             Adjust how many units you own and how many hours they run daily.
           </p>
         </div>
         <button 
           onClick={onBack}
-          className="text-xs font-bold text-primary-blue hover:text-primary-blue/80 dark:text-primary-green hover:underline"
+          className="text-xs font-extrabold text-primary-blue hover:text-primary-blue/80 dark:text-primary-green hover:underline cursor-pointer transition-colors"
         >
           Modify Selection
         </button>
@@ -170,20 +170,20 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
         }}
         initial="hidden"
         animate="show"
-        className="space-y-4 max-h-[390px] overflow-y-auto pr-2 py-2 text-left"
+        className="space-y-4 max-h-[410px] overflow-y-auto pr-2 py-2 text-left"
       >
         {activeAppliances.length === 0 ? (
-          <div className="py-12 px-4 text-center space-y-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50">
+          <div className="py-12 px-4 text-center space-y-4 border border-dashed border-slate-200 dark:border-slate-850 rounded-[24px] bg-white/60 dark:bg-slate-900/30 backdrop-blur-md">
             <Zap className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto animate-pulse" />
             <div className="space-y-1">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">No appliances added yet</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white font-display">No appliances added yet</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
                 Please select the appliances in your home from Step 1 to configure their usage profiles.
               </p>
             </div>
             <button
               onClick={onBack}
-              className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               Add Appliances
             </button>
@@ -196,26 +196,26 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                 key={app.id} 
                 variants={{
                   hidden: { opacity: 0, y: 15 },
-                  show: { opacity: 1, y: 0 }
+                  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } }
                 }}
-                className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700/80 hover:-translate-y-0.5 transition-all duration-200 [backface-visibility:hidden] [transform-style:preserve-3d] space-y-4"
+                className="p-5 rounded-[24px] border border-slate-200/50 dark:border-slate-800/40 bg-white/60 dark:bg-slate-900/30 backdrop-blur-md shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700/80 transition-all duration-300 relative overflow-hidden space-y-4"
               >
                 {/* Appliance Info and Quantity control */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl border ${getApplianceColorClasses(app.id)} shadow-sm`}>
+                    <div className={`p-2.5 rounded-xl border ${getApplianceColorClasses(app.id)} shadow-sm transition-transform duration-300 hover:scale-[1.05]`}>
                       {getIconComponent(app.icon)}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{app.name}</h4>
-                      <div className="flex items-center gap-1.5 mt-1">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white font-display">{app.name}</h4>
+                      <div className="flex items-center gap-1.5 mt-1 select-none">
                         <input
                           type="number"
                           min="1"
                           max="10000"
                           value={app.watts}
                           onChange={(e) => updateWatts(app.id, Math.max(1, parseInt(e.target.value) || 0))}
-                          className="w-16 px-2 py-0.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-250 dark:border-slate-750 rounded-lg text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-blue/30 focus:border-primary-blue/50 dark:focus:ring-primary-green/30 dark:focus:border-primary-green/50 text-center transition-all"
+                          className="w-20 px-2.5 py-1 text-xs font-bold bg-slate-50/70 dark:bg-slate-850 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-blue/30 dark:focus:ring-primary-green/30 text-center transition-all shadow-inner font-mono"
                         />
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-450 dark:text-slate-550">Watts</span>
                       </div>
@@ -223,56 +223,63 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                   </div>
 
                   {/* Quantity Stepper */}
-                  <div className="flex items-center space-y-0.5 flex-col items-end">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550">How many units?</span>
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl p-1 mt-1 shadow-sm">
-                      <button
+                  <div className="flex items-center space-y-0.5 flex-col items-end select-none">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">How many units?</span>
+                    <div className="flex items-center bg-slate-50/80 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-1 mt-1 shadow-inner">
+                      <motion.button
                         onClick={() => updateQuantity(app.id, -1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-white dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer shadow-sm border border-transparent hover:border-slate-200/50 dark:hover:border-slate-700/50 bg-transparent"
                       >
                         <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="w-8 text-center text-sm font-bold text-slate-800 dark:text-white">
+                      </motion.button>
+                      <span className="w-8 text-center text-sm font-extrabold text-slate-850 dark:text-white font-display">
                         {app.quantity}
                       </span>
-                      <button
+                      <motion.button
                         onClick={() => updateQuantity(app.id, 1)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-white dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer shadow-sm border border-transparent hover:border-slate-200/50 dark:hover:border-slate-700/50 bg-transparent"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
                 </div>
 
                 {/* Presets Row */}
                 {getPresetsForAppliance(app.id) && (
-                  <div className="flex flex-wrap items-center gap-1.5 bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-xl border border-slate-150/50 dark:border-slate-800/40">
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">Presets:</span>
-                    {getPresetsForAppliance(app.id)!.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => updateWatts(app.id, preset.value)}
-                        className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
-                          app.watts === preset.value
-                            ? "border-primary-blue bg-blue-50/50 text-primary-blue dark:border-primary-green dark:bg-green-950/20 dark:text-primary-green"
-                            : "border-slate-200 bg-white hover:bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-850 dark:text-slate-400"
-                        }`}
-                      >
-                        {preset.label} ({preset.value}W)
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap items-center gap-1.5 bg-slate-50/30 dark:bg-slate-950/10 p-2 rounded-[14px] border border-slate-200/40 dark:border-slate-800/20 relative z-10 select-none">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-450 dark:text-slate-500 mr-1">Presets:</span>
+                    {getPresetsForAppliance(app.id)!.map((preset, idx) => {
+                      const isActive = app.watts === preset.value;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => updateWatts(app.id, preset.value)}
+                          className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-all duration-200 cursor-pointer ${
+                            isActive
+                              ? "border-primary-blue bg-blue-50/70 text-primary-blue dark:border-primary-green dark:bg-green-950/40 dark:text-primary-green shadow-sm"
+                              : "border-slate-200/60 bg-white dark:border-slate-800/80 dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-450 shadow-sm"
+                          }`}
+                        >
+                          {preset.label} ({preset.value}W)
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
 
                 {/* Single Unit Configurations */}
                 {app.quantity <= 1 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 relative z-10">
                     {/* Usage Slider */}
                     <div className="space-y-2">
-                      <div className="flex justify-between text-xs font-bold text-slate-550 dark:text-slate-400">
+                      <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
                         <span>Daily usage duration</span>
-                        <span className="text-primary-blue dark:text-primary-green font-bold">
+                        <span className="text-primary-blue dark:text-primary-green font-extrabold">
                           {app.hours} hrs/day
                         </span>
                       </div>
@@ -286,25 +293,25 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                         className="premium-slider w-full cursor-pointer"
                         style={{
                           background: activeTheme === "dark"
-                            ? `linear-gradient(to right, #10b981 0%, #10b981 ${(app.hours / 24) * 100}%, #1e293b ${(app.hours / 24) * 100}%, #1e293b 100%)`
-                            : `linear-gradient(to right, #2563eb 0%, #2563eb ${(app.hours / 24) * 100}%, #e2e8f0 ${(app.hours / 24) * 100}%, #e2e8f0 100%)`
+                            ? `linear-gradient(to right, #10b981 0%, #22d3ee ${(app.hours / 24) * 100}%, #1e293b ${(app.hours / 24) * 100}%, #1e293b 100%)`
+                            : `linear-gradient(to right, #2563eb 0%, #06b6d4 ${(app.hours / 24) * 100}%, #e2e8f0 ${(app.hours / 24) * 100}%, #e2e8f0 100%)`
                         }}
                       />
                     </div>
 
                     {/* Age Slider (AC, Fridge, Fan only) */}
                     {["ac", "fridge", "fan"].includes(app.id) && (
-                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
+                      <div className="space-y-2 pt-2 border-t border-slate-150 dark:border-slate-850">
                         <div className="flex justify-between text-xs font-bold text-slate-550 dark:text-slate-400">
                           <span className="flex items-center gap-1">
                             Appliance Age
                             {app.age && app.age >= 5 ? (
                               <span className="text-[9px] text-amber-500 font-extrabold flex items-center gap-0.5 animate-pulse">
-                                ⚠️ ({Math.round(app.age * getApplianceDecayRate(app.id) * 100)}% Decay)
+                                <AlertTriangle className="w-3 h-3 text-amber-500" /> ({Math.round(app.age * getApplianceDecayRate(app.id) * 100)}% Decay)
                               </span>
                             ) : null}
                           </span>
-                          <span className="text-primary-blue dark:text-primary-green font-bold">
+                          <span className="text-primary-blue dark:text-primary-green font-extrabold">
                             {app.age || 0} years old
                           </span>
                         </div>
@@ -318,8 +325,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                           className="premium-slider w-full cursor-pointer"
                           style={{
                             background: activeTheme === "dark"
-                              ? `linear-gradient(to right, #10b981 0%, #10b981 ${((app.age || 0) / 15) * 100}%, #1e293b ${((app.age || 0) / 15) * 100}%, #1e293b 100%)`
-                              : `linear-gradient(to right, #2563eb 0%, #2563eb ${((app.age || 0) / 15) * 100}%, #e2e8f0 ${((app.age || 0) / 15) * 100}%, #e2e8f0 100%)`
+                              ? `linear-gradient(to right, #10b981 0%, #22d3ee ${((app.age || 0) / 15) * 100}%, #1e293b ${((app.age || 0) / 15) * 100}%, #1e293b 100%)`
+                              : `linear-gradient(to right, #2563eb 0%, #06b6d4 ${((app.age || 0) / 15) * 100}%, #e2e8f0 ${((app.age || 0) / 15) * 100}%, #e2e8f0 100%)`
                           }}
                         />
                       </div>
@@ -327,20 +334,16 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                   </div>
                 ) : (
                   /* Multiple Units configuration - Collapsible details */
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-10">
                     <button
                       onClick={() => toggleUnits(app.id)}
-                      className="flex items-center justify-between w-full py-2.5 px-3.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-800 transition-colors"
+                      className="flex items-center justify-between w-full py-2.5 px-3.5 bg-slate-50/80 hover:bg-slate-100 dark:bg-slate-850/40 dark:hover:bg-slate-850 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-350 border border-slate-200/50 dark:border-slate-800 transition-all cursor-pointer shadow-sm"
                     >
                       <span className="flex items-center gap-1.5">
                         <SlidersHorizontal className="w-3.5 h-3.5 text-primary-blue dark:text-primary-green" />
                         Configure {app.quantity} units individually
                       </span>
-                      {isUnitsExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
-                      )}
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-355 ${isUnitsExpanded ? "rotate-180" : ""}`} />
                     </button>
 
                     <AnimatePresence initial={false}>
@@ -352,10 +355,10 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                           transition={{ duration: 0.25, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="p-3.5 mt-2 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150 dark:border-slate-800 rounded-xl space-y-4">
+                          <div className="p-4 mt-2.5 bg-slate-50/40 dark:bg-slate-950/20 border border-slate-200/40 dark:border-slate-800/30 rounded-2xl space-y-4 shadow-inner relative z-10">
                             {/* Unit Hours */}
                             <div className="space-y-3">
-                              <div className="flex justify-between items-center text-xs font-bold text-slate-550 dark:text-slate-400 border-b border-slate-150 dark:border-slate-850 pb-2">
+                              <div className="flex justify-between items-center text-xs font-bold text-slate-550 dark:text-slate-400 border-b border-slate-200/40 dark:border-slate-800/20 pb-2">
                                 <span>Unit Durations</span>
                                 <span className="text-primary-blue dark:text-primary-green text-[10px]">
                                   Avg: {app.hours} hrs/day
@@ -367,7 +370,7 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                                   const pct = (currentHours / 24) * 100;
                                   return (
                                     <div key={idx} className="space-y-1">
-                                      <div className="flex justify-between text-[11px] font-bold text-slate-550 dark:text-slate-450">
+                                      <div className="flex justify-between text-[11px] font-bold text-slate-500 dark:text-slate-455">
                                         <span>Unit #{idx + 1} Usage</span>
                                         <span className="text-primary-blue dark:text-primary-green font-semibold">
                                           {currentHours} hrs/day
@@ -383,8 +386,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                                         className="premium-slider w-full cursor-pointer"
                                         style={{
                                           background: activeTheme === "dark"
-                                            ? `linear-gradient(to right, #10b981 0%, #10b981 ${pct}%, #1e293b ${pct}%, #1e293b 100%)`
-                                            : `linear-gradient(to right, #2563eb 0%, #2563eb ${pct}%, #e2e8f0 ${pct}%, #e2e8f0 100%)`
+                                            ? `linear-gradient(to right, #10b981 0%, #22d3ee ${pct}%, #1e293b ${pct}%, #1e293b 100%)`
+                                            : `linear-gradient(to right, #2563eb 0%, #06b6d4 ${pct}%, #e2e8f0 ${pct}%, #e2e8f0 100%)`
                                         }}
                                       />
                                     </div>
@@ -395,8 +398,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
 
                             {/* Unit Ages (AC, Fridge, Fan only) */}
                             {["ac", "fridge", "fan"].includes(app.id) && (
-                              <div className="space-y-3 pt-3 border-t border-slate-150 dark:border-slate-850">
-                                <div className="flex justify-between items-center text-xs font-bold text-slate-550 dark:text-slate-400 border-b border-slate-150 dark:border-slate-850 pb-2">
+                              <div className="space-y-3 pt-3 border-t border-slate-200/40 dark:border-slate-850">
+                                <div className="flex justify-between items-center text-xs font-bold text-slate-550 dark:text-slate-400 border-b border-slate-200/40 dark:border-slate-800/20 pb-2">
                                   <span>Unit Ages</span>
                                   <span className="text-primary-blue dark:text-primary-green text-[10px]">
                                     Avg: {app.age || 0} yrs
@@ -414,7 +417,7 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                                             Unit #{idx + 1} Age
                                             {currentAge >= 5 ? (
                                               <span className="text-[9px] text-amber-500 font-extrabold flex items-center gap-0.5 animate-pulse">
-                                                ⚠️ ({decayPct}% Decay)
+                                                <AlertTriangle className="w-3 h-3" /> ({decayPct}% Decay)
                                               </span>
                                             ) : null}
                                           </span>
@@ -432,8 +435,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
                                           className="premium-slider w-full cursor-pointer"
                                           style={{
                                             background: activeTheme === "dark"
-                                              ? `linear-gradient(to right, #10b981 0%, #10b981 ${pct}%, #1e293b ${pct}%, #1e293b 100%)`
-                                              : `linear-gradient(to right, #2563eb 0%, #2563eb ${pct}%, #e2e8f0 ${pct}%, #e2e8f0 100%)`
+                                              ? `linear-gradient(to right, #10b981 0%, #22d3ee ${pct}%, #1e293b ${pct}%, #1e293b 100%)`
+                                              : `linear-gradient(to right, #2563eb 0%, #06b6d4 ${pct}%, #e2e8f0 ${pct}%, #e2e8f0 100%)`
                                           }}
                                         />
                                       </div>
@@ -458,9 +461,9 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
         <motion.button
           onClick={onBack}
-          whileHover={{ scale: 1.01 }}
+          whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="h-11 px-5 flex items-center justify-center text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 transition-all cursor-pointer"
+          className="h-11 px-5 flex items-center justify-center text-sm font-bold rounded-xl text-slate-600 dark:text-slate-400 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 hover:scale-[1.01] transition-all cursor-pointer shadow-sm hover:shadow"
         >
           Back
         </motion.button>

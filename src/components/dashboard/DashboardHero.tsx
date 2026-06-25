@@ -288,7 +288,7 @@ export const KpiCard: React.FC<{
 
   return (
     <ThreeDCard maxTilt={8} className="h-full">
-      <div className={`bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group ${hoverGlowClass} transition-all duration-300 w-full h-full [backface-visibility:hidden] [transform-style:preserve-3d]`}>
+      <div className={`card-client bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group ${hoverGlowClass} transition-all duration-300 w-full h-full [backface-visibility:hidden] [transform-style:preserve-3d]`}>
         {/* Top right corner glowing wash */}
         <div className={`absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-35 dark:opacity-25 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-150 group-hover:opacity-55 transition-all duration-500`} />
 

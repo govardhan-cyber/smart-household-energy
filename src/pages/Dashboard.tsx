@@ -857,7 +857,26 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 pt-4 pb-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-4">
-          {/* Tab Selector */}
+      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-blue-900 flex items-center gap-2">
+              <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
+              SMART HOUSEHOLD ENERGY PORTAL
+            </h1>
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              Energy Consumption, Conservation & Solar Planning Report
+            </p>
+          </div>
+          <div className="text-right text-xs text-slate-500 font-mono">
+            <div>Report Generated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <div>Account: {user?.email || "Govardhan"}</div>
+            <div>Security Status: Verified & Audited</div>
+          </div>
+        </div>
+      </div>
+      {/* Tab Selector */}
       <div className="flex justify-center no-print relative z-10">
         <div className="flex backdrop-blur-md bg-slate-200/50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/30 dark:border-slate-800/50 shadow-inner relative">
           <motion.button
@@ -1172,34 +1191,6 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Benchmarking Comparison Banner inside Step 3 */}
-                      <div className={`p-4 rounded-2xl border text-xs font-bold flex items-start gap-2.5 text-left ${
-                        isAboveBenchmark 
-                          ? "bg-red-50 border-red-150 text-alert-red dark:bg-red-950/20 dark:border-red-900/40" 
-                          : "bg-green-50 border-green-150 text-primary-green dark:bg-green-950/20 dark:border-green-900/40"
-                      }`}>
-                        {isAboveBenchmark ? (
-                          <>
-                            <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-alert-red" />
-                            <div>
-                              <span>Your bill is {benchmarkDiffPercent}% more than the average similar household (Average: ₹{benchmarkCharge.toFixed(0)} for {benchmarkUnits} kWh).</span>
-                              <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-normal mt-0.5">
-                                Compare against the typical 250 kWh slab category. Check recommendations next to optimize your category.
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
-                            <div>
-                              <span>Outstanding! Your bill is {benchmarkDiffPercent}% less than similar homes (Average: ₹{benchmarkCharge.toFixed(0)} for {benchmarkUnits} kWh).</span>
-                              <span className="block text-[10px] text-slate-555 dark:text-slate-400 font-normal mt-0.5">
-                                You are successfully conserving energy relative to the typical household.
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
 
                       {/* Slabs breakdown details */}
                       <div className="space-y-3">
@@ -1288,7 +1279,10 @@ export const Dashboard: React.FC = () => {
               </div>
 
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-6 text-left relative overflow-hidden">
+                <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6 sm:p-7 rounded-[32px] border border-white/20 dark:border-slate-800/40 shadow-2xl space-y-6 text-left relative overflow-hidden">
+                  {/* Decorative top-right color accent */}
+                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 opacity-20 blur-xl pointer-events-none rounded-full" />
+                  
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">Summary</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1297,15 +1291,15 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Total units card */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
                     {/* Glowing wash circle */}
                     <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/5 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
                     
                     <div className="flex items-center justify-between relative z-10">
-                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
                         Estimated Monthly Usage
                       </span>
-                      <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-primary-blue dark:text-primary-green">
+                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-primary-blue dark:text-primary-green shadow-inner">
                         <Zap className="w-4 h-4" />
                       </div>
                     </div>
@@ -1313,20 +1307,20 @@ export const Dashboard: React.FC = () => {
                       <span className="text-4xl font-display font-extrabold text-slate-900 dark:text-white leading-none">
                         <AnimatedNumber value={liveTotalUnits} />
                       </span>
-                      <span className="text-sm font-semibold text-slate-455 dark:text-slate-500">kWh (Units)</span>
+                      <span className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider ml-1">kWh (Units)</span>
                     </div>
                   </div>
 
                   {/* Estimated bill card */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
                     {/* Glowing wash circle */}
-                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-green/10 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
+                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/10 dark:bg-primary-green/10 blur-xl pointer-events-none rounded-full" />
                     
                     <div className="flex items-center justify-between relative z-10">
-                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                       <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
                         Estimated Monthly Bill
                       </span>
-                      <span className="text-xs text-primary-green font-bold bg-green-50/80 dark:bg-green-950/30 px-2.5 py-0.5 rounded-full border border-green-200 dark:border-green-900/50 backdrop-blur-sm">
+                      <span className="text-[10px] text-green-600 dark:text-primary-green font-extrabold uppercase tracking-wider bg-green-50/90 dark:bg-green-950/40 px-2.5 py-0.5 rounded-full border border-green-200/50 dark:border-green-900/40 backdrop-blur-md shadow-sm">
                         After Subsidy
                       </span>
                     </div>
@@ -1334,36 +1328,38 @@ export const Dashboard: React.FC = () => {
                       <span className="text-4xl font-display font-extrabold text-primary-blue dark:text-primary-green leading-none">
                         ₹<AnimatedNumber value={liveBill.netEnergyCharge} />
                       </span>
-                      <span className="text-sm font-semibold text-slate-455 dark:text-slate-500">{liveBill.stateName} Net</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-450 truncate max-w-[160px]" title={`${liveBill.stateName} Net`}>
+                        {liveBill.stateName} Net
+                      </span>
                     </div>
                   </div>
 
                   {/* Benchmarking Comparison Banner */}
-                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all ${
+                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all duration-300 ${
                     isAboveBenchmark 
-                      ? "bg-red-50/50 border-red-200 border-l-alert-red text-alert-red dark:bg-red-950/10 dark:border-red-900/30" 
-                      : "bg-green-50/50 border-green-200 border-l-primary-green text-primary-green dark:bg-green-950/10 dark:border-green-900/30"
+                      ? "bg-red-50/40 border-red-200/50 border-l-alert-red text-alert-red dark:bg-red-950/10 dark:border-red-900/30" 
+                      : "bg-green-50/40 border-green-200/50 border-l-primary-green text-primary-green dark:bg-green-950/10 dark:border-green-900/30"
                   }`}>
                     {isAboveBenchmark ? (
                       <>
-                        <div className="p-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-alert-red">
+                        <div className="p-1.5 rounded-xl bg-red-150/40 dark:bg-red-900/30 text-alert-red shadow-inner">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
                         </div>
                         <div className="space-y-0.5">
                           <span className="font-bold">You spend {benchmarkDiffPercent}% more than similar homes.</span>
-                          <span className="block text-[10px] text-slate-555 dark:text-slate-400 font-semibold mt-0.5">
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                             Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
                           </span>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="p-1 rounded-lg bg-green-100 dark:bg-green-900/30 text-primary-green">
+                        <div className="p-1.5 rounded-xl bg-green-150/40 dark:bg-green-900/30 text-primary-green shadow-inner">
                           <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
                         </div>
                         <div className="space-y-0.5">
                           <span className="font-bold">Great job! You spend {benchmarkDiffPercent}% less than similar homes.</span>
-                          <span className="block text-[10px] text-slate-555 dark:text-slate-400 font-semibold mt-0.5">
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
                             Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
                           </span>
                         </div>
@@ -1373,13 +1369,15 @@ export const Dashboard: React.FC = () => {
 
                   {/* Budget Progress Tracker */}
                   {user && (
-                    <div className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                    <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
                       {/* Glow circle */}
                       <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-blue-500/5 dark:bg-green-500/5 blur-xl pointer-events-none rounded-full" />
                       
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider relative z-10">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider relative z-10 font-display">
                         <span>Budget Tracking</span>
-                        <span className="text-slate-700 dark:text-slate-350">₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}</span>
+                        <span className="text-slate-700 dark:text-slate-300 font-sans">
+                          ₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}
+                        </span>
                       </div>
                       
                       {/* Progress Bar */}
@@ -1389,36 +1387,38 @@ export const Dashboard: React.FC = () => {
                         const isExceeded = liveBill.netEnergyCharge > budgetLimit;
                         return (
                           <div className="space-y-3.5 relative z-10">
-                            <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
-                              <div 
-                                className={`h-full rounded-full transition-all duration-500 ${
+                            <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden shadow-inner p-0.5">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${percent}%` }}
+                                transition={{ type: "spring", stiffness: 80, damping: 15 }}
+                                className={`h-full rounded-full ${
                                   isExceeded 
-                                    ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_8px_rgba(239,68,68,0.3)]" 
+                                    ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.4)]" 
                                     : percent > 80 
-                                      ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]" 
-                                      : "bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
+                                      ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" 
+                                      : "bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 shadow-[0_0_10px_rgba(37,99,235,0.25)]"
                                 }`}
-                                style={{ width: `${percent}%` }}
                               />
                             </div>
                             
                             {/* Budget warning alert card */}
                             {isExceeded && (
-                              <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-100 rounded-xl dark:bg-red-950/20 dark:border-red-900/50 text-alert-red dark:text-red-400 text-[10px] font-bold mt-1">
+                              <div className="flex items-start gap-2.5 p-3 bg-red-50/60 border border-red-100/50 rounded-xl dark:bg-red-950/20 dark:border-red-900/50 text-alert-red dark:text-red-400 text-[10px] font-bold mt-1 shadow-sm">
                                 <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse" />
-                                <span>Budget Exceeded! Reduce {appliances.some(a => a.id === "ac" && a.quantity > 0) ? "AC" : "heavy appliances"} or other device hours to meet target.</span>
+                                <span>Budget Exceeded! Reduce AC or other device hours to meet target.</span>
                               </div>
                             )}
                             {!isExceeded && percent > 80 && (
-                              <div className="flex items-start gap-2.5 p-3 bg-orange-50 border border-orange-100 rounded-xl dark:bg-orange-950/10 dark:border-orange-900/30 text-warning-orange text-[10px] font-bold mt-1">
+                              <div className="flex items-start gap-2.5 p-3 bg-orange-50/60 border border-orange-100/50 rounded-xl dark:bg-orange-950/10 dark:border-orange-900/30 text-warning-orange text-[10px] font-bold mt-1 shadow-sm">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <span>Approaching budget limit (over 80% used). Consider optimizing usage.</span>
                               </div>
                             )}
                             {!isExceeded && percent <= 80 && (
-                              <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-primary-green">
+                              <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-green-600 dark:text-primary-green uppercase tracking-wider">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-primary-green animate-ping" />
-                                <span>Safe Zone: Consuming within your budget target.</span>
+                                <span>Safe Zone: Within target budget</span>
                               </div>
                             )}
                           </div>

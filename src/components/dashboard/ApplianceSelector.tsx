@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Wind, Flame, Tv, Fan, Laptop, Lightbulb, Zap, ChevronRight, Check,
   Refrigerator, WashingMachine, Microwave, CookingPot, Coffee, Blender,
@@ -43,6 +43,15 @@ const CATEGORIES = [
   { id: "water", name: "Water Related" }
 ];
 
+const FILTER_CATEGORIES = [
+  { id: "all", name: "All Categories" },
+  { id: "essential", name: "Essential" },
+  { id: "kitchen", name: "Kitchen" },
+  { id: "electronics", name: "Electronics" },
+  { id: "comfort", name: "Comfort" },
+  { id: "water", name: "Water" }
+];
+
 const getCategoryIcon = (catId: string) => {
   switch (catId) {
     case "essential": return <ShieldCheck className="w-4 h-4 text-primary-blue dark:text-primary-green" />;
@@ -67,116 +76,170 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
   onNext,
   hasSelection
 }) => {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.04
+        staggerChildren: 0.03
       }
     }
   };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 120, damping: 15 } }
   };
+
+  const activeCategories = activeCategory === "all"
+    ? CATEGORIES
+    : CATEGORIES.filter(c => c.id === activeCategory);
 
   return (
     <div className="space-y-6">
-      {/* Title */}
+      {/* Title & Description */}
       <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white text-left">Select appliances in your home</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white text-left font-display">Select appliances in your home</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 text-left mt-1 font-medium">
           Click each card to toggle appliances on or off. You'll specify quantities on the next step.
         </p>
       </div>
 
-      {/* Staggered Grid List */}
+      {/* Glassmorphic Category Filter Tabs */}
+      <div className="flex items-center justify-start gap-1 p-1 bg-slate-100/40 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/40 dark:border-slate-800/40 rounded-2xl overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 relative z-20 select-none">
+        {FILTER_CATEGORIES.map(category => {
+          const isActive = activeCategory === category.id;
+          return (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={`relative px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer whitespace-nowrap z-10 ${
+                isActive 
+                  ? "text-primary-blue dark:text-primary-green" 
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-350"
+              }`}
+            >
+              {category.name}
+              {isActive && (
+                <motion.div
+                  layoutId="activeCategoryPill"
+                  className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-sm z-[-1] border border-slate-200/50 dark:border-slate-700/50"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Grid Container */}
       <motion.div 
+        layout
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="space-y-8 max-h-[420px] overflow-y-auto pr-2 py-2"
+        className="space-y-8 max-h-[440px] overflow-y-auto pr-2 py-2 scroll-smooth"
       >
-        {CATEGORIES.map(category => {
-          const categoryAppliances = appliances.filter(app => app.category === category.id);
-          if (categoryAppliances.length === 0) return null;
-          return (
-            <div key={category.id} className="space-y-4">
-              {/* Category Header */}
-              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-2 text-left">
-                {getCategoryIcon(category.id)}
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-550 dark:text-slate-450">
-                  {category.name}
-                </h4>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {categoryAppliances.map(app => {
-                  const isSelected = app.quantity > 0;
-                  return (
-                    <motion.button
-                      key={app.id}
-                      variants={cardVariants}
-                      onClick={() => toggleAppliance(app.id)}
-                      className={`group p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border hover:-translate-y-1 hover:shadow-md active:scale-[0.98] transition-all duration-200 [backface-visibility:hidden] [transform-style:preserve-3d] relative overflow-hidden cursor-pointer ${
-                        isSelected
-                          ? "border-primary-blue bg-gradient-to-br from-blue-50/40 to-blue-100/10 dark:border-primary-green dark:from-green-950/15 dark:to-green-950/5 shadow-[0_0_15px_-3px_rgba(37,99,235,0.15)] dark:shadow-[0_0_15px_-3px_rgba(16,185,129,0.15)]"
-                          : "border-slate-200 bg-gradient-to-br from-white to-slate-50/30 dark:border-slate-800 dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950/10 shadow-sm"
-                      }`}
-                    >
-                      {/* Active state ambient glow */}
-                      <AnimatePresence>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 0.22 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="absolute -right-6 -top-6 w-16 h-16 blur-xl bg-primary-blue dark:bg-primary-green pointer-events-none rounded-full"
-                          />
-                        )}
-                      </AnimatePresence>
+        <AnimatePresence mode="popLayout">
+          {activeCategories.map(category => {
+            const categoryAppliances = appliances.filter(app => app.category === category.id);
+            if (categoryAppliances.length === 0) return null;
+            return (
+              <motion.div 
+                key={category.id} 
+                layout 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4"
+              >
+                {/* Category Header */}
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-2 text-left">
+                  {getCategoryIcon(category.id)}
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-550 dark:text-slate-450">
+                    {category.name}
+                  </h4>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <AnimatePresence mode="popLayout">
+                    {categoryAppliances.map(app => {
+                      const isSelected = app.quantity > 0;
+                      return (
+                        <motion.button
+                          key={app.id}
+                          layout
+                          variants={cardVariants}
+                          whileHover="hover"
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => toggleAppliance(app.id)}
+                          className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
+                            isSelected
+                              ? "border-primary-blue bg-gradient-to-br from-blue-50/40 to-blue-100/10 dark:border-primary-green dark:from-green-950/15 dark:to-green-950/5 shadow-[0_4px_20px_-4px_rgba(37,99,235,0.15)] dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]"
+                              : "border-slate-200 bg-white/60 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/30 shadow-sm hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-md"
+                          }`}
+                        >
+                          {/* Active state ambient glow */}
+                          <AnimatePresence>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1.2, opacity: 0.28 }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                className="absolute -right-6 -top-6 w-16 h-16 blur-xl bg-primary-blue dark:bg-primary-green pointer-events-none rounded-full"
+                              />
+                            )}
+                          </AnimatePresence>
 
-                      {/* Active state check indicator */}
-                      <AnimatePresence>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary-blue dark:bg-primary-green text-white dark:text-slate-950 flex items-center justify-center shadow-sm z-20"
+                          {/* Active state check indicator */}
+                          <AnimatePresence>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ scale: 0, rotate: -25, opacity: 0 }}
+                                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                                exit={{ scale: 0, rotate: 25, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 450, damping: 20 }}
+                                className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary-blue dark:bg-primary-green text-white dark:text-slate-950 flex items-center justify-center shadow-sm z-20"
+                              >
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Icon with micro-bounce and rotate */}
+                          <motion.div 
+                            variants={{
+                              hover: { scale: 1.1, rotate: [0, -6, 6, -3, 3, 0], transition: { duration: 0.4 } }
+                            }}
+                            className={`p-2.5 rounded-xl border transition-all relative z-10 ${
+                              isSelected
+                                ? "bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 border-transparent shadow-md"
+                                : "bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-slate-200 dark:border-slate-800 group-hover:bg-slate-100 dark:group-hover:bg-slate-800"
+                            }`}
                           >
-                            <Check className="w-3 h-3 stroke-[3]" />
+                            {getIconComponent(app.icon)}
                           </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Icon */}
-                      <div className={`p-2.5 rounded-xl border transition-all relative z-10 ${
-                        isSelected
-                          ? "bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 border-transparent shadow-sm"
-                          : "bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-slate-200 dark:border-slate-800"
-                      }`}>
-                        {getIconComponent(app.icon)}
-                      </div>
-                      
-                      {/* Labels */}
-                      <div className="w-full relative z-10">
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                          {app.name}
-                        </h4>
-                        <span className="text-[10px] font-semibold text-slate-450 dark:text-slate-500 block truncate mt-0.5">
-                          {app.hint}
-                        </span>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+                          
+                          {/* Labels */}
+                          <div className="w-full relative z-10">
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                              {app.name}
+                            </h4>
+                            <span className="text-[10px] font-semibold text-slate-455 dark:text-slate-500 block truncate mt-0.5">
+                              {app.hint}
+                            </span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </motion.div>
 
       {/* Navigation Footer */}
@@ -194,4 +257,4 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
       </div>
     </div>
   );
-};
+}

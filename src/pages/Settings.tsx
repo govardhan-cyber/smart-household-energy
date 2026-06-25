@@ -18,20 +18,26 @@ const ToggleSwitch: React.FC<{
   description: string;
 }> = ({ checked, onChange, label, description }) => {
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between py-3.5 px-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/40 dark:border-slate-800/60 rounded-2xl hover:border-slate-350 dark:hover:border-slate-700/80 transition-all duration-300 group">
       <div className="space-y-0.5 pr-4 text-left">
-        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{label}</span>
-        <p className="text-[10px] text-slate-450 dark:text-slate-500 leading-normal">{description}</p>
+        <span className="text-xs font-extrabold text-slate-850 dark:text-slate-200 uppercase tracking-wide">{label}</span>
+        <p className="text-[10.5px] text-slate-500 dark:text-slate-455 leading-normal">{description}</p>
       </div>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-          checked ? "bg-primary-blue dark:bg-primary-green" : "bg-slate-200 dark:bg-slate-850"
-        }`}
+        className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 focus:outline-none bg-slate-205 dark:bg-slate-850 overflow-hidden"
       >
-        <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+        {/* Glowing background gradient when checked */}
+        <div 
+          className={`absolute inset-0 transition-opacity duration-305 bg-gradient-to-r from-blue-500 to-indigo-650 dark:from-emerald-500 dark:to-teal-500 ${
+            checked ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <motion.span
+          layout
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          className={`pointer-events-none relative z-10 inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 ${
             checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
@@ -72,11 +78,35 @@ export const Settings: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  const applyBudgetPreset = (bill: number, units: number) => {
+    setMonthlyBudgetBill(bill);
+    setMonthlyBudgetUnits(units);
+  };
+
+  const wattageContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04
+      }
+    }
+  };
+
+  const wattageItemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring" as const, stiffness: 350, damping: 25 }
+    }
+  };
+
   const inputBase = (field: string, hasLeftIcon = false, hasRightIcon = false) =>
-    `block w-full ${hasLeftIcon ? "pl-9" : "pl-4"} ${hasRightIcon ? "pr-12" : "pr-4"} py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all duration-200 outline-none border-2 bg-slate-50/50 dark:bg-slate-950/20 disabled:opacity-50 disabled:cursor-not-allowed ${
+    `block w-full ${hasLeftIcon ? "pl-9" : "pl-4"} ${hasRightIcon ? "pr-12" : "pr-4"} py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all duration-200 outline-none border-2 bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${
       focusedField === field
         ? "border-primary-blue dark:border-primary-green shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
-        : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+        : "border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
     }`;
 
   // Admin tariff editing states
@@ -341,7 +371,7 @@ export const Settings: React.FC = () => {
         </aside>
 
         {/* Center Main Content Column */}
-        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full max-w-4xl mx-auto">
+        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full mx-auto">
       {/* Premium Header Card */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-650 to-indigo-700 dark:from-primary-green dark:via-emerald-650 dark:to-teal-800 rounded-3xl p-6 sm:p-8 shadow-lg shadow-primary-blue/10 dark:shadow-none text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 group">
         <div className="absolute -right-24 -top-24 w-64 h-64 blur-3xl opacity-20 rounded-full bg-white pointer-events-none group-hover:scale-125 transition-transform duration-700" />
@@ -372,71 +402,141 @@ export const Settings: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
       <form onSubmit={handleSaveSettings} className="space-y-6">
         {/* Card 1: Theme Settings */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Appearance</h3>
           <p className="text-xs text-slate-450 dark:text-slate-500">Toggle light/dark visual display mode.</p>
-          
-          {/* Theme Preview Cards */}
+                    {/* Theme Preview Cards */}
           <div className="flex flex-col sm:flex-row items-stretch gap-4 pt-1">
             <button
               type="button"
               onClick={() => setTheme("light")}
-              className={`flex-1 p-5 rounded-2xl border-2 text-left transition-all duration-300 overflow-hidden group cursor-pointer relative ${
+              className={`flex-1 p-5 rounded-3xl border-2 text-left transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between ${
                 theme === "light"
                   ? "border-primary-blue bg-blue-50/15 dark:bg-primary-blue/10 shadow-[0_0_20px_-3px_rgba(37,99,235,0.12)]"
-                  : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
+                  : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
               }`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-xl transition-all ${theme === "light" ? "bg-blue-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-slate-500"}`}>
-                  <Sun className="w-5 h-5" />
+              <div className="absolute -right-8 -bottom-8 w-32 h-32 blur-2xl opacity-15 rounded-full bg-blue-500 pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+              
+              <div className="flex justify-between items-center mb-4 w-full relative z-10">
+                <div className={`p-2 rounded-xl transition-all ${theme === "light" ? "bg-blue-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-slate-500"}`}>
+                  <Sun className="w-4 h-4" />
                 </div>
                 {theme === "light" && (
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-blue text-white text-[10px] font-bold">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-blue text-white text-[10px] font-bold shadow-sm">
                     ✓
                   </span>
                 )}
               </div>
-              <span className="block text-xs font-extrabold text-slate-850 dark:text-white">Light Theme</span>
-              <span className="block text-[10px] text-slate-455 mt-1 leading-normal">Clean, high-contrast visual palette</span>
+              
+              {/* Mini Dashboard Graphic */}
+              <div className="w-full h-20 bg-slate-50 dark:bg-slate-955/40 rounded-xl border border-slate-200/50 dark:border-slate-850/50 p-2 mb-4 space-y-2 flex flex-col justify-between relative z-10 overflow-hidden shadow-inner">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-2 bg-slate-300 dark:bg-slate-800 rounded" />
+                  <div className="w-6 h-2 bg-slate-200 dark:bg-slate-850 rounded" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 h-10 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 rounded-lg p-1.5 flex flex-col justify-between">
+                    <div className="w-8 h-1.5 bg-blue-300 dark:bg-blue-900/60 rounded" />
+                    <div className="w-12 h-3 bg-blue-500 dark:bg-blue-600/80 rounded-sm" />
+                  </div>
+                  <div className="w-12 h-10 bg-slate-200/40 dark:bg-slate-800/40 rounded-lg p-1.5 flex flex-col justify-between">
+                    <div className="w-6 h-1.5 bg-slate-300 dark:bg-slate-700 rounded" />
+                    <div className="w-8 h-2.5 bg-slate-300 dark:bg-slate-700 rounded-sm" />
+                  </div>
+                </div>
+              </div>
+ 
+              <div className="relative z-10">
+                <span className="block text-xs font-black text-slate-855 dark:text-white uppercase tracking-wide">Light Theme</span>
+                <span className="block text-[10.5px] text-slate-500 dark:text-slate-455 mt-1 leading-normal">Clean, high-contrast crisp visualization workspace.</span>
+              </div>
             </button>
-
+ 
             <button
               type="button"
               onClick={() => setTheme("dark")}
-              className={`flex-1 p-5 rounded-2xl border-2 text-left transition-all duration-300 overflow-hidden group cursor-pointer relative ${
+              className={`flex-1 p-5 rounded-3xl border-2 text-left transition-all duration-300 group cursor-pointer relative overflow-hidden flex flex-col justify-between ${
                 theme === "dark"
                   ? "border-primary-green bg-green-50/5 dark:bg-primary-green/10 shadow-[0_0_20px_-3px_rgba(16,185,129,0.12)]"
-                  : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-sm"
+                  : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-sm"
               }`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-xl transition-all ${theme === "dark" ? "bg-primary-green text-slate-950" : "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-slate-500"}`}>
-                  <Moon className="w-5 h-5" />
+              <div className="absolute -right-8 -bottom-8 w-32 h-32 blur-2xl opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+              
+              <div className="flex justify-between items-center mb-4 w-full relative z-10">
+                <div className={`p-2 rounded-xl transition-all ${theme === "dark" ? "bg-primary-green text-slate-955" : "bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-slate-500"}`}>
+                  <Moon className="w-4 h-4" />
                 </div>
                 {theme === "dark" && (
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-green text-slate-950 text-[10px] font-bold">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary-green text-slate-955 text-[10px] font-bold shadow-sm">
                     ✓
                   </span>
                 )}
               </div>
-              <span className="block text-xs font-extrabold text-slate-850 dark:text-white">Dark Theme</span>
-              <span className="block text-[10px] text-slate-455 mt-1 leading-normal">Sleek, low-light mode for energy savers</span>
+              
+              {/* Mini Dashboard Graphic */}
+              <div className="w-full h-20 bg-slate-955 rounded-xl border border-slate-850 p-2 mb-4 space-y-2 flex flex-col justify-between relative z-10 overflow-hidden shadow-inner">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-2 bg-slate-800 rounded" />
+                  <div className="w-6 h-2 bg-slate-850 rounded" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 h-10 bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col justify-between">
+                    <div className="w-8 h-1.5 bg-emerald-950 rounded" />
+                    <div className="w-12 h-3 bg-emerald-500/80 rounded-sm" />
+                  </div>
+                  <div className="w-12 h-10 bg-slate-900/60 rounded-lg p-1.5 flex flex-col justify-between">
+                    <div className="w-6 h-1.5 bg-slate-800 rounded" />
+                    <div className="w-8 h-2.5 bg-slate-850 rounded-sm" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative z-10">
+                <span className="block text-xs font-black text-slate-855 dark:text-white uppercase tracking-wide">Dark Theme</span>
+                <span className="block text-[10.5px] text-slate-500 dark:text-slate-455 mt-1 leading-normal">Premium neon accents, low-eye-strain environment.</span>
+              </div>
             </button>
           </div>
         </div>
 
         {/* Card: Budget Targets */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Monthly Energy Budgets</h3>
           <p className="text-xs text-slate-455 dark:text-slate-500 flex items-start gap-1.5">
             <Info className="w-3.5 h-3.5 text-primary-blue dark:text-primary-green shrink-0 mt-0.5" />
             <span>Define your monthly spending and energy targets. Exceeding these will trigger active warning alerts on your dashboard.</span>
           </p>
           
+          {/* Preset Pills */}
+          <div className="flex items-center gap-2 pt-1 relative z-10 flex-wrap">
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mr-1">Presets:</span>
+            {[
+              { label: "Economy", bill: 1500, units: 200 },
+              { label: "Balanced", bill: 3000, units: 400 },
+              { label: "Comfort", bill: 6000, units: 800 }
+            ].map(p => {
+              const isMatch = Number(monthlyBudgetBill) === p.bill && Number(monthlyBudgetUnits) === p.units;
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => applyBudgetPreset(p.bill, p.units)}
+                  className={`px-5.5 py-2 rounded-full text-[10px] font-extrabold uppercase tracking-wider border transition-all duration-200 cursor-pointer ${
+                    isMatch
+                      ? "bg-gradient-to-r from-blue-600 to-blue-400 dark:from-emerald-500 dark:to-teal-500 text-white border-transparent shadow-[0_4px_12px_rgba(37,99,235,0.25)] dark:shadow-[0_4px_12px_rgba(16,185,129,0.25)]"
+                      : "bg-[#f0f4f8]/70 dark:bg-slate-950/40 border-[#e2ebf5]/60 dark:border-slate-800/60 text-slate-500 dark:text-slate-450 hover:bg-[#e9f0f8] dark:hover:bg-slate-900/60 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-350 dark:hover:border-slate-700"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-1">
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Target Monthly Bill</label>
@@ -489,9 +589,9 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Card: State Tariff Settings */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">State Tariff Settings</h3>
-          <p className="text-xs text-slate-450 dark:text-slate-500">Select the regional electricity board pricing structure to calculate your estimated monthly bill.</p>
+          <p className="text-xs text-slate-455 dark:text-slate-500">Select the regional electricity board pricing structure to calculate your estimated monthly bill.</p>
           <div className="space-y-4 pt-1">
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Tariff Scheme / Electricity Board</label>
@@ -500,10 +600,10 @@ export const Settings: React.FC = () => {
                 onChange={(e) => setTariffState(e.target.value)}
                 onFocus={() => setFocusedField("tariffState")}
                 onBlur={() => setFocusedField(null)}
-                className={`block w-full px-3.5 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-950/20 border-2 outline-none transition-all duration-200 cursor-pointer ${
+                className={`block w-full px-3.5 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm border-2 outline-none transition-all duration-200 cursor-pointer ${
                   focusedField === "tariffState"
                     ? "border-primary-blue dark:border-primary-green shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
-                    : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                    : "border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
                 }`}
               >
                 <optgroup label="Andhra Pradesh">
@@ -560,7 +660,7 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Card: Custom Appliance Wattages */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="text-left">
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Appliance Wattage Profile</h3>
@@ -604,38 +704,60 @@ export const Settings: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeWattageTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                variants={wattageContainerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
                 className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-left"
               >
-                {applianceGroups[activeWattageTab].map(app => (
-                  <div 
-                    key={app.id} 
-                    className="p-3 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-850 rounded-2xl hover:border-primary-blue/30 dark:hover:border-primary-green/30 hover:shadow-sm transition-all duration-300 group"
-                  >
-                    <label className="block text-[10px] font-extrabold text-slate-450 dark:text-slate-500 mb-1.5 group-hover:text-slate-700 dark:group-hover:text-slate-350 transition-colors">
-                      {app.name} (W)
-                    </label>
-                    <input
-                      type="number"
-                      value={customWattages[app.id] !== undefined ? customWattages[app.id] : ""}
-                      onChange={(e) => handleWattageChange(app.id, e.target.value)}
-                      onFocus={() => setFocusedField(`wattage_${app.id}`)}
-                      onBlur={() => setFocusedField(null)}
-                      className={inputBase(`wattage_${app.id}`)}
-                      placeholder={String(app.default)}
-                    />
-                  </div>
-                ))}
+                {applianceGroups[activeWattageTab].map(app => {
+                  const isCustom = customWattages[app.id] !== undefined && customWattages[app.id] !== "" && Number(customWattages[app.id]) !== app.default;
+                  return (
+                    <motion.div 
+                      key={app.id} 
+                      variants={wattageItemVariants}
+                      className="p-3.5 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-850 rounded-2xl hover:border-primary-blue/30 dark:hover:border-primary-green/30 hover:shadow-sm transition-all duration-300 group flex flex-col justify-between min-h-[95px]"
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <label className="block text-[10px] font-extrabold text-slate-450 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-350 transition-colors truncate" title={app.name}>
+                          {app.name} (W)
+                        </label>
+                        {isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomWattages(prev => {
+                                const next = { ...prev };
+                                delete next[app.id];
+                                return next;
+                              });
+                            }}
+                            className="p-0.5 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer shrink-0"
+                            title="Reset to Default"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="number"
+                        value={customWattages[app.id] !== undefined ? customWattages[app.id] : ""}
+                        onChange={(e) => handleWattageChange(app.id, e.target.value)}
+                        onFocus={() => setFocusedField(`wattage_${app.id}`)}
+                        onBlur={() => setFocusedField(null)}
+                        className={inputBase(`wattage_${app.id}`)}
+                        placeholder={String(app.default)}
+                      />
+                    </motion.div>
+                  );
+                })}
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
 
         {/* Card 2: Units Settings */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Metrics and Units</h3>
           <p className="text-xs text-slate-450 dark:text-slate-500">Configure how energy metrics are presented.</p>
           
@@ -680,7 +802,7 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Card 3: Notification Alerts */}
-        <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
             <Bell className="w-4.5 h-4.5 text-primary-blue dark:text-primary-green" />
             Alerts & Notifications
@@ -704,7 +826,7 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Admin Mode Toggle Banner */}
-        <div className="bg-gradient-to-r from-slate-100 to-slate-50/50 dark:from-slate-900/60 dark:to-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-sm">
+        <div className="bg-gradient-to-r from-slate-100/60 to-slate-50/30 dark:from-slate-900/40 dark:to-slate-950/20 backdrop-blur-md p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-sm">
           <div className="flex items-start gap-3.5 text-left">
             <div className="p-3 bg-primary-green/10 dark:bg-primary-green/15 rounded-2xl text-primary-green shrink-0 animate-pulse">
               <ShieldCheck className="w-6 h-6" />
@@ -736,7 +858,7 @@ export const Settings: React.FC = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border-2 border-primary-green/30 dark:border-primary-green/20 shadow-lg shadow-emerald-500/5 dark:shadow-none space-y-6 mt-4">
+              <div className="bg-white/70 dark:bg-slate-900/50 backdrop-blur-md p-6 sm:p-7 rounded-3xl border-2 border-primary-green/30 dark:border-primary-green/20 shadow-lg shadow-emerald-500/5 dark:shadow-none space-y-6 mt-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                   <div className="text-left">
                     <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
@@ -755,7 +877,7 @@ export const Settings: React.FC = () => {
                   <select
                     value={selectedAdminState}
                     onChange={(e) => setSelectedAdminState(e.target.value)}
-                    className="block w-full px-3.5 py-3 bg-slate-50/50 dark:bg-slate-950/20 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none dark:text-white cursor-pointer"
+                    className="block w-full px-3.5 py-3 bg-slate-50/70 dark:bg-slate-950/30 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none dark:text-white cursor-pointer transition-all focus:border-primary-blue dark:focus:border-primary-green focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
                   >
                     <optgroup label="Andhra Pradesh">
                       <option value="ap_apspdcl">APSPDCL (Southern)</option>
@@ -792,7 +914,7 @@ export const Settings: React.FC = () => {
                     <select
                       value={adminTariff.subsidy.type}
                       onChange={(e) => handleAdminSubsidyChange("type", e.target.value)}
-                      className="block w-full px-3.5 py-3 bg-slate-50/50 dark:bg-slate-950/20 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold focus:outline-none dark:text-white cursor-pointer"
+                      className="block w-full px-3.5 py-3 bg-slate-50/70 dark:bg-slate-950/30 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-2xl text-xs font-bold focus:outline-none dark:text-white cursor-pointer transition-all focus:border-primary-blue dark:focus:border-primary-green focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
                     >
                       <option value="fixed">Fixed Amount Reduction (₹)</option>
                       <option value="percentage">Percentage Discount (%)</option>
@@ -830,13 +952,15 @@ export const Settings: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
                     <span className="text-xs font-black text-slate-850 dark:text-slate-200 uppercase tracking-widest">Tariff Slab Breakdown</span>
-                    <button
+                    <motion.button
                       type="button"
                       onClick={handleAddSlab}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 dark:text-primary-green text-[10px] font-bold rounded-xl border border-emerald-200 dark:border-emerald-900/40 cursor-pointer transition-colors active:scale-[0.98]"
+                      whileHover={{ y: -1, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-primary-green text-[10px] font-bold rounded-xl border border-emerald-200 dark:border-emerald-900/40 cursor-pointer transition-colors active:scale-[0.98]"
                     >
                       <Plus className="w-3.5 h-3.5" /> Add Slab
-                    </button>
+                    </motion.button>
                   </div>
 
                   <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
@@ -844,12 +968,16 @@ export const Settings: React.FC = () => {
                       {adminTariff.slabs.map((slab: any, index: number) => (
                         <motion.div 
                           key={`slab_${index}`}
+                          layout
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex flex-col md:flex-row items-stretch md:items-end gap-3.5 p-4 bg-slate-50/30 dark:bg-slate-950/30 border-l-4 border-l-primary-green border-2 border-slate-200 dark:border-slate-850 rounded-2xl relative group"
+                          transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                          className="flex flex-col md:flex-row items-stretch md:items-end gap-3.5 p-4 bg-white/40 dark:bg-slate-950/20 backdrop-blur-sm border-l-4 border-l-primary-green border border-slate-200/50 dark:border-slate-800/50 rounded-2xl relative group shadow-sm pt-6"
                         >
+                          <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[8.5px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest z-10 shadow-sm">
+                            Slab #{index + 1}
+                          </div>
                           <div className="flex-1 w-full grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
                             <div className="space-y-1">
                               <label className="block text-[9.5px] font-extrabold text-slate-450 dark:text-slate-500 uppercase tracking-wider">Slab Label</label>
@@ -901,13 +1029,15 @@ export const Settings: React.FC = () => {
                             </div>
                           </div>
                           {adminTariff.slabs.length > 1 && (
-                            <button
+                            <motion.button
                               type="button"
                               onClick={() => handleRemoveSlab(index)}
-                              className="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl border-2 border-slate-200 dark:border-slate-800 transition-all cursor-pointer shrink-0 self-stretch sm:self-auto flex items-center justify-center active:scale-95"
+                              whileHover={{ scale: 1.05, borderColor: "rgba(239, 68, 68, 0.4)", color: "rgba(239, 68, 68, 1)" }}
+                              whileTap={{ scale: 0.95 }}
+                              className="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-2xl border-2 border-slate-200 dark:border-slate-800 transition-all cursor-pointer shrink-0 self-stretch sm:self-auto flex items-center justify-center"
                             >
                               <Trash2 className="w-4.5 h-4.5" />
-                            </button>
+                            </motion.button>
                           )}
                         </motion.div>
                       ))}

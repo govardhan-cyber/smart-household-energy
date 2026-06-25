@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -666,33 +666,42 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     };
 
     return (
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden flex flex-col justify-between shadow-sm space-y-3 group hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.2)] hover:border-indigo-500/20 transition-all duration-300 [backface-visibility:hidden] [transform-style:preserve-3d]">
+      <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md p-4 rounded-3xl border border-slate-200/60 dark:border-slate-800/50 text-center relative overflow-hidden flex flex-col justify-between shadow-sm space-y-3 group hover:shadow-md hover:border-indigo-500/30 transition-all duration-300 [backface-visibility:hidden] [transform-style:preserve-3d]">
         {/* Top right corner glowing wash */}
         <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-indigo-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
         
         {/* Title */}
         <div className="flex justify-between items-center text-left relative z-10">
           <div>
-            <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">
+            <span className="text-[9px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest block mb-0.5">
               ROOFTOP PLACEMENT MAP
             </span>
-            <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase">
+            <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase font-display">
               Isometric Rooftop Planner
             </h4>
           </div>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${
-            systemOutputPercent >= 90
-              ? "bg-green-500/10 border-green-500/20 text-primary-green"
-              : systemOutputPercent >= 70
-              ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
-              : "bg-red-500/10 border-red-500/20 text-red-500"
-          }`}>
-            Yield: {systemOutputPercent}%
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={`flex h-1.5 w-1.5 rounded-full ${
+              systemOutputPercent >= 90
+                ? "bg-emerald-500"
+                : systemOutputPercent >= 70
+                ? "bg-amber-500"
+                : "bg-rose-500"
+            } animate-pulse`} />
+            <span className={`text-[9.5px] font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wider shadow-sm backdrop-blur-sm ${
+              systemOutputPercent >= 90
+                ? "bg-green-500/10 border-green-500/20 text-primary-green"
+                : systemOutputPercent >= 70
+                ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                : "bg-red-500/10 border-red-500/20 text-red-500"
+            }`}>
+              Yield: {systemOutputPercent}%
+            </span>
+          </div>
         </div>
 
         {/* SVG Canvas */}
-        <div className="flex-1 flex items-center justify-center py-1 bg-slate-50/55 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/80 relative min-h-[125px] overflow-hidden">
+        <div className="flex-1 flex items-center justify-center py-2 bg-slate-50/40 dark:bg-slate-950/40 backdrop-blur-sm rounded-[20px] border border-slate-200/40 dark:border-slate-800/30 relative min-h-[125px] overflow-hidden shadow-inner">
           {/* Sun Glow */}
           <div 
             className="absolute rounded-full pointer-events-none transition-all duration-500"
@@ -707,44 +716,109 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           />
 
           <svg viewBox="0 0 400 180" className="w-full h-auto max-w-[340px] relative z-10">
-            {/* Sun */}
-            <circle cx={sunX} cy={sunY} r="8" fill="#FBBF24" className="transition-all duration-500 animate-pulse" />
-            <circle cx={sunX} cy={sunY} r="12" fill="none" stroke="#F59E0B" strokeWidth="1" strokeDasharray="3 3" className="animate-spin transition-all duration-500" style={{ animationDuration: "12s" }} />
+            <defs>
+              {/* Technical Blueprint Grid Pattern */}
+              <pattern id="blueprintGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.75" fill="currentColor" className="text-slate-300/40 dark:text-slate-700/30" />
+              </pattern>
+              
+              {/* Glowing Gradient for Active Sun */}
+              <radialGradient id="sunRadial" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#FFFBEB" />
+                <stop offset="20%" stopColor="#FDE68A" />
+                <stop offset="100%" stopColor="#F59E0B" />
+              </radialGradient>
 
-            {/* Sun Rays */}
-            <line x1={sunX} y1={sunY + 12} x2={sunX} y2={sunY + 22} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
-            <line x1={sunX - 12} y1={sunY} x2={sunX - 22} y2={sunY} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
-            <line x1={sunX + 12} y1={sunY} x2={sunX + 22} y2={sunY} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
-            <line x1={sunX - 9} y1={sunY + 9} x2={sunX - 16} y2={sunY + 16} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
-            <line x1={sunX + 9} y1={sunY + 9} x2={sunX + 16} y2={sunY + 16} stroke="#FBBF24" strokeWidth="1.5" className="transition-all duration-500" />
+              {/* Ambient Shadow Filter */}
+              <filter id="sunFilter" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              {/* Front Wall Blueprint Gradient */}
+              <linearGradient id="frontWallGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(226, 232, 240, 0.25)" />
+                <stop offset="100%" stopColor="rgba(148, 163, 184, 0.03)" />
+              </linearGradient>
+
+              {/* Side Wall Blueprint Gradient */}
+              <linearGradient id="sideWallGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="rgba(203, 213, 225, 0.2)" />
+                <stop offset="100%" stopColor="rgba(71, 85, 105, 0.02)" />
+              </linearGradient>
+
+              {/* Roof Blueprint Gradient */}
+              <linearGradient id="roofGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(99, 102, 241, 0.16)" />
+                <stop offset="100%" stopColor="rgba(99, 102, 241, 0.02)" />
+              </linearGradient>
+
+              {/* Active Monocrystalline Panel Gradient */}
+              <linearGradient id="activePanel" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#312e81" />
+                <stop offset="40%" stopColor="#4338ca" />
+                <stop offset="100%" stopColor="#1e1b4b" />
+              </linearGradient>
+
+              {/* Shaded Obsidian Panel Gradient */}
+              <linearGradient id="shadedPanel" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#334155" />
+                <stop offset="100%" stopColor="#0f172a" />
+              </linearGradient>
+
+              {/* Window Glass Gradient */}
+              <linearGradient id="windowGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="rgba(6, 182, 212, 0.3)" />
+                <stop offset="100%" stopColor="rgba(6, 182, 212, 0.04)" />
+              </linearGradient>
+            </defs>
+
+            {/* Grid background layer */}
+            <rect width="400" height="180" fill="url(#blueprintGrid)" rx="16" />
+
+            {/* Dotted radiation rays from Sun to Roof corners & center */}
+            <line x1={sunX} y1={sunY} x2="120" y2={(y_front + y_back) / 2} stroke="rgba(245, 158, 11, 0.18)" strokeWidth="0.8" strokeDasharray="3 3" className="transition-all duration-500" />
+            <line x1={sunX} y1={sunY} x2="200" y2={(y_front + y_back) / 2} stroke="rgba(245, 158, 11, 0.22)" strokeWidth="1" strokeDasharray="3 3" className="transition-all duration-500" />
+            <line x1={sunX} y1={sunY} x2="280" y2={(y_front + y_back) / 2} stroke="rgba(245, 158, 11, 0.18)" strokeWidth="0.8" strokeDasharray="3 3" className="transition-all duration-500" />
+
+            {/* Sun */}
+            <circle cx={sunX} cy={sunY} r="8" fill="url(#sunRadial)" filter="url(#sunFilter)" className="transition-all duration-500" />
+            <circle cx={sunX} cy={sunY} r="13" fill="none" stroke="#F59E0B" strokeWidth="1.2" strokeDasharray="4 4" className="animate-spin transition-all duration-500" style={{ animationDuration: "16s" }} />
 
             {/* House structure */}
             {/* Front Wall */}
             <polygon 
               points={`60,${y_front} 240,${y_front} 240,165 60,165`} 
-              className="fill-slate-100 dark:fill-slate-800 stroke-slate-200 dark:stroke-slate-850 stroke-[1.5px] transition-all duration-500" 
+              fill="url(#frontWallGrad)"
+              className="stroke-slate-300/80 dark:stroke-slate-700/60 stroke-[1.2px] transition-all duration-500" 
             />
             {/* Side Wall */}
             <polygon 
               points={`240,${y_front} 340,${y_back} 340,120 240,165`} 
-              className="fill-slate-150 dark:fill-slate-750 stroke-slate-200 dark:stroke-slate-850 stroke-[1.5px] transition-all duration-500" 
+              fill="url(#sideWallGrad)"
+              className="stroke-slate-300/80 dark:stroke-slate-700/60 stroke-[1.2px] transition-all duration-500" 
             />
             
             {/* Door */}
-            <rect x="130" y="125" width="40" height="40" rx="4" className="fill-slate-200 dark:fill-slate-900 stroke-slate-300 dark:stroke-slate-850" />
+            <rect x="130" y="125" width="40" height="40" rx="4" className="fill-slate-200/30 dark:fill-slate-905/40 stroke-slate-350 dark:stroke-slate-750 stroke-[1.2px]" />
             <circle cx="162" cy="145" r="1.5" fill="#B45309" />
 
             {/* Window */}
             <polygon 
               points="270,125 310,110 310,95 270,110" 
-              className="fill-cyan-500/10 dark:fill-cyan-500/5 stroke-slate-300 dark:stroke-slate-850" 
+              fill="url(#windowGrad)"
+              className="stroke-cyan-500/40 dark:stroke-cyan-500/20 stroke-[1px]" 
             />
-            <line x1="290" y1="117.5" x2="290" y2="102.5" stroke="#94A3B8" strokeWidth="1" />
+            <line x1="290" y1="117.5" x2="290" y2="102.5" stroke="rgba(34, 211, 238, 0.4)" strokeWidth="0.8" />
 
             {/* Roof plane */}
             <polygon 
               points={`60,${y_front} 160,${y_back} 340,${y_back} 240,${y_front}`} 
-              className="fill-slate-250 dark:fill-slate-700 stroke-slate-350 dark:stroke-slate-800 stroke-[2px] transition-all duration-500" 
+              fill="url(#roofGrad)"
+              className="stroke-indigo-400/40 dark:stroke-indigo-500/30 stroke-[2px] transition-all duration-500" 
             />
 
             {/* SOLAR PANELS */}
@@ -767,18 +841,19 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   key={idx}
                   points={`${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`}
                   onClick={() => togglePanelShaded(idx)}
-                  className={`cursor-pointer transition-all duration-300 stroke-[1.5px] ${
+                  fill={isShaded ? "url(#shadedPanel)" : "url(#activePanel)"}
+                  className={`cursor-pointer transition-all duration-300 stroke-[1.2px] ${
                     isShaded
-                      ? "fill-slate-750 dark:fill-slate-850 stroke-slate-500 hover:fill-slate-650 hover:stroke-slate-400"
-                      : "fill-indigo-600 dark:fill-indigo-500 stroke-indigo-400 hover:fill-cyan-400 dark:hover:fill-cyan-400 hover:stroke-white"
+                      ? "stroke-rose-500/50 hover:stroke-rose-400"
+                      : "stroke-indigo-300/40 dark:stroke-indigo-400/40 hover:stroke-cyan-300"
                   }`}
                 />
               );
             })}
           </svg>
 
-          {/* Hint Overlay */}
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-slate-950/80 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full pointer-events-none tracking-wide select-none">
+          {/* Hint Overlay (optimized with whitespace-nowrap and glass design to prevent text wrapping layout bugs) */}
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-slate-900/80 dark:bg-slate-950/70 backdrop-blur-md border border-white/10 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full pointer-events-none tracking-wide select-none whitespace-nowrap z-20 shadow-sm">
             💡 CLICK PANELS TO TOGGLE SHADING
           </div>
         </div>
@@ -792,20 +867,20 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/85">
                 <button
                   onClick={() => setRoofTilt("inclined")}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     roofTilt === "inclined"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
-                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-emerald-500 dark:to-teal-500 text-white shadow-sm shadow-indigo-500/25 dark:shadow-emerald-500/20 transform scale-[1.02]"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/30 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   Pitched (15°)
                 </button>
                 <button
                   onClick={() => setRoofTilt("flat")}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     roofTilt === "flat"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
-                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-emerald-500 dark:to-teal-500 text-white shadow-sm shadow-indigo-500/25 dark:shadow-emerald-500/20 transform scale-[1.02]"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/30 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   Flat (0°)
@@ -819,30 +894,30 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/85">
                 <button
                   onClick={() => setRoofOrientation("south")}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     roofOrientation === "south"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
-                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-emerald-500 dark:to-teal-500 text-white shadow-sm shadow-indigo-500/25 dark:shadow-emerald-500/20 transform scale-[1.02]"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/30 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   South
                 </button>
                 <button
                   onClick={() => setRoofOrientation("east")}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     roofOrientation === "east"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
-                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-emerald-500 dark:to-teal-500 text-white shadow-sm shadow-indigo-500/25 dark:shadow-emerald-500/20 transform scale-[1.02]"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/30 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   East
                 </button>
                 <button
                   onClick={() => setRoofOrientation("west")}
-                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     roofOrientation === "west"
-                      ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm border border-slate-200/35 dark:border-slate-700/50"
-                      : "text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-600 to-indigo-700 dark:from-emerald-500 dark:to-teal-500 text-white shadow-sm shadow-indigo-500/25 dark:shadow-emerald-500/20 transform scale-[1.02]"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/30 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   West
@@ -851,9 +926,16 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
           </div>
           
-          <div className="flex justify-between text-[9.5px] font-bold uppercase tracking-wider text-slate-455 dark:text-slate-555 mt-0.5">
-            <span>Panels: {panelsNeeded} ({shadedCount} Shaded)</span>
-            <span>Coverage: {spaceUtilizedPercent}%</span>
+          {/* Glass Badges for Stats Row */}
+          <div className="flex justify-between items-center gap-2 mt-1 font-display">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100/50 dark:bg-slate-950/30 rounded-xl border border-slate-200/30 dark:border-slate-850/40 text-[9px] font-bold text-slate-500 dark:text-slate-400 select-none">
+              <Layers className="w-3.5 h-3.5 text-indigo-500 dark:text-primary-green shrink-0" />
+              <span>Panels: <span className="font-extrabold text-slate-700 dark:text-white">{panelsNeeded}</span> ({shadedCount} Shaded)</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-100/50 dark:bg-slate-950/30 rounded-xl border border-slate-200/30 dark:border-slate-850/40 text-[9px] font-bold text-slate-500 dark:text-slate-400 select-none">
+              <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0 animate-pulse" />
+              <span>Coverage: <span className="font-extrabold text-slate-700 dark:text-white">{spaceUtilizedPercent}%</span></span>
+            </div>
           </div>
         </div>
       </div>
@@ -1303,19 +1385,86 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </div>
 
           {/* Panel details sub-section */}
-          <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 text-xs text-left space-y-1 shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] transition-all duration-300">
-            <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-5 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-            <span className="font-bold text-slate-855 dark:text-slate-300 block mb-1 relative z-10">Rooftop Module Details:</span>
-            <div className="grid grid-cols-2 gap-y-1 text-slate-500 dark:text-slate-400 relative z-10">
-              <div>Modules Needed:</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">{panelsNeeded} panels ({panelWattage}W)</div>
-              <div>Single Panel Dimensions:</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">{panelSizeLabel}</div>
-              <div>Single Panel Weight:</div>
-              <div className="font-bold text-slate-800 dark:text-slate-200 text-right">~{panelWeight} kg</div>
-              <div>Internal Efficiency:</div>
-              <div className="font-extrabold text-primary-green text-right">
-                {panelEfficiency.toFixed(1)}%
+          <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm relative overflow-hidden group hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.15)] hover:border-indigo-500/20 transition-all duration-300">
+            <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-indigo-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
+            
+            <div className="flex items-center gap-2 mb-3 relative z-10">
+              <div className="p-1.5 bg-indigo-500/10 text-indigo-555 rounded-lg">
+                <Layers className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
+                  SYSTEM COMPONENTS
+                </span>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase leading-tight mt-0.5 font-display">
+                  Rooftop Module Details
+                </h4>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 relative z-10">
+              {/* Card 1: Modules Needed */}
+              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
+                  <Layers className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Required Modules</span>
+                </div>
+                <div>
+                  <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
+                    {panelsNeeded} Panels
+                  </div>
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                    {panelWattage}W Rating ({solarTech === "topcon" ? "TOPCon" : "Mono-PERC"})
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Dimensions */}
+              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
+                  <Ruler className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Dimensions</span>
+                </div>
+                <div>
+                  <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
+                    {panelSizeLabel.replace("~", "")}
+                  </div>
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                    Per Module Size
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Weight */}
+              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
+                  <Scale className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Weight Load</span>
+                </div>
+                <div>
+                  <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
+                    ~{panelWeight} kg
+                  </div>
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                    Total Load: {panelsNeeded * panelWeight} kg
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Efficiency */}
+              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-500 shrink-0 animate-pulse" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Efficiency</span>
+                </div>
+                <div>
+                  <div className="text-sm font-extrabold text-emerald-600 dark:text-primary-green leading-tight">
+                    {panelEfficiency.toFixed(1)}%
+                  </div>
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                    Cell Conversion
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1377,7 +1526,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* 3. Feasibility Review Callout */}
-            <div className={`p-5 rounded-3xl border ${conclusion.colorClass} space-y-4 text-left shadow-sm relative overflow-hidden group`}>
+            <div className={`card-client p-5 rounded-3xl border ${conclusion.colorClass} space-y-4 text-left shadow-sm relative overflow-hidden group`}>
               <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
               <div className="flex justify-between items-center relative z-10">
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-555">
@@ -1416,7 +1565,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             {/* 4. Stripe/Tesla style metric grid */}
             <div className="grid grid-cols-2 gap-4 text-left">
               {/* Card 1: Investment */}
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
+              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
                 <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">💰 Investment</span>
                 <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight mt-2 relative z-10">
@@ -1426,7 +1575,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
 
               {/* Card 2: Annual Return */}
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] hover:border-emerald-500/20 transition-all duration-300">
+              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] hover:border-emerald-500/20 transition-all duration-300">
                 <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">📈 Annual Return</span>
                 <p className="text-xl font-display font-black text-primary-green leading-tight mt-2 relative z-10">
@@ -1436,7 +1585,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
 
               {/* Card 3: Monthly Savings */}
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-cyan-500/20 transition-all duration-300">
+              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-cyan-500/20 transition-all duration-300">
                 <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-cyan-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">⚡ Monthly Savings</span>
                 <p className="text-xl font-display font-black text-primary-blue dark:text-blue-400 leading-tight mt-2 relative z-10">
@@ -1446,7 +1595,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
 
               {/* Card 4: ROI */}
-              <div className="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)] hover:border-amber-500/20 transition-all duration-300">
+              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)] hover:border-amber-500/20 transition-all duration-300">
                 <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">🏆 ROI</span>
                 <p className="text-xl font-display font-black text-amber-500 leading-tight mt-2 relative z-10">

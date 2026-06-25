@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Zap, ShieldCheck, ArrowRight, Sparkles, Brain, Leaf } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Zap, ShieldCheck, ArrowRight, Sparkles, Brain, Leaf, TrendingUp, Sun, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeDCard } from "../components/ThreeDCard";
 
@@ -9,10 +9,27 @@ import { ThreeDCard } from "../components/ThreeDCard";
 const Orb = ({ className }: { className: string }) => (
   <motion.div
     className={`absolute rounded-full blur-3xl pointer-events-none ${className}`}
-    animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
-    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+    animate={{ scale: [1, 1.18, 1], opacity: [0.2, 0.42, 0.2] }}
+    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
   />
 );
+
+/* ── animated number counter ────────────────────────────────────── */
+const Counter = ({ to, suffix = "" }: { to: number; suffix?: string }) => {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let cur = 0;
+    const step = to / 60;
+    const timer = setInterval(() => {
+      cur += step;
+      if (cur >= to) { setVal(to); clearInterval(timer); }
+      else setVal(Math.floor(cur));
+    }, 22);
+    return () => clearInterval(timer);
+  }, [to]);
+  return <>{val.toLocaleString()}{suffix}</>;
+};
+
 
 export const Login: React.FC = () => {
   const { login, loginWithGoogle, user } = useAuth();
@@ -80,427 +97,391 @@ export const Login: React.FC = () => {
   return (
     <div className="flex-1 flex min-h-screen bg-transparent transition-colors duration-300 relative overflow-hidden select-none">
       {/* --- LEFT PANEL: Interactive Product Showcase (70%) --- */}
-      <div className="hidden lg:flex lg:w-[70%] relative overflow-hidden flex-col justify-between p-10 z-10 border-r border-slate-200/60 dark:border-slate-900/60 bg-slate-50/10 dark:bg-transparent">
-        
-        {/* Animated Orbs for glow depth */}
-        <Orb className="w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 -top-24 -left-24" />
-        <Orb className="w-80 h-80 bg-emerald-500/5 bottom-0 right-0" />
+      <div className="hidden lg:flex lg:w-[70%] relative overflow-hidden flex-col justify-between p-10 xl:p-12 z-10 border-r border-slate-200/45 dark:border-slate-800/35 bg-white/5 dark:bg-slate-950/5">
 
-        {/* Top Header & Feature Section */}
-        <div className="space-y-6 w-full text-left">
-          {/* Brand Header */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Zap className="w-5.5 h-5.5 text-white animate-pulse" />
+        {/* Deep ambient orbs */}
+        <Orb className="w-[520px] h-[520px] bg-blue-500/6 dark:bg-blue-500/10 -top-40 -left-40" />
+        <Orb className="w-[380px] h-[380px] bg-emerald-500/5 dark:bg-emerald-500/8 bottom-0 right-10" />
+        <Orb className="w-56 h-56 bg-violet-500/4 dark:bg-cyan-500/6 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+
+        {/* ══ HERO ══ */}
+        <div className="space-y-7 w-full text-left">
+
+          {/* Brand badge */}
+          <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.65 }}
+            className="flex items-center gap-3.5">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-blue-500 to-emerald-400 blur-md opacity-50" />
+              <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-blue-500 to-emerald-500 flex items-center justify-center shadow-xl shadow-blue-500/25">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
             </div>
-            <span className="font-display font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-              EnergyAI
-            </span>
+            <div>
+              <span className="font-display font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">EnergyAI</span>
+              <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 tracking-widest uppercase">Smart Household Platform</p>
+            </div>
           </motion.div>
 
-          {/* Grid for Hero + Badges & Dashboard widgets */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start w-full">
-            
-            {/* Left side: branding copy & core features */}
-            <div className="xl:col-span-4 space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="space-y-4"
-              >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-slate-900/60 border border-slate-250 dark:border-slate-800 text-blue-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
+          {/* Main 12-col grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-7 items-start w-full">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="xl:col-span-4 space-y-5">
+              <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.1 }}
+                className="space-y-4">
+                {/* AI pill */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 border border-blue-200/70 dark:border-cyan-800/50 text-blue-700 dark:text-cyan-400 text-[10px] font-bold uppercase tracking-wider shadow-sm">
                   <Sparkles className="w-3 h-3 text-yellow-500" />
-                  <span>AI-POWERED ENERGY INTELLIGENCE</span>
+                  AI-Powered Energy Intelligence
                 </div>
-                
-                <h2 className="text-4xl xl:text-5xl font-display font-black text-slate-900 dark:text-white leading-tight tracking-tight">
-                  Transform Energy Data <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-emerald-600 dark:from-blue-400 dark:via-cyan-400 dark:to-emerald-400">Into Savings</span>
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
+                {/* Headline */}
+                <div className="space-y-1">
+                  <h2 className="text-4xl xl:text-[2.55rem] font-display font-black text-slate-900 dark:text-white leading-[1.12] tracking-tight">
+                    Transform<br />Energy Data
+                  </h2>
+                  <h2 className="text-4xl xl:text-[2.55rem] font-display font-black leading-[1.12] tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-cyan-600 to-emerald-600 dark:from-blue-400 dark:via-cyan-400 dark:to-emerald-400">
+                    Into Savings
+                  </h2>
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-[13px] leading-relaxed">
                   Monitor consumption, predict bills, receive AI-powered recommendations, and reduce electricity costs with intelligent analytics.
                 </p>
               </motion.div>
 
-              {/* Three clean feature items */}
-              <div className="grid grid-cols-1 gap-3 pt-2">
+              {/* Feature pills */}
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.2 }}
+                className="grid grid-cols-1 gap-2.5">
                 {[
-                  { icon: Zap, color: 'blue', title: 'Smart Monitoring', desc: 'Real-time energy tracking' },
-                  { icon: Brain, color: 'purple', title: 'AI Predictions', desc: 'Accurate bill forecasts' },
-                  { icon: Leaf, color: 'emerald', title: 'Eco Friendly', desc: 'Reduce carbon footprint' }
+                  { icon: Zap,   hue: "blue",   title: "Smart Monitoring", desc: "Real-time energy tracking",  dot: "bg-blue-500"    },
+                  { icon: Brain, hue: "violet",  title: "AI Predictions",  desc: "Accurate bill forecasts",    dot: "bg-violet-500"  },
+                  { icon: Leaf,  hue: "emerald", title: "Eco Friendly",    desc: "Reduce carbon footprint",    dot: "bg-emerald-500" },
+                  { icon: Sun,   hue: "amber",   title: "Solar Ready",     desc: "Rooftop PV optimisation",    dot: "bg-amber-500"   },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3.5 p-3 rounded-xl bg-white/65 dark:bg-slate-955/20 border border-slate-200/65 dark:border-slate-900/45 backdrop-blur-sm transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/45 hover:scale-[1.02] hover:shadow-sm">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-${item.color === 'blue' ? 'blue-500' : item.color === 'purple' ? 'purple-500' : 'emerald-500'}/10 border border-${item.color === 'blue' ? 'blue-500' : item.color === 'purple' ? 'purple-500' : 'emerald-500'}/20 shadow-inner`}>
-                      <item.icon className={`w-4.5 h-4.5 text-${item.color === 'blue' ? 'blue-600' : item.color === 'purple' ? 'purple-600' : 'emerald-600'} dark:text-${item.color === 'blue' ? 'blue-400' : item.color === 'purple' ? 'purple-400' : 'emerald-400'}`} />
+                  <motion.div key={idx}
+                    initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.25 + idx * 0.07 }}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800/40 backdrop-blur-sm hover:bg-white/90 dark:hover:bg-slate-900/50 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-default">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      item.hue === "blue" ? "bg-blue-100 dark:bg-blue-900/40" :
+                      item.hue === "violet" ? "bg-violet-100 dark:bg-violet-900/40" :
+                      item.hue === "emerald" ? "bg-emerald-100 dark:bg-emerald-900/40" : "bg-amber-100 dark:bg-amber-900/40"
+                    }`}>
+                      <item.icon className={`w-4 h-4 ${
+                        item.hue === "blue" ? "text-blue-600 dark:text-blue-400" :
+                        item.hue === "violet" ? "text-violet-600 dark:text-violet-400" :
+                        item.hue === "emerald" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                      }`} />
                     </div>
-                    <div>
-                      <h4 className="text-[13px] font-bold text-slate-850 dark:text-slate-200">{item.title}</h4>
-                      <p className="text-[11px] text-slate-550 dark:text-slate-400">{item.desc}</p>
+                    <div className="min-w-0">
+                      <h4 className="text-[12px] font-bold text-slate-850 dark:text-slate-200 leading-none">{item.title}</h4>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.desc}</p>
                     </div>
-                  </div>
+                    <span className={`ml-auto w-1.5 h-1.5 rounded-full ${item.dot} opacity-55 group-hover:opacity-100 transition-opacity shrink-0`} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
+
             </div>
 
-            {/* Right side: high fidelity live twin layout widgets */}
-            <div className="xl:col-span-8 space-y-4 w-full">
-              
-              {/* Row 1: Energy Overview Widget */}
-              <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] shadow-sm backdrop-blur-md">
-                <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-850/60 pb-2 mb-3">
-                  <span className="text-[10px] font-extrabold text-slate-650 dark:text-slate-400 uppercase tracking-wider">Energy Overview</span>
-                  <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-md">Today</span>
-                </div>
-                
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-left shrink-0">
-                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-500 uppercase leading-none">Today's Usage</p>
-                    <p className="text-2.5xl font-black text-slate-900 dark:text-white mt-1.5 leading-none">12.4 <span className="text-xs font-semibold text-slate-555">kWh</span></p>
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 mt-2 bg-emerald-100/60 dark:bg-emerald-955/20 px-1.5 py-0.5 rounded">
-                      ▲ +12% vs yesterday
-                    </span>
+            {/* ── RIGHT COLUMN: widgets ── */}
+            <div className="xl:col-span-8 space-y-3.5 w-full">
+
+              {/* Energy Overview */}
+              <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-4 rounded-[22px] shadow-sm backdrop-blur-md">
+                <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100/80 dark:border-slate-800/60">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-blue-500 dark:text-emerald-400" />
+                    <span className="text-[10px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Energy Overview</span>
                   </div>
-                  
-                  {/* Miniature Spark/Bar Chart */}
-                  <div className="flex-1 h-20 flex items-end justify-between gap-1.5 pt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />Live
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60">Today</span>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between gap-4">
+                  {/* Animated bar chart – now on the LEFT */}
+                  <div className="flex-1 h-[70px] flex items-end justify-between gap-1 pt-1">
                     {chartData.map((val, idx) => (
-                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
-                        <div className="absolute bottom-full mb-1 bg-slate-900 dark:bg-slate-800 text-white text-[8px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md z-20">
+                      <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative">
+                        <div className="absolute bottom-full mb-1.5 bg-slate-900 dark:bg-slate-800 text-white text-[8px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md z-20">
                           {val}%
                         </div>
-                        <div 
-                          className="w-full bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-400 dark:from-emerald-500 dark:via-emerald-450 dark:to-cyan-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(37,99,235,0.15)] dark:shadow-[0_0_8px_rgba(16,185,129,0.15)]"
-                          style={{ height: `${val}%` }}
+                        <div className="w-full transition-all duration-500"
+                          style={{
+                            height: `${val}%`,
+                            background: isDark ? `linear-gradient(to top, #10b981, #22d3ee)` : `linear-gradient(to top, #2563eb, #06b6d4)`,
+                            opacity: 0.5 + (val / 100) * 0.5,
+                            borderRadius: "3px 3px 2px 2px",
+                            boxShadow: isDark ? "0 0 6px rgba(34,211,238,0.2)" : "0 0 6px rgba(37,99,235,0.18)",
+                          }}
                         />
                       </div>
                     ))}
                   </div>
+                  {/* Stat block – now on the RIGHT */}
+                  <div className="text-right shrink-0 space-y-1.5">
+                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Today's Usage</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white leading-none">
+                      12.4 <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">kWh</span>
+                    </p>
+                    <div className="flex items-center justify-end gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full">
+                        ▲ +12% vs yesterday
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 px-2 py-0.5 rounded-full">
+                        <Sun className="w-2.5 h-2.5" />Solar: ON
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Row 2: AI Recommendation Widget */}
-              <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] shadow-sm backdrop-blur-md flex items-center justify-between gap-4">
-                <div className="text-left space-y-2.5">
-                  <span className="text-[10px] font-extrabold text-slate-655 dark:text-slate-400 uppercase tracking-wider">AI Recommendation</span>
-                  <p className="text-[11px] text-slate-705 dark:text-slate-350 leading-relaxed max-w-sm">
-                    Your usage is higher than usual. AI suggests setting AC to <span className="font-bold text-blue-600 dark:text-emerald-400">24°C</span> to save up to <span className="font-bold text-slate-900 dark:text-white">₹120</span> today.
+              {/* AI Recommendation */}
+              <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+                className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-4 rounded-[22px] shadow-sm backdrop-blur-md flex items-center gap-4">
+                <div className="text-left space-y-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 border border-violet-200/60 dark:border-violet-700/40">
+                      <Brain className="w-3 h-3 text-violet-600 dark:text-violet-400" />
+                      <span className="text-[9px] font-extrabold text-violet-700 dark:text-violet-400 uppercase tracking-wider">AI Recommendation</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                    Usage is higher than usual. Suggest AC to{" "}
+                    <span className="font-black text-blue-600 dark:text-emerald-400 bg-blue-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-md">24°C</span>
+                    {" — "}save up to{" "}
+                    <span className="font-black text-slate-900 dark:text-white">₹120</span> today.
                   </p>
-                  <button type="button" className="text-[10px] font-bold text-white dark:text-slate-950 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-emerald-400 dark:to-cyan-400 px-3.5 py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
-                    Optimize Now
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button type="button"
+                      className="text-[10px] font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-3.5 py-1.5 rounded-lg shadow-md shadow-blue-500/20 hover:opacity-90 hover:shadow-lg transition-all cursor-pointer">
+                      ⚡ Optimize Now
+                    </button>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">Confidence: 94%</span>
+                  </div>
                 </div>
-
-                {/* Animated Robot Assistant */}
-                <div className="w-20 h-20 flex items-center justify-center shrink-0 overflow-visible">
+                {/* Robot */}
+                <div className="w-20 h-20 shrink-0 overflow-visible">
                   <svg viewBox="0 0 100 120" className="w-20 h-24 overflow-visible">
                     <defs>
-                      <linearGradient id="robot-head-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#FFFFFF" />
-                        <stop offset="100%" stopColor="#E2E8F0" />
+                      <linearGradient id="rh2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#E2E8F0" />
                       </linearGradient>
-                      <linearGradient id="robot-body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#FFFFFF" />
-                        <stop offset="100%" stopColor="#CBD5E1" />
+                      <linearGradient id="rb2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#CBD5E1" />
                       </linearGradient>
-                      <linearGradient id="robot-screen-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#1E293B" />
-                        <stop offset="100%" stopColor="#0F172A" />
+                      <linearGradient id="rs2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#1E293B" /><stop offset="100%" stopColor="#0F172A" />
                       </linearGradient>
-                      <filter id="robot-glow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                      </filter>
+                      <filter id="rg2"><feGaussianBlur stdDeviation="2" result="b" /><feComposite in="SourceGraphic" in2="b" operator="over" /></filter>
                     </defs>
                     <style>{`
-                      @keyframes robot-float {
-                        0%, 100% { transform: translateY(0px); }
-                        50% { transform: translateY(-8px); }
-                      }
-                      @keyframes robot-shadow {
-                        0%, 100% { transform: scale(1); opacity: 0.15; }
-                        50% { transform: scale(0.7); opacity: 0.08; }
-                      }
-                      @keyframes robot-blink {
-                        0%, 96%, 100% { transform: scaleY(1); }
-                        98% { transform: scaleY(0.1); }
-                      }
-                      @keyframes robot-arm-left {
-                        0%, 100% { transform: rotate(0deg); }
-                        50% { transform: rotate(4deg); }
-                      }
-                      @keyframes robot-arm-right {
-                        0%, 100% { transform: rotate(0deg); }
-                        50% { transform: rotate(-4deg); }
-                      }
-                      .anim-float {
-                        animation: robot-float 4s ease-in-out infinite;
-                      }
-                      .anim-shadow {
-                        animation: robot-shadow 4s ease-in-out infinite;
-                        transform-origin: 50px 115px;
-                      }
-                      .anim-blink {
-                        animation: robot-blink 5s ease-in-out infinite;
-                        transform-origin: 50% 27px;
-                      }
-                      .anim-arm-left {
-                        animation: robot-arm-left 4s ease-in-out infinite;
-                        transform-origin: 22px 55px;
-                      }
-                      .anim-arm-right {
-                        animation: robot-arm-right 4s ease-in-out infinite;
-                        transform-origin: 78px 55px;
-                      }
+                      .rf2{animation:rfloat2 4s ease-in-out infinite}
+                      .rsh2{animation:rshadow2 4s ease-in-out infinite;transform-origin:50px 115px}
+                      .rbl2{animation:rblink2 5s ease-in-out infinite;transform-origin:50% 27px}
+                      .ral2{animation:rarm2 4s ease-in-out infinite;transform-origin:22px 55px}
+                      .rar2{animation:rarmr2 4s ease-in-out infinite;transform-origin:78px 55px}
+                      @keyframes rfloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+                      @keyframes rshadow2{0%,100%{transform:scale(1);opacity:.15}50%{transform:scale(.7);opacity:.08}}
+                      @keyframes rblink2{0%,96%,100%{transform:scaleY(1)}98%{transform:scaleY(.1)}}
+                      @keyframes rarm2{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+                      @keyframes rarmr2{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-4deg)}}
                     `}</style>
-                    
-                    {/* Floating Shadow */}
-                    <ellipse cx="50" cy="115" rx="20" ry="3" fill="#000" className="anim-shadow" />
-                    
-                    {/* Robot body + head (floating) */}
-                    <g className="anim-float">
-                      {/* Ears/Side Capsules */}
+                    <ellipse cx="50" cy="115" rx="20" ry="3" fill="#000" className="rsh2" />
+                    <g className="rf2">
                       <rect x="8" y="24" width="10" height="20" rx="5" fill="#E2E8F0" />
                       <rect x="82" y="24" width="10" height="20" rx="5" fill="#E2E8F0" />
-
-                      {/* Arms */}
-                      <path d="M 20 54 C 10 65, 8 85, 14 92 C 20 98, 25 85, 23 65 Z" fill="#CBD5E1" className="anim-arm-left" />
-                      <path d="M 80 54 C 90 65, 92 85, 86 92 C 80 98, 75 85, 77 65 Z" fill="#CBD5E1" className="anim-arm-right" />
-
-                      {/* Body */}
-                      <path d="M 30 50 C 30 45, 70 45, 70 50 C 70 65, 75 100, 50 100 C 25 100, 30 65, 30 50 Z" fill="url(#robot-body-grad)" />
-                      <path d="M 32 68 C 32 68, 50 78, 68 68 C 68 68, 62 90, 50 90 C 38 90, 32 68, 32 68 Z" fill="none" stroke="#94A3B8" strokeWidth="1" />
-                      
-                      {/* Neck */}
+                      <path d="M 20 54 C 10 65,8 85,14 92 C 20 98,25 85,23 65 Z" fill="#CBD5E1" className="ral2" />
+                      <path d="M 80 54 C 90 65,92 85,86 92 C 80 98,75 85,77 65 Z" fill="#CBD5E1" className="rar2" />
+                      <path d="M 30 50 C 30 45,70 45,70 50 C 70 65,75 100,50 100 C 25 100,30 65,30 50 Z" fill="url(#rb2)" />
                       <rect x="42" y="40" width="16" height="8" rx="3" fill="#94A3B8" />
-                      
-                      {/* Head */}
-                      <rect x="15" y="10" width="70" height="42" rx="20" fill="url(#robot-head-grad)" stroke="#E2E8F0" strokeWidth="1" />
-                      
-                      {/* Screen */}
-                      <rect x="21" y="15" width="58" height="30" rx="14" fill="url(#robot-screen-grad)" />
-                      
-                      {/* Face elements */}
-                      <g filter="url(#robot-glow)">
-                        {/* Eyes */}
-                        <ellipse cx="38" cy="27" rx="6" ry="5" fill="#22D3EE" className="anim-blink" />
-                        <ellipse cx="62" cy="27" rx="6" ry="5" fill="#22D3EE" className="anim-blink" />
-                        {/* Smile */}
+                      <rect x="15" y="10" width="70" height="42" rx="20" fill="url(#rh2)" stroke="#E2E8F0" strokeWidth="1" />
+                      <rect x="21" y="15" width="58" height="30" rx="14" fill="url(#rs2)" />
+                      <g filter="url(#rg2)">
+                        <ellipse cx="38" cy="27" rx="6" ry="5" fill="#22D3EE" className="rbl2" />
+                        <ellipse cx="62" cy="27" rx="6" ry="5" fill="#22D3EE" className="rbl2" />
                         <path d="M 45 34 Q 50 39 55 34" fill="none" stroke="#22D3EE" strokeWidth="3" strokeLinecap="round" />
                       </g>
                     </g>
                   </svg>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Row 3: Split Savings, Carbon, and circular Progress */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
-                  <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Est Savings</span>
-                  <div className="mt-1">
-                    <p className="text-[15px] font-black text-slate-900 dark:text-white leading-none">₹1,250<span className="text-[9px] text-slate-500 font-bold">/mo</span></p>
-                    <span className="text-[8px] text-blue-600 dark:text-cyan-400 font-bold leading-none block mt-1">▲ +14% vs last mo</span>
+              {/* Stats row – colored gradient cards */}
+              <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.30 }}
+                className="grid grid-cols-3 gap-3">
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-600 dark:from-blue-700 dark:to-cyan-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-blue-500/20 cursor-default">
+                  <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-lg" />
+                  <span className="text-[8px] font-extrabold text-blue-100 uppercase tracking-wider">Est Savings</span>
+                  <div>
+                    <p className="text-[17px] font-black text-white leading-none">₹1,250<span className="text-[9px] font-bold text-blue-200">/mo</span></p>
+                    <span className="text-[8px] text-blue-200 font-bold block mt-1">▲ +14% vs last mo</span>
                   </div>
                 </div>
-
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
-                  <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-455 uppercase tracking-wider block">Carbon Reduc.</span>
-                  <div className="mt-1">
-                    <p className="text-[15px] font-black text-slate-900 dark:text-white leading-none">28%</p>
-                    <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-bold leading-none block mt-1">🌱 142 kg CO₂ saved</span>
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-emerald-500/20 cursor-default">
+                  <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-lg" />
+                  <span className="text-[8px] font-extrabold text-emerald-100 uppercase tracking-wider">Carbon Reduc.</span>
+                  <div>
+                    <p className="text-[17px] font-black text-white leading-none">28%</p>
+                    <span className="text-[8px] text-emerald-200 font-bold block mt-1">🌱 142 kg CO₂ saved</span>
                   </div>
                 </div>
-
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-2.5 rounded-[20px] text-left flex items-center justify-between h-[85px] gap-2 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
-                  <div className="min-w-0">
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/50 p-3 rounded-[20px] flex items-center justify-between h-[90px] gap-2 cursor-default">
+                  <div>
                     <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Efficiency</span>
-                    <p className="text-xs font-black text-slate-800 dark:text-slate-205 mt-1 leading-none">Excellent</p>
+                    <p className="text-[12px] font-black text-slate-800 dark:text-slate-200 mt-1">Excellent</p>
                   </div>
-                  <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-slate-200 dark:text-slate-850" />
-                      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="3" fill="transparent"
-                        strokeDasharray={2 * Math.PI * 15}
-                        strokeDashoffset={2 * Math.PI * 15 * (1 - 0.92)}
-                        strokeLinecap="round"
-                        className="text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_3px_rgba(16,185,129,0.6)]"
-                      />
+                  <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="3.5" fill="none" className="text-slate-200 dark:text-slate-800" />
+                      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="3.5" fill="none"
+                        strokeDasharray={2 * Math.PI * 15} strokeDashoffset={2 * Math.PI * 15 * 0.08}
+                        strokeLinecap="round" className="text-emerald-500 drop-shadow-[0_0_4px_rgba(16,185,129,0.7)]" />
                     </svg>
-                    <span className="absolute text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400">92%</span>
+                    <span className="absolute text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">92%</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Row 4: Top Appliances & Live Status */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Top Appliances widget */}
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left space-y-3 flex flex-col justify-between h-[155px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-950/30 hover:shadow-md">
-                  <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Top Appliances</span>
+              {/* Bottom row */}
+              <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}
+                className="grid grid-cols-2 gap-3">
+                {/* Top Appliances */}
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md">
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <Wifi className="w-3 h-3 text-blue-500 dark:text-cyan-400" />
+                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider">Top Appliances</span>
+                  </div>
                   <div className="space-y-2 flex-1 flex flex-col justify-center">
-                    {/* AC */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold">
-                        <span className="text-slate-800 dark:text-slate-350">1. Air Conditioner</span>
-                        <span className="text-slate-900 dark:text-white font-black">5.6 kWh</span>
+                    {[
+                      { name: "Air Conditioner", kwh: "5.6 kWh", pct: 75 },
+                      { name: "Refrigerator",    kwh: "2.1 kWh", pct: 40 },
+                      { name: "Washing Machine", kwh: "1.3 kWh", pct: 25 },
+                    ].map((app, i) => (
+                      <div key={i} className="space-y-0.5">
+                        <div className="flex justify-between text-[9px] font-bold">
+                          <span className="text-slate-700 dark:text-slate-350">{i + 1}. {app.name}</span>
+                          <span className="text-slate-900 dark:text-white">{app.kwh}</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }} animate={{ width: `${app.pct}%` }}
+                            transition={{ delay: 0.5 + i * 0.12, duration: 0.8, ease: "easeOut" }}
+                            className="h-full rounded-full"
+                            style={{ background: isDark ? "linear-gradient(to right,#10b981,#22d3ee)" : "linear-gradient(to right,#2563eb,#06b6d4)" }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 dark:from-emerald-500 dark:to-cyan-400 rounded-full" style={{ width: "75%" }} />
-                      </div>
-                    </div>
-                    {/* Refrigerator */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold">
-                        <span className="text-slate-800 dark:text-slate-350">2. Refrigerator</span>
-                        <span className="text-slate-900 dark:text-white font-black">2.1 kWh</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 dark:from-emerald-500 dark:to-cyan-400 rounded-full" style={{ width: "40%" }} />
-                      </div>
-                    </div>
-                    {/* Washing Machine */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[9px] font-bold">
-                        <span className="text-slate-800 dark:text-slate-350">3. Washing Machine</span>
-                        <span className="text-slate-900 dark:text-white font-black">1.3 kWh</span>
-                      </div>
-                      <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 dark:from-emerald-500 dark:to-cyan-400 rounded-full" style={{ width: "25%" }} />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Live Status widget */}
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left flex flex-col justify-between h-[155px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
-                  <div className="space-y-1">
-                    <span className="text-[8px] font-extrabold text-slate-655 dark:text-slate-455 uppercase tracking-wider block">Live Status</span>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-450 uppercase">Operational</span>
-                      </div>
-                      <span className={`inline-flex items-center gap-1 text-[9px] font-bold transition-all duration-300 ${solarCharge ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-500'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${solarCharge ? 'bg-amber-500 animate-ping' : 'bg-slate-400'}`} />
-                        ☀️ Solar
+                {/* Live Status */}
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider">Live Status</span>
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-450">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />Operational
+                      </span>
+                      <span className={`flex items-center gap-1 text-[9px] font-bold transition-colors ${solarCharge ? "text-amber-600 dark:text-amber-400" : "text-slate-400"}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${solarCharge ? "bg-amber-500 animate-ping" : "bg-slate-300"}`} />☀️
                       </span>
                     </div>
                   </div>
-                  
-                  {/* Miniature Blueprint house wireframe */}
-                  <div className="flex justify-center items-center py-2 flex-1">
+                  <div className="flex-1 flex justify-center items-center">
                     <svg viewBox="0 0 100 70" className="w-28 h-20 overflow-visible">
                       <defs>
-                        <pattern id="house-grid-3d" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <pattern id="hg2" width="8" height="8" patternUnits="userSpaceOnUse">
                           <path d="M 8 0 L 0 0 0 8" fill="none" stroke={isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)"} strokeWidth="0.5" />
                         </pattern>
                       </defs>
-                      <rect width="100" height="70" fill="url(#house-grid-3d)" />
-                      
-                      {/* Wireframe Back Edges (Low Opacity/Dashed) */}
-                      <path d="M 15 45 L 50 33 L 70 43 M 50 33 L 50 13 M 50 13 L 15 25 M 50 13 L 70 23 M 50 13 L 60 3" fill="none" stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.1)"} strokeWidth="0.8" strokeDasharray="2 2" />
-
-                      {/* Main House Outline */}
-                      {/* Floor Base */}
-                      <path d="M 15 45 L 35 55 L 70 43" fill="none" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      {/* Vertical Pillars */}
-                      <line x1="15" y1="45" x2="15" y2="25" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" />
-                      <line x1="35" y1="55" x2="35" y2="35" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" />
-                      <line x1="70" y1="43" x2="70" y2="23" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" />
-                      {/* Top Wall Plates */}
-                      <path d="M 15 25 L 35 35 L 70 23" fill="none" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-
-                      {/* Roof Gable & Ridge */}
-                      <path d="M 15 25 L 25 15 L 35 35" fill="none" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      <line x1="25" y1="15" x2="60" y2="3" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" />
-                      <line x1="60" y1="3" x2="70" y2="23" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1.2" strokeLinecap="round" />
-
-                      {/* Door (Isometric) */}
-                      <path d="M 22 48.5 L 28 51.5 L 28 41.5 L 22 38.5 Z" fill="none" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1" />
-
-                      {/* Window (Isometric) */}
-                      <path d="M 45 46.5 L 58 42 L 58 34 L 45 38.5 Z" fill="none" stroke={isDark ? "rgba(34, 211, 238, 0.5)" : "rgba(37, 99, 235, 0.5)"} strokeWidth="1" />
-                      <line x1="51.5" y1="44.25" x2="51.5" y2="36.25" stroke={isDark ? "rgba(34, 211, 238, 0.3)" : "rgba(37, 99, 235, 0.3)"} strokeWidth="0.8" />
-                      <line x1="45" y1="42.5" x2="58" y2="38" stroke={isDark ? "rgba(34, 211, 238, 0.3)" : "rgba(37, 99, 235, 0.3)"} strokeWidth="0.8" />
-
-                      {/* Solar Panel (Isometric Grid on Roof Slope) */}
-                      <polygon points="26,16 59,4.5 68,22.5 34,34" fill={solarCharge ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.05)"} stroke={solarCharge ? "#f59e0b" : "#10b981"} strokeWidth="1.2" className="transition-colors duration-500" />
-                      <line x1="42.5" y1="10.25" x2="51" y2="28.25" stroke={solarCharge ? "rgba(245, 158, 11, 0.6)" : "rgba(16, 185, 129, 0.4)"} strokeWidth="0.8" />
-                      <line x1="30" y1="25" x2="63.5" y2="13.5" stroke={solarCharge ? "rgba(245, 158, 11, 0.6)" : "rgba(16, 185, 129, 0.4)"} strokeWidth="0.8" />
-
-                      {/* Glowing Energy Flow Node Animation */}
+                      <rect width="100" height="70" fill="url(#hg2)" />
+                      <path d="M 15 45 L 50 33 L 70 43 M 50 33 L 50 13 M 50 13 L 15 25 M 50 13 L 70 23 M 50 13 L 60 3" fill="none" stroke={isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"} strokeWidth="0.8" strokeDasharray="2 2" />
+                      {[
+                        "M 15 45 L 35 55 L 70 43","M 15 25 L 35 35 L 70 23","M 15 25 L 25 15 L 35 35",
+                      ].map((d, i) => <path key={i} d={d} fill="none" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />)}
+                      <line x1="15" y1="45" x2="15" y2="25" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" />
+                      <line x1="35" y1="55" x2="35" y2="35" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" />
+                      <line x1="70" y1="43" x2="70" y2="23" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" />
+                      <line x1="25" y1="15" x2="60" y2="3" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" />
+                      <line x1="60" y1="3" x2="70" y2="23" stroke={isDark ? "rgba(34,211,238,0.55)" : "rgba(37,99,235,0.55)"} strokeWidth="1.2" strokeLinecap="round" />
+                      <path d="M 22 48.5 L 28 51.5 L 28 41.5 L 22 38.5 Z" fill="none" stroke={isDark ? "rgba(34,211,238,0.5)" : "rgba(37,99,235,0.5)"} strokeWidth="1" />
+                      <path d="M 45 46.5 L 58 42 L 58 34 L 45 38.5 Z" fill="none" stroke={isDark ? "rgba(34,211,238,0.5)" : "rgba(37,99,235,0.5)"} strokeWidth="1" />
+                      <line x1="51.5" y1="44.25" x2="51.5" y2="36.25" stroke={isDark ? "rgba(34,211,238,0.3)" : "rgba(37,99,235,0.3)"} strokeWidth="0.8" />
+                      <line x1="45" y1="42.5" x2="58" y2="38" stroke={isDark ? "rgba(34,211,238,0.3)" : "rgba(37,99,235,0.3)"} strokeWidth="0.8" />
+                      <polygon points="26,16 59,4.5 68,22.5 34,34" fill={solarCharge ? "rgba(245,158,11,0.18)" : "rgba(16,185,129,0.07)"} stroke={solarCharge ? "#f59e0b" : "#10b981"} strokeWidth="1.2" className="transition-colors duration-500" />
+                      <line x1="42.5" y1="10.25" x2="51" y2="28.25" stroke={solarCharge ? "rgba(245,158,11,0.65)" : "rgba(16,185,129,0.45)"} strokeWidth="0.8" />
+                      <line x1="30" y1="25" x2="63.5" y2="13.5" stroke={solarCharge ? "rgba(245,158,11,0.65)" : "rgba(16,185,129,0.45)"} strokeWidth="0.8" />
                       {solarCharge && (
                         <>
-                          <circle r="2" fill="#f59e0b" className="drop-shadow-[0_0_3px_#f59e0b]">
-                            <animateMotion dur="2.5s" repeatCount="indefinite" path="M 35 55 L 35 35 L 25 15 L 60 3" />
-                          </circle>
-                          <circle r="1.5" fill="#f59e0b" className="drop-shadow-[0_0_3px_#f59e0b]">
-                            <animateMotion dur="2.5s" begin="1.25s" repeatCount="indefinite" path="M 35 55 L 35 35 L 25 15 L 60 3" />
-                          </circle>
+                          <circle r="2" fill="#f59e0b"><animateMotion dur="2.5s" repeatCount="indefinite" path="M 35 55 L 35 35 L 25 15 L 60 3" /></circle>
+                          <circle r="1.5" fill="#f59e0b"><animateMotion dur="2.5s" begin="1.25s" repeatCount="indefinite" path="M 35 55 L 35 35 L 25 15 L 60 3" /></circle>
                         </>
                       )}
-
-                      {/* Front Peak Node */}
                       <circle cx="25" cy="15" r="2.5" fill={solarCharge ? "#f59e0b" : "#10b981"} className="animate-ping" style={{ transformOrigin: "25px 15px" }} />
                       <circle cx="25" cy="15" r="1.5" fill={solarCharge ? "#f59e0b" : "#10b981"} />
                     </svg>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-            </div>
+            </div>{/* end right column */}
+          </div>{/* end grid */}
+        </div>{/* end hero */}
 
-          </div>
-
-        </div>
-
-        {/* Footer Metrics & Partner Logos */}
-        <div className="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-900/60 space-y-6 w-full text-left">
-          {/* Stats grid */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* ══ FOOTER ══ */}
+        <div className="mt-7 pt-5 border-t border-slate-200/40 dark:border-slate-800/40 space-y-5 w-full text-left">
+          {/* Animated stat counters */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
             {[
-              { val: "10,000+", label: "Households Monitored" },
-              { val: "95%", label: "AI Prediction Accuracy" },
-              { val: "2.5M kWh", label: "Energy Saved" },
-              { val: "5,200 Tons", label: "CO₂ Reduced" }
+              { to: 10000, suffix: "+",    label: "Households Monitored",  color: "blue"    },
+              { to: 95,    suffix: "%",    label: "AI Prediction Accuracy", color: "violet"  },
+              { to: 2500,  suffix: " kWh", label: "Energy Saved (K)",       color: "emerald" },
+              { to: 5200,  suffix: " T",   label: "CO₂ Reduced",            color: "cyan"    },
             ].map((stat, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-white/60 dark:bg-slate-950/10 border border-slate-200/50 dark:border-slate-900/20 backdrop-blur-sm hover:shadow-sm transition-all duration-300">
-                <p className="text-xl font-display font-black leading-none bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-cyan-600 dark:from-emerald-450 dark:to-cyan-400">{stat.val}</p>
-                <p className="text-[8px] font-extrabold text-slate-655 dark:text-slate-400 uppercase tracking-wider mt-1">{stat.label}</p>
-              </div>
+              <motion.div key={idx}
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + idx * 0.08 }}
+                className="relative overflow-hidden p-3 rounded-2xl bg-white/65 dark:bg-slate-900/30 border border-slate-200/55 dark:border-slate-800/40 backdrop-blur-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+                <div className={`absolute top-0 right-0 w-12 h-12 rounded-full opacity-10 blur-xl ${
+                  stat.color === "blue" ? "bg-blue-500" : stat.color === "violet" ? "bg-violet-500" :
+                  stat.color === "emerald" ? "bg-emerald-500" : "bg-cyan-500"
+                }`} />
+                <p className={`text-[18px] font-display font-black leading-none ${
+                  stat.color === "blue" ? "text-blue-700 dark:text-blue-400" :
+                  stat.color === "violet" ? "text-violet-700 dark:text-violet-400" :
+                  stat.color === "emerald" ? "text-emerald-700 dark:text-emerald-400" : "text-cyan-700 dark:text-cyan-400"
+                }`}>
+                  <Counter to={stat.to} suffix={stat.suffix} />
+                </p>
+                <p className="text-[8px] font-extrabold text-slate-550 dark:text-slate-400 uppercase tracking-wider mt-1">{stat.label}</p>
+              </motion.div>
             ))}
           </div>
 
-          {/* Partner Brand Logos */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
-              <p className="text-[8px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center shrink-0">
-                Trusted Partner Integration
-              </p>
-              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
+          {/* Partners */}
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
+              <p className="text-[8px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0">Trusted Partner Integration</p>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 opacity-40 dark:opacity-30 select-none grayscale hover:grayscale-0 hover:opacity-70 dark:hover:opacity-60 transition-all duration-300">
-              <span className="text-[10px] font-black tracking-tighter font-sans uppercase text-slate-900 dark:text-white">TATA POWER</span>
-              <span className="text-[11px] font-extrabold tracking-tight lowercase text-slate-900 dark:text-white">adani</span>
+            <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 opacity-35 dark:opacity-25 grayscale hover:grayscale-0 hover:opacity-65 dark:hover:opacity-55 transition-all duration-500">
+              <span className="text-[10px] font-black uppercase tracking-tighter text-slate-900 dark:text-white">TATA POWER</span>
+              <span className="text-[11px] font-extrabold lowercase text-slate-900 dark:text-white">adani</span>
               <span className="text-[10px] font-black tracking-wide text-slate-900 dark:text-white">▲ Azure</span>
               <span className="text-[10px] font-black tracking-widest italic text-slate-900 dark:text-white">SIEMENS</span>
               <span className="text-[10px] font-bold tracking-wide text-slate-900 dark:text-white">Schneider <span className="text-emerald-500">Electric</span></span>
             </div>
           </div>
+          <p className="text-slate-400 dark:text-slate-500 text-[10px] tracking-wide">
+            © 2026 EnergyAI · Enterprise-grade Encryption · Secure &amp; Private
+          </p>
         </div>
-        {/* Footer info */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-slate-455 dark:text-slate-500 text-[10px] tracking-wide mt-4"
-        >
-          © 2026 EnergyAI · Enterprise-grade Encryption · Secure & Private
-        </motion.p>
       </div>
 
       {/* --- RIGHT PANEL: Premium Glass Form (30%) --- */}

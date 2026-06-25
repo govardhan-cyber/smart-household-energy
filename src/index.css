@@ -60,7 +60,6 @@
   font-family: var(--font-sans);
   background-color: #F8FAFC;
   color: #0F172A;
-  transition: background-color 0.3s ease, color 0.3s ease;
   --slider-track-bg: #e2e8f0;
 }
 
@@ -113,60 +112,216 @@ body {
 
 /* Print Styles for PDF Export */
 @media print {
-  header, nav, footer, button, select, .no-print, hr {
+  /* Force color graphics & gradients in print output */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Stop all transitions and animations during printing for instant preview rendering */
+  *, *:before, *:after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Target page properties */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  /* Hide interactive, navigation, and editing elements */
+  header, nav, footer, button, select, .no-print, hr, .toast-alert, [role="tooltip"], .chatbot-button {
     display: none !important;
   }
-  body, #root, main {
-    background: white !important;
-    color: black !important;
-    padding: 0 !important;
+
+  /* Unconstrain body and page wrappers */
+  body, html, #root, #root > div, main, .app-container, [class*="min-h-screen"], [class*="min-h-"] {
+    display: block !important;
+    position: relative !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     margin: 0 !important;
-  }
-  .bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-50\/50 {
-    background: transparent !important;
-    border-color: #E2E8F0 !important;
+    padding: 0 !important;
     box-shadow: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
   }
-  .text-slate-900, .text-slate-800, .text-slate-700 {
-    color: black !important;
+
+  /* Hide interactive animated ThreeBackground WebGL canvases */
+  #three-bg-canvas, canvas.webgl, .three-background-canvas {
+    display: none !important;
   }
-  .text-primary-blue, .text-primary-green {
-    color: #1E40AF !important;
+
+  /* Flatten all card shadows, backgrounds, and translucent borders */
+  .bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-50\/50, .bg-slate-900, .bg-slate-950,
+  .dark .bg-white, .dark .bg-slate-900, .dark .bg-slate-950,
+  .bg-gradient-to-br, .bg-gradient-to-r, .dark .bg-gradient-to-br, .dark .bg-gradient-to-r,
+  .bg-white\/60, .bg-white\/75, .bg-slate-900\/60, .bg-slate-950\/60, .bg-slate-950\/75,
+  .dark .bg-white\/60, .dark .bg-white\/75, .dark .bg-slate-900\/60, .dark .bg-slate-950\/60,
+  .rounded-3xl, .rounded-2xl {
+    background: #ffffff !important;
+    background-image: none !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
+
+  /* Force card border accents (left colored borders) to keep their visibility */
+  .border-l-4 {
+    border-left-width: 4px !important;
+  }
+  .border-l-primary-blue { border-left-color: #2563eb !important; }
+  .border-l-amber-500 { border-left-color: #d97706 !important; }
+  .border-l-primary-green { border-left-color: #10b981 !important; }
+
+  /* Ensure text colors are high-contrast dark gray for readability */
+  .text-white, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-350, .text-slate-400, .text-slate-505, .text-slate-500,
+  .dark .text-white, .dark .text-slate-100, .dark .text-slate-200, .dark .text-slate-300, .dark .text-slate-350, .dark .text-slate-400, .dark .text-slate-500 {
+    color: #475569 !important; /* Muted text color */
+  }
+
+  .text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600,
+  .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700, .dark .text-slate-600 {
+    color: #0f172a !important; /* Main title text */
+  }
+
+  /* Primary brand accent colors in print */
+  .text-primary-blue, .text-blue-600, .text-blue-500 {
+    color: #1e40af !important;
+  }
+  .text-primary-green, .text-emerald-500, .text-teal-500, .text-emerald-600 {
+    color: #047857 !important;
+  }
+  .text-amber-500, .text-amber-600, .text-yellow-600 {
+    color: #b45309 !important;
+  }
+
+  /* Adjust grid columns to span full width to fit portrait orientation layout */
+  .grid {
+    display: block !important;
+  }
+  .grid > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Exceptions for grids that display small side-by-side specs/badges */
+  .grid-cols-2, .grid-cols-3, .grid-cols-4, .print\:grid-cols-2, .print\:grid-cols-3 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 15px !important;
+  }
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .grid-cols-2 > *, .grid-cols-3 > *, .grid-cols-4 > *, .print\:grid-cols-2 > *, .print\:grid-cols-3 > * {
+    width: auto !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Tables formatting for print */
   table {
     border-collapse: collapse !important;
     width: 100% !important;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
   }
   th, td {
-    border: 1px solid #CBD5E1 !important;
+    border: 1px solid #cbd5e1 !important;
     padding: 8px !important;
+    color: #334155 !important;
+  }
+  thead tr {
+    background-color: #f1f5f9 !important;
   }
 
-  /* Avoid splitting charts and tables across pages */
-  .page-break-avoid, .recharts-wrapper, table, tr, blockquote, .grid, .grid-cols-1, .grid-cols-2 {
+  /* Avoid page breaks inside sections and charts */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  .page-break-avoid, tr, table, img, svg, canvas, .recharts-wrapper, .chart-card, .print-page-break-avoid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* Modal print adjustments */
-  .fixed {
+  /* Recharts custom color styling overrides for legibility */
+  .recharts-text, .recharts-label {
+    fill: #334155 !important;
+    font-size: 10px !important;
+  }
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #e2e8f0 !important;
+  }
+  .recharts-legend-item-text {
+    color: #334155 !important;
+  }
+
+  /* Modal print separation - isolates only the active modal and prints it full-screen */
+  #root:has(.print-modal-parent) > *:not(:has(.print-modal-parent)) {
+    display: none !important;
+  }
+  body:has(.print-modal-parent) .print-background-content {
+    display: none !important;
+  }
+  
+  /* Make the print modal flow as a normal relative block to avoid page parent height collapse */
+  .print-modal-parent {
     position: relative !important;
     inset: auto !important;
     display: block !important;
-    background: transparent !important;
+    width: 100% !important;
+    height: auto !important;
+    z-index: 9999 !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
-  .bg-slate-950\/60, .backdrop-blur-sm {
+
+  /* Hide backdrop overlay in print */
+  .bg-slate-950\/60,
+  .bg-slate-950\/90,
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
     display: none !important;
   }
-  .max-w-2xl {
-    max-width: none !important;
+
+  /* Force modal content container to use full page width and remove modal borders/shadows */
+  .print-modal-parent > div:not(.bg-slate-950\/60) {
     width: 100% !important;
+    max-width: none !important;
     border: none !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
-  .max-h-\[85vh\] {
-    max-h: none !important;
+
+  /* Force modal containers and child containers to expand vertically and lay out as normal blocks */
+  .print-modal-parent,
+  .print-modal-parent div:not(.grid):not([class*="grid-cols-"]),
+  .print-modal-parent section,
+  .print-modal-parent main {
+    display: block !important;
+    position: relative !important;
+    max-height: none !important;
+    overflow: visible !important;
     overflow-y: visible !important;
+    height: auto !important;
+    flex: none !important;
   }
 }
 
@@ -378,10 +533,93 @@ body {
 }
 
 /* ── Premium Background Redesign Utilities ───────────────── */
+
+/* Legacy aurora-shift (kept for compatibility) */
 @keyframes aurora-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+/* Aurora streak: top banner that slowly shifts hues and drifts */
+@keyframes aurora-top-drift {
+  0%   { background-position: 0% 0%;   opacity: 1; }
+  33%  { background-position: 60% 30%; opacity: 0.75; }
+  66%  { background-position: 100% 10%; opacity: 0.9; }
+  100% { background-position: 0% 0%;   opacity: 1; }
+}
+
+@keyframes aurora-bottom-drift {
+  0%   { background-position: 100% 100%; opacity: 1; }
+  33%  { background-position: 40% 70%;  opacity: 0.7; }
+  66%  { background-position: 0% 90%;   opacity: 0.85; }
+  100% { background-position: 100% 100%; opacity: 1; }
+}
+
+/* Aurora colors registered properties for smooth gradient transitions */
+@property --aurora-color-1 { syntax: '<color>'; inherits: true; initial-value: hsla(215, 90%, 65%, 0.18); }
+@property --aurora-color-2 { syntax: '<color>'; inherits: true; initial-value: hsla(230, 85%, 60%, 0.08); }
+@property --aurora-color-3 { syntax: '<color>'; inherits: true; initial-value: hsla(185, 85%, 60%, 0.12); }
+@property --aurora-color-4 { syntax: '<color>'; inherits: true; initial-value: hsla(245, 85%, 65%, 0.15); }
+@property --aurora-color-5 { syntax: '<color>'; inherits: true; initial-value: hsla(205, 80%, 60%, 0.07); }
+@property --aurora-color-6 { syntax: '<color>'; inherits: true; initial-value: hsla(170, 80%, 60%, 0.10); }
+
+.aurora-streak-top {
+  --aurora-color-1: hsla(215, 90%, 65%, 0.18);
+  --aurora-color-2: hsla(230, 85%, 60%, 0.08);
+  --aurora-color-3: hsla(185, 85%, 60%, 0.12);
+  background: radial-gradient(ellipse 80% 60% at 20% -10%,
+    var(--aurora-color-1) 0%,
+    var(--aurora-color-2) 40%,
+    transparent 70%
+  ), radial-gradient(ellipse 50% 45% at 75% 5%,
+    var(--aurora-color-3) 0%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: aurora-top-drift 26s ease-in-out infinite;
+  filter: blur(18px);
+  opacity: 0.38;
+}
+
+.aurora-streak-bottom {
+  --aurora-color-4: hsla(245, 85%, 65%, 0.15);
+  --aurora-color-5: hsla(205, 80%, 60%, 0.07);
+  --aurora-color-6: hsla(170, 80%, 60%, 0.10);
+  background: radial-gradient(ellipse 70% 55% at 80% 110%,
+    var(--aurora-color-4) 0%,
+    var(--aurora-color-5) 45%,
+    transparent 70%
+  ), radial-gradient(ellipse 45% 40% at 25% 105%,
+    var(--aurora-color-6) 0%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: aurora-bottom-drift 30s ease-in-out infinite;
+  filter: blur(22px);
+  opacity: 0.30;
+}
+
+/* Dark mode overrides (smoothly transitioning values) */
+.dark .aurora-streak-top {
+  --aurora-color-1: hsla(175, 90%, 55%, 0.16);
+  --aurora-color-2: hsla(195, 85%, 50%, 0.07);
+  --aurora-color-3: hsla(145, 80%, 50%, 0.10);
+  filter: blur(20px);
+  opacity: 0.55;
+}
+
+.dark .aurora-streak-bottom {
+  --aurora-color-4: hsla(210, 85%, 55%, 0.13);
+  --aurora-color-5: hsla(170, 80%, 50%, 0.06);
+  --aurora-color-6: hsla(155, 80%, 50%, 0.09);
+  filter: blur(25px);
+  opacity: 0.42;
+}
+
+.animate-aurora {
+  background-size: 200% 200%;
+  animation: aurora-shift 22s ease infinite;
 }
 
 @keyframes float-orb-1 {
@@ -399,11 +637,6 @@ body {
   50% { transform: translate(25px, 25px) scale(1.08); }
 }
 
-.animate-aurora {
-  background-size: 200% 200%;
-  animation: aurora-shift 22s ease infinite;
-}
-
 .animate-float-orb-1 {
   animation: float-orb-1 18s ease-in-out infinite alternate;
 }
@@ -416,9 +649,9 @@ body {
   animation: float-orb-3 16s ease-in-out infinite alternate;
 }
 
-/* High-fidelity procedural SVG noise pattern */
+/* High-fidelity static noise pattern - optimized to use hardware-accelerated canvas background image passed from React to avoid scroll repaint lag */
 .grain-noise-overlay {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 /* ── Wind Turbine & Smart House Animations ── */
@@ -451,6 +684,44 @@ body {
   animation: window-glow 4s ease-in-out infinite;
 }
 
+/* ── Solar ray pulse ── */
+@keyframes solar-ray-pulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+  50%       { opacity: 0.9; transform: scaleY(1.3); }
+}
+
+.solar-ray {
+  transform-origin: bottom center;
+  animation: solar-ray-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes solar-sun-pulse {
+  0%, 100% {
+    r: 4.5;
+    filter: drop-shadow(0 0 4px rgba(250,204,21,0.6));
+    opacity: 0.8;
+  }
+  50% {
+    r: 6;
+    filter: drop-shadow(0 0 8px rgba(250,204,21,0.9)) drop-shadow(0 0 14px rgba(250,204,21,0.4));
+    opacity: 1;
+  }
+}
+
+.solar-sun-pulse {
+  animation: solar-sun-pulse 2.8s ease-in-out infinite;
+}
+
+/* ── Turbine energy flow line ── */
+@keyframes turbine-flow {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0;  }
+}
+
+.turbine-flow-line {
+  animation: turbine-flow 1.8s linear infinite;
+}
+
 @keyframes wave-drift {
   0%, 100% { transform: translateY(0px) scaleY(1); }
   50% { transform: translateY(-4px) scaleY(1.03); }
@@ -458,6 +729,63 @@ body {
 
 .animated-wave {
   animation: wave-drift 8s ease-in-out infinite alternate;
+}
+
+
+
+
+/* Background vignette overlay transitions */
+.vignette-overlay {
+  background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(238,242,255,0.58) 100%);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.dark .vignette-overlay {
+  background: radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(7,12,18,0.60) 100%);
+}
+
+/* Smart Home SVG Gradient Stops */
+.roof-stop-0 {
+  stop-color: #2563eb;
+}
+.dark .roof-stop-0 {
+  stop-color: #22d3ee;
+}
+.roof-stop-1 {
+  stop-color: #06b6d4;
+}
+.dark .roof-stop-1 {
+  stop-color: #10b981;
+}
+.roof-stop-2 {
+  stop-color: #2563eb;
+}
+.dark .roof-stop-2 {
+  stop-color: #22d3ee;
+}
+
+.panel-stop-0 {
+  stop-color: #1e40af;
+}
+.dark .panel-stop-0 {
+  stop-color: #1e3a5f;
+}
+.panel-stop-1 {
+  stop-color: #0369a1;
+}
+.dark .panel-stop-1 {
+  stop-color: #0f766e;
+}
+
+/* Premium Hover Lift Card Class */
+.card-client {
+  transition: all 0.3s ease !important;
+}
+
+.card-client:hover {
+  transform: translateY(-10px) !important;
 }
 
 

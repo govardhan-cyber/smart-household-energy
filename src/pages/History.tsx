@@ -235,9 +235,28 @@ export const History: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen">
+      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left print-background-content">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-blue-900 flex items-center gap-2">
+              <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
+              SMART HOUSEHOLD ENERGY PORTAL
+            </h1>
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              Historical Consumption & Carbon Footprint Audit Log
+            </p>
+          </div>
+          <div className="text-right text-xs text-slate-500 font-mono">
+            <div>Report Generated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <div>Account: {user?.email || "Govardhan"}</div>
+            <div>Security Status: Verified & Audited</div>
+          </div>
+        </div>
+      </div>
       
       {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full">
+      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full print-background-content">
         
         {/* Left Sidebar Column - Sticky */}
         <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
@@ -442,7 +461,7 @@ export const History: React.FC = () => {
       {/* ── Detail Modal ─────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedReport && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 print-modal-parent">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setSelectedReport(null)}
@@ -455,6 +474,25 @@ export const History: React.FC = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative bg-white/95 dark:bg-slate-950/90 backdrop-blur-md w-full max-w-2xl rounded-3xl border border-slate-200/60 dark:border-slate-850 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 text-left"
             >
+              {/* ─── PRINT ONLY MODAL HEADER ────────────────────────────────────────── */}
+              <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 p-6 mb-2 text-left z-10 bg-white dark:bg-slate-950">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <h1 className="text-xl font-black tracking-tight text-blue-900 flex items-center gap-2">
+                      <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
+                      SMART HOUSEHOLD ENERGY PORTAL
+                    </h1>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">
+                      Historical Consumption & Carbon Footprint Audit Log
+                    </p>
+                  </div>
+                  <div className="text-right text-xs text-slate-500 font-mono">
+                    <div>Report Generated: {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                    <div>Account: {user?.email || "Govardhan"}</div>
+                    <div>Security Status: Verified & Audited</div>
+                  </div>
+                </div>
+              </div>
               {/* Soft ambient backgrounds */}
               <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary-blue/5 dark:bg-primary-blue/5 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary-green/5 dark:bg-primary-green/5 rounded-full blur-3xl pointer-events-none" />
