@@ -20,3 +20,13 @@
   - **Recovery Instruction**:
     - If the user says "recover version 8", run `git checkout version-8`.
 
+- **Version 9**: Points to git tag `version-9` (Commit `bcf07bc`).
+  - **Features**:
+    - Added glassmorphic styling, glowing gradient border, and spring scaling/wiggle animations to the chatbot container and trigger.
+    - Replaced the chatbot logo with a custom-generated friendly 3D robot avatar matching reference styling.
+    - Updated chatbot instructions and greeting to explicitly state its access to context-aware records, bills, and simulations.
+    - Removed the harsh black border from the home page recommendation box in favor of a soft glass backdrop.
+  - **Recovery Instruction**:
+    - If the user says "recover version 9", run `git checkout version-9`.
+
+

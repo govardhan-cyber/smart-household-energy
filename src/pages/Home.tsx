@@ -8,14 +8,13 @@ import {
   LayoutList,
   Star,
   TrendingDown,
-  BarChart3,
   Lightbulb,
   ChevronRight,
   Sparkles,
   CheckCircle2,
   IndianRupee,
   Leaf,
-  Users,
+  Sun,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeCanvas } from "../components/ThreeCanvas";
@@ -23,98 +22,61 @@ import { ThreeDCard } from "../components/ThreeDCard";
 
 
 
-/* ── animated counter hook ─────────────────────────── */
-function useCountUp(end: number, duration = 1800, start = false) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    let startTime: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * end));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [end, duration, start]);
-  return count;
-}
 
-
-/* ── stat item with counter ─────────────────────────── */
-function StatItem({ icon: Icon, label, suffix, prefix, value, sub, color, delay, inView }: {
-  icon: React.ElementType; label: string; suffix?: string; prefix?: string; value: number;
-  sub: string; color: string; delay: number; inView: boolean;
-}) {
-  const count = useCountUp(value, 1800, inView);
-
-  let iconBgClass = "bg-slate-100 dark:bg-slate-800";
-  let textColorClass = color;
-  let hoverGlowClass = "";
-  
-  if (color.includes("primary-green")) {
-    iconBgClass = "bg-emerald-500/10 dark:bg-emerald-500/15";
-    textColorClass = "text-emerald-500 dark:text-emerald-450";
-    hoverGlowClass = "hover:shadow-emerald-500/5 hover:border-emerald-500/30 dark:hover:border-emerald-500/40";
-  } else if (color.includes("primary-blue")) {
-    iconBgClass = "bg-blue-500/10 dark:bg-blue-500/15";
-    textColorClass = "text-blue-500 dark:text-blue-400";
-    hoverGlowClass = "hover:shadow-blue-500/5 hover:border-blue-500/30 dark:hover:border-blue-500/40";
-  } else if (color.includes("accent-neon")) {
-    iconBgClass = "bg-cyan-500/10 dark:bg-cyan-500/15";
-    textColorClass = "text-cyan-500 dark:text-cyan-400";
-    hoverGlowClass = "hover:shadow-cyan-500/5 hover:border-cyan-500/30 dark:hover:border-cyan-500/40";
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      className={`relative p-6 rounded-[24px] bg-white/70 dark:bg-[#11192e]/90 border border-slate-200/50 dark:border-slate-800/60 shadow-sm flex flex-col items-center text-center space-y-3.5 ${hoverGlowClass} transition-all duration-300`}
-    >
-      <div className={`w-11 h-11 rounded-full flex items-center justify-center ${iconBgClass} ${textColorClass}`}>
-        <Icon className="w-5.5 h-5.5" />
-      </div>
-      <div className="space-y-1">
-        <div className={`text-3xl sm:text-4xl font-display font-black ${textColorClass} tabular-nums leading-none tracking-tight`}>
-          {prefix}{count.toLocaleString()}{suffix}
-        </div>
-        <div className="text-sm font-bold text-slate-800 dark:text-slate-100">{label}</div>
-        <p className="text-xs text-slate-550 dark:text-slate-400 max-w-[200px] mx-auto leading-relaxed">{sub}</p>
-      </div>
-    </motion.div>
-  );
-}
 
 /* ── feature card ────────────────────────────────────── */
 function FeatureCard({ icon: Icon, title, description, color, gradient, delay }: {
   icon: React.ElementType; title: string; description: string;
   color: string; gradient: string; delay: number;
 }) {
+  let glowTypeClass = "";
+  let innerGlow = "";
+  let iconClass = "";
+
+  if (color.includes("red-500")) {
+    glowTypeClass = "card-client-red";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(239,68,68,0.15),transparent_65%)]";
+    iconClass = "icon-cpu";
+  } else if (color.includes("emerald-500")) {
+    glowTypeClass = "card-client-emerald";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(16,185,129,0.15),transparent_65%)]";
+    iconClass = "icon-zap";
+  } else if (color.includes("amber-500")) {
+    glowTypeClass = "card-client-amber";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.15),transparent_65%)]";
+    iconClass = "icon-sun";
+  } else if (color.includes("blue-500")) {
+    glowTypeClass = "card-client-blue";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.15),transparent_65%)]";
+    iconClass = "icon-list";
+  } else if (color.includes("purple-500")) {
+    glowTypeClass = "card-client-purple";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(168,85,247,0.15),transparent_65%)]";
+    iconClass = "icon-sparkles";
+  } else if (color.includes("cyan-500")) {
+    glowTypeClass = "card-client-cyan";
+    innerGlow = "bg-[radial-gradient(circle_at_30%_30%,rgba(6,182,212,0.15),transparent_65%)]";
+    iconClass = "icon-shield";
+  }
+
   return (
-    <ThreeDCard maxTilt={8}>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay }}
-        whileHover={{ scale: 1.01 }}
-        className="relative group p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300 overflow-hidden text-left cursor-default w-full h-full"
-      >
-        <div className={`absolute inset-0 ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl`} />
-        <div className="relative z-10 space-y-4">
-          <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-sm`}>
-            <Icon className="w-6 h-6" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{description}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      className={`relative group p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm card-client ${glowTypeClass} overflow-hidden text-left cursor-default w-full h-full`}
+    >
+      <div className={`absolute inset-0 ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl`} />
+      <div className={`absolute inset-0 ${innerGlow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl`} />
+      <div className="relative z-10 space-y-4">
+        <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-sm ${iconClass}`}>
+          <Icon className="w-6 h-6" />
         </div>
-      </motion.div>
-    </ThreeDCard>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
+        <p className="text-sm text-slate-550 dark:text-slate-400 leading-relaxed">{description}</p>
+      </div>
+    </motion.div>
   );
 }
 
@@ -180,8 +142,7 @@ function TestimonialCard({ name, location, discom, avatar, savings, quote, ratin
 /* ════════════════════════════════════════════════════ */
 export const Home: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const [statsInView, setStatsInView] = useState(false);
+
 
 
 
@@ -257,13 +218,6 @@ export const Home: React.FC = () => {
     activeTip = "Optimal range! Shift heavy usage to solar hours (11am-2pm) to use green energy.";
   }
 
-  useEffect(() => {
-    const el = statsRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsInView(true); }, { threshold: 0.3 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
 
   const words = ["smarter.", "cheaper.", "greener."];
   const [wordIdx, setWordIdx] = useState(0);
@@ -453,33 +407,33 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Dedicated card wrapper that defines the coordinate system for the card and its floating badges */}
-          <div className="relative w-full max-w-[420px] z-10 pointer-events-auto mt-6 lg:mt-0">
+          <div className="relative w-full max-w-[480px] z-10 pointer-events-auto mt-6 lg:mt-0">
             
             {/* Floating badge top-right */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.9, type: "spring", stiffness: 260 }}
-              className="absolute -top-5 -right-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
+              className="absolute -top-5 -right-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
             >
               <IndianRupee className="w-4 h-4 text-primary-green" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">₹{Math.round(estimatedBill)} estimated</span>
+              <span className="text-xs font-bold text-slate-850 dark:text-slate-200">₹{Math.round(estimatedBill)} estimated</span>
             </motion.div>
-
+ 
             {/* Floating badge bottom-left */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.0, type: "spring", stiffness: 260 }}
-              className="absolute -bottom-5 -left-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
+              className="absolute -bottom-5 -left-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
             >
               <CheckCircle2 className="w-4 h-4 text-primary-green animate-pulse" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{activeSlabName}</span>
+              <span className="text-xs font-bold text-slate-850 dark:text-slate-200">{activeSlabName}</span>
             </motion.div>
-
+ 
             <ThreeDCard maxTilt={6} className="shadow-2xl shadow-slate-900/10 dark:shadow-slate-950/50">
-              <div className="bg-white dark:bg-slate-900 py-8 px-7 rounded-[2.2rem] border border-slate-200/80 dark:border-slate-700/60 select-none">
-                <div className="flex items-center justify-between mb-7">
+              <div className="bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl py-12 px-9 rounded-[2.2rem] border border-slate-200/50 dark:border-slate-850/60 select-none">
+                <div className="flex items-center justify-between mb-9">
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Interactive Simulator</p>
                     <div className="flex items-baseline gap-1 mt-2">
@@ -507,7 +461,7 @@ export const Home: React.FC = () => {
                 </div>
 
                 {/* Animated progress bars with slider overrides */}
-                <div className="space-y-5.5">
+                <div className="space-y-7">
                   {/* AC Row */}
                   <div>
                     <div className="flex justify-between text-xs font-bold mb-2">
@@ -543,7 +497,7 @@ export const Home: React.FC = () => {
                         className="h-full bg-gradient-to-r from-warning-orange to-amber-500 rounded-full"
                       />
                     </div>
-                    <div className="text-[9px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-left pl-1">Constant baseline draw</div>
+                    <div className="text-[9px] text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider text-left pl-1">Constant baseline draw</div>
                   </div>
 
                   {/* Fans Row */}
@@ -573,13 +527,17 @@ export const Home: React.FC = () => {
                 {/* Dynamic Recommendation Tip */}
                 <motion.div
                   key={activeTip}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-7 p-4 rounded-2xl bg-green-50/50 dark:bg-green-950/20 border border-green-150/70 dark:border-green-900/30 flex items-start gap-2.5"
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                  className="mt-9 p-4.5 rounded-2xl bg-emerald-500/[0.04] dark:bg-emerald-500/[0.03] backdrop-blur-md border border-emerald-500/10 dark:border-emerald-500/10 shadow-[0_4px_20px_rgba(16,185,129,0.03)] flex items-start gap-3.5"
                 >
-                  <Lightbulb className="w-4 h-4 text-primary-green flex-shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed text-left">
-                    <span className="font-bold text-slate-800 dark:text-slate-200">AI Suggestion:</span> {activeTip}
+                  <div className="p-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                    <Lightbulb className="w-4 h-4" />
+                  </div>
+                  <p className="text-[11.5px] text-slate-600 dark:text-slate-400 leading-relaxed text-left pt-0.5">
+                    <span className="font-display font-bold text-slate-800 dark:text-slate-200 mr-1.5">AI Suggestion:</span>
+                    {activeTip}
                   </p>
                 </motion.div>
               </div>
@@ -588,47 +546,45 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ══ STATISTICS BANNER ═════════════════════════════════ */}
-      <section
-        ref={statsRef}
-        className="relative border-y border-slate-200/60 dark:border-slate-800/40 py-14 overflow-hidden bg-slate-50/40 dark:bg-[#0c1222]/80"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-100/30 via-white/20 to-slate-100/30 dark:from-[#0d1527]/90 dark:via-[#111b33]/40 dark:to-[#0d1527]/90 backdrop-blur-[2px]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatItem icon={Users} inView={statsInView} value={12000} suffix="+" label="Households Analyzed" sub="Across AP, Telangana & Karnataka" color="text-primary-green" delay={0} />
-            <StatItem icon={IndianRupee} inView={statsInView} value={520000} prefix="₹" suffix="+" label="Estimated Savings" sub="From slab optimization across users" color="text-primary-blue dark:text-blue-400" delay={0.12} />
-            <StatItem icon={ShieldCheck} inView={statsInView} value={99} suffix="%" label="Billing Accuracy" sub="Verified against actual DISCOM bills" color="text-accent-neon" delay={0.24} />
-          </div>
-        </div>
-      </section>
-
       {/* ══ FEATURES ══════════════════════════════════════════ */}
-      <section className="py-20">
+      <section className="relative py-24 overflow-hidden border-t border-slate-200/50 dark:border-slate-800/30 bg-slate-50/20 dark:bg-transparent">
+        {/* Background glow orb */}
+        <div className="absolute top-[-150px] left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-emerald-500/10 to-cyan-500/10 dark:from-emerald-500/15 dark:to-cyan-500/15 rounded-full blur-[100px] -z-10 pointer-events-none" />
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center space-y-3 mb-14"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-center space-y-4 mb-16"
           >
-            <div className="inline-flex items-center gap-2 text-xs font-bold text-primary-green bg-green-50 dark:bg-green-950/30 border border-green-150 dark:border-green-900/40 px-3 py-1.5 rounded-full">
-              <BarChart3 className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 dark:border-emerald-500/30 px-3.5 py-1.5 rounded-full shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               Why choose us
             </div>
-            <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-slate-900 dark:text-white">
+            
+            <h2 className="text-4xl sm:text-5xl font-display font-black text-slate-900 dark:text-white leading-[1.15] tracking-tight">
               Everything you need to <br />
-              <span className="text-primary-green">cut your bill</span>
+              <span className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">
+                cut your bill
+              </span>
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm">
+            
+            <p className="text-slate-550 dark:text-slate-400 max-w-lg mx-auto text-base leading-relaxed">
               Precise calculations, smart tips and complete privacy — all in one place.
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FeatureCard icon={LayoutList} title="Real AP Slab Billing" description="Follows LT-I domestic tariff exactly. Estimates match your actual APSPDCL / TSSPDCL bill down to the last rupee." color="bg-primary-blue/10 dark:bg-primary-blue/20 text-primary-blue" gradient="bg-gradient-to-br from-primary-blue/4 to-transparent" delay={0} />
-            <FeatureCard icon={Zap} title="Personalized AI Tips" description="We rank your top consumers and surface the single change that saves you the most — specific to your usage pattern." color="bg-primary-green/10 dark:bg-primary-green/20 text-primary-green" gradient="bg-gradient-to-br from-primary-green/4 to-transparent" delay={0.1} />
-            <FeatureCard icon={ShieldCheck} title="Private by Default" description="Your data lives in your account, encrypted at rest. No ads, no sharing. Your home energy is yours alone." color="bg-secondary-teal/10 dark:bg-secondary-teal/20 text-secondary-teal" gradient="bg-gradient-to-br from-secondary-teal/4 to-transparent" delay={0.2} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <FeatureCard icon={Cpu} title="Slab Alert System" description="Get alerted before crossing tariff boundaries. Tracks APSPDCL / TSSPDCL domestic slab boundaries." color="bg-red-500/10 dark:bg-red-500/20 text-red-500" gradient="bg-gradient-to-br from-red-500/4 to-transparent" delay={0} />
+            <FeatureCard icon={Zap} title="Appliance Profiling" description="Audit AC, refrigerator, lights, and water pumps. Understand decay factors and BEE efficiency savings." color="bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500" gradient="bg-gradient-to-br from-emerald-500/4 to-transparent" delay={0.1} />
+            <FeatureCard icon={Sun} title="Solar Net Metering" description="Simulate rooftop solar setup size, calculate amortization paybacks, and evaluate grid net export yields." color="bg-amber-500/10 dark:bg-amber-500/20 text-amber-500" gradient="bg-gradient-to-br from-amber-500/4 to-transparent" delay={0.2} />
+            <FeatureCard icon={LayoutList} title="Bill OCR Scans" description="Upload pdf/image bills. Auto-detect units, slab category charges, electricity taxes, and fuel adjustments." color="bg-blue-500/10 dark:bg-blue-500/20 text-blue-500" gradient="bg-gradient-to-br from-blue-500/4 to-transparent" delay={0.3} />
+            <FeatureCard icon={Sparkles} title="AI Energy Coach" description="Chat with your AI coach. Evaluates household load profiles, flags standby power loss, and ranks savings steps." color="bg-purple-500/10 dark:bg-purple-500/20 text-purple-500" gradient="bg-gradient-to-br from-purple-500/4 to-transparent" delay={0.4} />
+            <FeatureCard icon={ShieldCheck} title="Private By Default" description="Your appliance loads remain secure. No tracking, ads, or data resale. All files encrypted at rest." color="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-500" gradient="bg-gradient-to-br from-cyan-500/4 to-transparent" delay={0.5} />
           </div>
         </div>
       </section>

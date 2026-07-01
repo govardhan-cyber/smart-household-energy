@@ -257,7 +257,7 @@ export const Login: React.FC = () => {
                   </p>
                   <div className="flex items-center gap-2">
                     <button type="button"
-                      className="text-[10px] font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-3.5 py-1.5 rounded-lg shadow-md shadow-blue-500/20 hover:opacity-90 hover:shadow-lg transition-all cursor-pointer">
+                      className="text-[10px] font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-3.5 py-1.5 rounded-lg shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/35 dark:hover:shadow-emerald-500/25 hover:scale-105 active:scale-95 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
                       ⚡ Optimize Now
                     </button>
                     <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">Confidence: 94%</span>
@@ -313,7 +313,7 @@ export const Login: React.FC = () => {
               {/* Stats row – colored gradient cards */}
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.30 }}
                 className="grid grid-cols-3 gap-3">
-                <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-600 dark:from-blue-700 dark:to-cyan-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-blue-500/20 cursor-default">
+                <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-600 dark:from-blue-700 dark:to-cyan-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-blue-500/20 cursor-default card-client card-client-blue">
                   <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-lg" />
                   <span className="text-[8px] font-extrabold text-blue-100 uppercase tracking-wider">Est Savings</span>
                   <div>
@@ -321,7 +321,7 @@ export const Login: React.FC = () => {
                     <span className="text-[8px] text-blue-200 font-bold block mt-1">▲ +14% vs last mo</span>
                   </div>
                 </div>
-                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-emerald-500/20 cursor-default">
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 p-3.5 rounded-[20px] text-left flex flex-col justify-between h-[90px] shadow-lg shadow-emerald-500/20 cursor-default card-client card-client-emerald">
                   <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10 blur-lg" />
                   <span className="text-[8px] font-extrabold text-emerald-100 uppercase tracking-wider">Carbon Reduc.</span>
                   <div>
@@ -329,7 +329,7 @@ export const Login: React.FC = () => {
                     <span className="text-[8px] text-emerald-200 font-bold block mt-1">🌱 142 kg CO₂ saved</span>
                   </div>
                 </div>
-                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/50 p-3 rounded-[20px] flex items-center justify-between h-[90px] gap-2 cursor-default">
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/50 p-3 rounded-[20px] flex items-center justify-between h-[90px] gap-2 cursor-default card-client card-client-cyan">
                   <div>
                     <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Efficiency</span>
                     <p className="text-[12px] font-black text-slate-800 dark:text-slate-200 mt-1">Excellent</p>
@@ -350,10 +350,10 @@ export const Login: React.FC = () => {
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}
                 className="grid grid-cols-2 gap-3">
                 {/* Top Appliances */}
-                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md">
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md card-client card-client-blue">
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <Wifi className="w-3 h-3 text-blue-500 dark:text-cyan-400" />
-                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider">Top Appliances</span>
+                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-455 uppercase tracking-wider">Top Appliances</span>
                   </div>
                   <div className="space-y-2 flex-1 flex flex-col justify-center">
                     {[
@@ -380,9 +380,9 @@ export const Login: React.FC = () => {
                 </div>
 
                 {/* Live Status */}
-                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md">
+                <div className="bg-white/72 dark:bg-slate-900/35 border border-slate-200/65 dark:border-slate-800/45 p-3.5 rounded-[22px] text-left flex flex-col h-[150px] backdrop-blur-md card-client card-client-emerald">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider">Live Status</span>
+                    <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-455 uppercase tracking-wider">Live Status</span>
                     <div className="flex items-center gap-2">
                       <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-450">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />Operational
@@ -652,15 +652,30 @@ export const Login: React.FC = () => {
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-950/30 text-sm font-bold text-slate-800 dark:text-slate-300 hover:bg-slate-50/80 dark:hover:bg-slate-850 dark:hover:border-slate-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                whileHover="hover"
+                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-950/30 text-sm font-bold text-slate-800 dark:text-slate-300 hover:bg-slate-50/80 dark:hover:bg-slate-850 dark:hover:border-slate-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer group"
               >
-                <svg className="h-4.5 w-4.5 shrink-0" viewBox="0 0 24 24">
+                <motion.svg 
+                  variants={{
+                    hover: { scale: 1.25, rotate: [0, -15, 10, 0] }
+                  }}
+                  transition={{ duration: 0.45 }}
+                  className="h-4.5 w-4.5 shrink-0" 
+                  viewBox="0 0 24 24"
+                >
                   <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.1.85-2.22 3.02v2.51h3.58c2.09-1.92 3.29-4.75 3.29-7.38z" />
                   <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.58-2.51c-.99.66-2.26 1.06-3.76 1.06-2.9 0-5.35-1.97-6.22-4.63H2.82v2.59C4.8 21.09 8.16 24 12 24z" />
                   <path fill="#FBBC05" d="M5.78 14.97c-.22-.66-.35-1.37-.35-2.1s.13-1.44.35-2.1V8.18H2.82C2.04 9.73 1.6 11.47 1.6 13.3c0 1.83.44 3.57 1.22 5.12l2.96-2.45z" />
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.16 0 4.8 2.91 2.82 7.02l2.96 2.45c.87-2.66 3.32-4.63 6.22-4.63z" />
-                </svg>
-                Continue with Google
+                </motion.svg>
+                <motion.span
+                  variants={{
+                    hover: { x: 3 }
+                  }}
+                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                >
+                  Continue with Google
+                </motion.span>
               </motion.button>
             </form>
 

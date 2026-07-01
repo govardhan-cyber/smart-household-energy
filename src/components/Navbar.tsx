@@ -137,32 +137,37 @@ export const Navbar: React.FC = () => {
     : [{ name: "FAQ", path: "/faq", icon: HelpCircle }];
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 bg-transparent pointer-events-none ${
-        scrolled ? "py-3" : "py-5"
-      }`}
-    >
+    <header className="sticky top-0 z-50 w-full bg-transparent pointer-events-none py-3">
       <div className="max-w-[94%] xl:max-w-[1400px] 2xl:max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 w-full pointer-events-auto">
         <div
-          className={`relative w-full backdrop-blur-xl border rounded-[24px] transition-all duration-300 ${
+          className={`relative w-full backdrop-blur-2xl border rounded-[24px] transition-[background-color,border-color,box-shadow] duration-300 ${
             scrolled
-              ? "bg-white/75 dark:bg-slate-950/70 border-slate-200/40 dark:border-slate-800/45 shadow-[0_8px_30px_rgb(0,0,0,0.05)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
-              : "bg-white/60 dark:bg-slate-950/50 border-slate-200/30 dark:border-slate-800/30 shadow-[0_4px_20px_rgb(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+              ? "bg-white/40 dark:bg-slate-950/30 border-white/20 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+              : "bg-white/25 dark:bg-slate-950/15 border-white/15 dark:border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.01)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]"
           }`}
         >
           <div className="px-6 h-16 flex items-center justify-between">
             {/* ── Brand / Logo ──────────────────────────────────────── */}
             <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-3 shrink-0 group">
-              <div className="relative w-9.5 h-9.5 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 dark:from-emerald-500 dark:via-teal-600 dark:to-cyan-400 p-[1.5px] shadow-[0_0_12px_rgba(37,99,235,0.2)] dark:shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:scale-105 group-hover:shadow-[0_0_20px_rgba(37,99,235,0.45)] dark:group-hover:shadow-[0_0_22px_rgba(16,185,129,0.3)] transition-all duration-300">
-                <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center transition-colors duration-300">
-                  <Zap className="w-4.5 h-4.5 text-primary-blue dark:text-primary-green fill-current/10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+              <div className="relative w-10 h-10 shrink-0">
+                {/* Rotating gradient border on hover (spring) */}
+                <motion.div 
+                  whileHover={{ rotate: 180 }}
+                  transition={{ type: "spring", stiffness: 120, damping: 15 }}
+                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 dark:from-emerald-500 dark:via-teal-600 dark:to-cyan-400 p-[1.5px] shadow-[0_0_12px_rgba(37,99,235,0.2)] dark:shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] dark:group-hover:shadow-[0_0_22px_rgba(16,185,129,0.3)] transition-all duration-300 will-change-transform"
+                />
+                {/* Glowing blur background */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 dark:from-emerald-500 dark:to-cyan-400 blur-[6px] opacity-30 dark:opacity-20 group-hover:opacity-60 dark:group-hover:opacity-50 transition-opacity duration-300" />
+                {/* Static inner container with Zap */}
+                <div className="absolute inset-[1.5px] rounded-full bg-white dark:bg-slate-900 flex items-center justify-center z-10 transition-colors duration-300">
+                  <Zap className="w-5 h-5 text-primary-blue dark:text-primary-green fill-current/10 group-hover:scale-115 group-hover:rotate-12 transition-all duration-300" />
                 </div>
               </div>
               <div className="flex flex-col leading-none text-left">
                 <span className="font-display font-black text-sm sm:text-[15.5px] tracking-tight text-slate-900 dark:text-white group-hover:text-primary-blue dark:group-hover:text-primary-green transition-colors duration-200">
                   Smart Household Energy
                 </span>
-                <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold uppercase tracking-widest mt-0.5 transition-colors duration-200">
+                <span className="text-[9px] text-slate-400 dark:text-slate-450 font-bold uppercase tracking-widest mt-1 transition-colors duration-200">
                   Consumption &amp; Saving Analysis
                 </span>
               </div>
@@ -343,7 +348,7 @@ export const Navbar: React.FC = () => {
                   <Link to="/login" className="px-4.5 py-2 text-sm font-semibold text-slate-600 dark:text-slate-455 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-900/50 rounded-full transition-all">
                     Sign in
                   </Link>
-                  <Link to="/login" className="relative group overflow-hidden px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-primary-blue via-blue-600 to-indigo-600 dark:from-primary-green dark:to-emerald-600 dark:text-slate-955 rounded-full shadow-md hover:shadow-lg shadow-blue-500/15 dark:shadow-emerald-500/10 transition-all duration-300">
+                  <Link to="/login" className="relative group overflow-hidden px-5.5 py-2 text-sm font-bold text-white bg-gradient-to-r from-primary-blue via-blue-600 to-indigo-600 dark:from-primary-green dark:via-emerald-500 dark:to-emerald-600 dark:text-slate-950 rounded-full shadow-md hover:shadow-lg shadow-blue-500/15 dark:shadow-emerald-500/15 transition-all duration-300 hover:scale-105 active:scale-95">
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="relative">Get started</span>
                   </Link>
@@ -464,7 +469,7 @@ export const Navbar: React.FC = () => {
                       Sign in
                     </Link>
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)}
-                      className="block text-center px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary-blue to-indigo-650 dark:from-primary-green dark:to-emerald-600 dark:text-slate-955 rounded-2xl shadow-sm"
+                      className="block text-center px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary-blue to-indigo-600 dark:from-primary-green dark:to-emerald-600 dark:text-slate-950 rounded-2xl shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                     >
                       Get started
                     </Link>

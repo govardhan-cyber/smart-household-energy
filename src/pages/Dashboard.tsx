@@ -1116,7 +1116,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-6 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
+                      className="space-y-6"
                     >
                       <ApplianceSelector
                         appliances={appliances}
@@ -1133,7 +1133,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="[backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
+                      className=""
                     >
                       <ConsumptionCalculator
                         activeAppliances={activeAppliances}
@@ -1157,7 +1157,7 @@ export const Dashboard: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="space-y-6 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
+                      className="space-y-6"
                     >
                       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div>
@@ -1291,7 +1291,7 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Total units card */}
-                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
+                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-blue group cursor-default">
                     {/* Glowing wash circle */}
                     <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/5 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
                     
@@ -1299,7 +1299,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
                         Estimated Monthly Usage
                       </span>
-                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-primary-blue dark:text-primary-green shadow-inner">
+                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-955/30 border border-blue-100/30 dark:border-blue-900/30 text-primary-blue dark:text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                         <Zap className="w-4 h-4" />
                       </div>
                     </div>
@@ -1307,12 +1307,12 @@ export const Dashboard: React.FC = () => {
                       <span className="text-4xl font-display font-extrabold text-slate-900 dark:text-white leading-none">
                         <AnimatedNumber value={liveTotalUnits} />
                       </span>
-                      <span className="text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider ml-1">kWh (Units)</span>
+                      <span className="text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider ml-1">kWh (Units)</span>
                     </div>
                   </div>
 
                   {/* Estimated bill card */}
-                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
+                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-emerald group cursor-default">
                     {/* Glowing wash circle */}
                     <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/10 dark:bg-primary-green/10 blur-xl pointer-events-none rounded-full" />
                     
@@ -1320,7 +1320,7 @@ export const Dashboard: React.FC = () => {
                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
                         Estimated Monthly Bill
                       </span>
-                      <span className="text-[10px] text-green-600 dark:text-primary-green font-extrabold uppercase tracking-wider bg-green-50/90 dark:bg-green-950/40 px-2.5 py-0.5 rounded-full border border-green-200/50 dark:border-green-900/40 backdrop-blur-md shadow-sm">
+                      <span className="text-[10px] text-green-600 dark:text-primary-green font-extrabold uppercase tracking-wider bg-green-50/90 dark:bg-green-950/40 px-2.5 py-0.5 rounded-full border border-green-200/50 dark:border-green-900/40 backdrop-blur-md shadow-sm transition-transform duration-300 group-hover:scale-105">
                         After Subsidy
                       </span>
                     </div>
@@ -1335,14 +1335,14 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Benchmarking Comparison Banner */}
-                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all duration-300 ${
+                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default group ${
                     isAboveBenchmark 
                       ? "bg-red-50/40 border-red-200/50 border-l-alert-red text-alert-red dark:bg-red-950/10 dark:border-red-900/30" 
                       : "bg-green-50/40 border-green-200/50 border-l-primary-green text-primary-green dark:bg-green-950/10 dark:border-green-900/30"
                   }`}>
                     {isAboveBenchmark ? (
                       <>
-                        <div className="p-1.5 rounded-xl bg-red-150/40 dark:bg-red-900/30 text-alert-red shadow-inner">
+                        <div className="p-1.5 rounded-xl bg-red-150/40 dark:bg-red-900/30 text-alert-red shadow-inner transition-transform duration-300 group-hover:scale-110">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
                         </div>
                         <div className="space-y-0.5">
@@ -1354,7 +1354,7 @@ export const Dashboard: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <div className="p-1.5 rounded-xl bg-green-150/40 dark:bg-green-900/30 text-primary-green shadow-inner">
+                        <div className="p-1.5 rounded-xl bg-green-150/40 dark:bg-green-900/30 text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                           <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
                         </div>
                         <div className="space-y-0.5">
@@ -1369,13 +1369,13 @@ export const Dashboard: React.FC = () => {
 
                   {/* Budget Progress Tracker */}
                   {user && (
-                    <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
+                    <div className="relative overflow-hidden bg-white/45 dark:bg-slate-955/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-cyan group cursor-default">
                       {/* Glow circle */}
                       <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-blue-500/5 dark:bg-green-500/5 blur-xl pointer-events-none rounded-full" />
                       
                       <div className="flex items-center justify-between text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider relative z-10 font-display">
                         <span>Budget Tracking</span>
-                        <span className="text-slate-700 dark:text-slate-300 font-sans">
+                        <span className="text-slate-700 dark:text-slate-350 font-sans group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200">
                           ₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}
                         </span>
                       </div>
@@ -1387,19 +1387,22 @@ export const Dashboard: React.FC = () => {
                         const isExceeded = liveBill.netEnergyCharge > budgetLimit;
                         return (
                           <div className="space-y-3.5 relative z-10">
-                            <div className="w-full h-3 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden shadow-inner p-0.5">
+                            <div className="w-full h-3.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden shadow-inner p-0.5 relative">
                               <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${percent}%` }}
                                 transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                                className={`h-full rounded-full ${
+                                className={`h-full rounded-full relative overflow-hidden ${
                                   isExceeded 
                                     ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.4)]" 
                                     : percent > 80 
                                       ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" 
                                       : "bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 shadow-[0_0_10px_rgba(37,99,235,0.25)]"
                                 }`}
-                              />
+                              >
+                                {/* Sheen effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-transparent pointer-events-none" />
+                              </motion.div>
                             </div>
                             
                             {/* Budget warning alert card */}
@@ -1428,9 +1431,9 @@ export const Dashboard: React.FC = () => {
                   )}
 
                   {/* Privacy note */}
-                  <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
-                    <ShieldCheck className="w-4 h-4 text-green-500" />
-                    <span>SaaS encryption active. Data is private to your profile.</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4 group/privacy cursor-default">
+                    <ShieldCheck className="w-4 h-4 text-green-500 transition-transform duration-300 group-hover/privacy:scale-110 group-hover/privacy:rotate-12" />
+                    <span className="group-hover/privacy:text-slate-500 dark:group-hover/privacy:text-slate-350 transition-colors duration-300">SaaS encryption active. Data is private to your profile.</span>
                   </div>
                 </div>
               </div>
@@ -1442,7 +1445,7 @@ export const Dashboard: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full pt-4 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
+              className="w-full pt-4"
             >
               <Charts 
                 chartData={chartData} 
@@ -1465,7 +1468,7 @@ export const Dashboard: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8 [backface-visibility:hidden] [transform-style:preserve-3d] transform-gpu"
+              className="space-y-8"
             >
               <SavingsAdvisor
                 analysisResult={analysisResult}
@@ -1474,9 +1477,6 @@ export const Dashboard: React.FC = () => {
                 onPrint={() => window.print()}
                 onBack={() => setCurrentStep(3)}
                 onReset={handleReset}
-                stateKey={user?.tariffState || "ap"}
-                customFlatRate={user?.customFlatRate || 7.5}
-                activeAppliances={activeAppliances}
               />
               
               <Charts 

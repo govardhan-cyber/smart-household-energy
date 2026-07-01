@@ -218,7 +218,7 @@ export const Register: React.FC = () => {
                   <p className="text-[11px] text-slate-705 dark:text-slate-350 leading-relaxed max-w-sm">
                     Your usage is higher than usual. AI suggests setting AC to <span className="font-bold text-blue-600 dark:text-emerald-400">24°C</span> to save up to <span className="font-bold text-slate-900 dark:text-white">₹120</span> today.
                   </p>
-                  <button type="button" className="text-[10px] font-bold text-white dark:text-slate-955 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-emerald-400 dark:to-cyan-400 px-3.5 py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity cursor-pointer">
+                  <button type="button" className="text-[10px] font-bold text-white dark:text-slate-950 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-emerald-400 dark:to-cyan-400 px-3.5 py-1.5 rounded-lg shadow-sm hover:shadow-md hover:shadow-blue-500/20 dark:hover:shadow-emerald-500/20 hover:scale-105 active:scale-95 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
                     Optimize Now
                   </button>
                 </div>
@@ -327,7 +327,7 @@ export const Register: React.FC = () => {
 
               {/* Row 3: Split Savings, Carbon, and circular Progress */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
+                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] card-client card-client-blue">
                   <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Est Savings</span>
                   <div className="mt-1">
                     <p className="text-[15px] font-black text-slate-900 dark:text-white leading-none">₹1,250<span className="text-[9px] text-slate-500 font-bold">/mo</span></p>
@@ -335,7 +335,7 @@ export const Register: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
+                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-3 rounded-[20px] text-left flex flex-col justify-between h-[85px] card-client card-client-emerald">
                   <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-455 uppercase tracking-wider block">Carbon Reduc.</span>
                   <div className="mt-1">
                     <p className="text-[15px] font-black text-slate-900 dark:text-white leading-none">28%</p>
@@ -343,7 +343,7 @@ export const Register: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-2.5 rounded-[20px] text-left flex items-center justify-between h-[85px] gap-2 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
+                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-2.5 rounded-[20px] text-left flex items-center justify-between h-[85px] gap-2 card-client card-client-cyan">
                   <div className="min-w-0">
                     <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Efficiency</span>
                     <p className="text-xs font-black text-slate-800 dark:text-slate-205 mt-1 leading-none">Excellent</p>
@@ -366,7 +366,7 @@ export const Register: React.FC = () => {
               {/* Row 4: Top Appliances & Live Status */}
               <div className="grid grid-cols-2 gap-3">
                 {/* Top Appliances widget */}
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left space-y-3 flex flex-col justify-between h-[155px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
+                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left space-y-3 flex flex-col justify-between h-[155px] card-client card-client-blue">
                   <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-455 uppercase tracking-wider block">Top Appliances</span>
                   <div className="space-y-2 flex-1 flex flex-col justify-center">
                     {/* AC */}
@@ -403,7 +403,7 @@ export const Register: React.FC = () => {
                 </div>
 
                 {/* Live Status widget */}
-                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left flex flex-col justify-between h-[155px] transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-955/30 hover:shadow-md">
+                <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-4 rounded-[20px] text-left flex flex-col justify-between h-[155px] card-client card-client-emerald">
                   <div className="space-y-1">
                     <span className="text-[8px] font-extrabold text-slate-655 dark:text-slate-455 uppercase tracking-wider block">Live Status</span>
                     <div className="flex items-center justify-between">
@@ -718,15 +718,30 @@ export const Register: React.FC = () => {
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-950/30 text-sm font-bold text-slate-800 dark:text-slate-300 hover:bg-slate-50/80 dark:hover:bg-slate-850 dark:hover:border-slate-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                whileHover="hover"
+                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-950/30 text-sm font-bold text-slate-800 dark:text-slate-300 hover:bg-slate-50/80 dark:hover:bg-slate-850 dark:hover:border-slate-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer group"
               >
-                <svg className="h-4.5 w-4.5 shrink-0" viewBox="0 0 24 24">
+                <motion.svg 
+                  variants={{
+                    hover: { scale: 1.25, rotate: [0, -15, 10, 0] }
+                  }}
+                  transition={{ duration: 0.45 }}
+                  className="h-4.5 w-4.5 shrink-0" 
+                  viewBox="0 0 24 24"
+                >
                   <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69c-.29 1.5-.1.85-2.22 3.02v2.51h3.58c2.09-1.92 3.29-4.75 3.29-7.38z" />
                   <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-3.58-2.51c-.99.66-2.26 1.06-3.76 1.06-2.9 0-5.35-1.97-6.22-4.63H2.82v2.59C4.8 21.09 8.16 24 12 24z" />
                   <path fill="#FBBC05" d="M5.78 14.97c-.22-.66-.35-1.37-.35-2.1s.13-1.44.35-2.1V8.18H2.82C2.04 9.73 1.6 11.47 1.6 13.3c0 1.83.44 3.57 1.22 5.12l2.96-2.45z" />
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.96 1.19 15.24 0 12 0 8.16 0 4.8 2.91 2.82 7.02l2.96 2.45c.87-2.66 3.32-4.63 6.22-4.63z" />
-                </svg>
-                Sign up with Google
+                </motion.svg>
+                <motion.span
+                  variants={{
+                    hover: { x: 3 }
+                  }}
+                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                >
+                  Sign up with Google
+                </motion.span>
               </motion.button>
             </form>
 

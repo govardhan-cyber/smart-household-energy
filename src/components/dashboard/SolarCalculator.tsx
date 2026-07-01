@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler, MessageSquare, ArrowRight } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -213,33 +213,34 @@ const SolarReadinessScore: React.FC<{
       {/* Bottom Group: Alert & Footer grouped together to eliminate awkward vertical stretching gaps */}
       <div className="space-y-2.5 mt-auto relative z-10">
         {/* Bottom Block: Compact Good Fit Alert */}
-        <div className="p-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 rounded-2xl flex items-center justify-between gap-2.5 text-left hover:border-emerald-500/30 transition-all duration-300">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-xl shrink-0">
+        <motion.button
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
+              detail: { message: `Analyze my solar readiness parameters. My roof is ${roofArea} sq ft in ${stateName}. Explain why this is a good fit.` } 
+            }));
+          }}
+          whileHover={{ y: -3, scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          type="button"
+          className="w-full p-3.5 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 dark:from-emerald-900/10 dark:to-teal-900/5 border border-emerald-500/15 dark:border-emerald-500/20 rounded-2xl flex items-center justify-between gap-3 text-left cursor-pointer transition-colors duration-200 hover:border-emerald-500/35 hover:shadow-[0_4px_20px_rgba(16,185,129,0.06)] group/fit relative overflow-hidden"
+        >
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-xl shrink-0 shadow-sm">
               <Leaf className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-405 block">
+              <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 block uppercase tracking-wider">
                 Why it's a good fit
               </span>
-              <span className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
                 Ample roof space & high yield for maximum savings.
               </span>
             </div>
           </div>
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
-                detail: { message: `Analyze my solar readiness parameters. My roof is ${roofArea} sq ft in ${stateName}. Explain why this is a good fit.` } 
-              }));
-            }}
-            type="button"
-            className="p-1 text-emerald-600 dark:text-primary-green hover:bg-emerald-500/15 rounded-lg transition-all text-xs font-black shrink-0 cursor-pointer"
-            title="View Details"
-          >
-            ➔
-          </button>
-        </div>
+          <div className="p-1.5 bg-emerald-500/10 text-emerald-600 dark:text-primary-green rounded-lg shrink-0 group-hover/fit:bg-emerald-500 group-hover/fit:text-white transition-colors duration-250">
+            <ArrowRight className="w-3.5 h-3.5 group-hover/fit:translate-x-0.5 transition-transform duration-250" />
+          </div>
+        </motion.button>
 
         {/* Footer Info Callout */}
         <div className="flex items-center gap-1.5 text-[8.5px] font-bold text-slate-400 dark:text-slate-550 pt-2 border-t border-slate-100 dark:border-slate-850">
@@ -257,19 +258,21 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.05
+      staggerChildren: 0.09,
+      delayChildren: 0.04
     }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
+    y: 0,
     transition: {
-      duration: 0.25,
-      ease: "easeInOut" as const
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 28
     }
   }
 };
@@ -292,6 +295,14 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (selectedState === "ka") {
+      setSelectedCity("bangalore");
+    } else {
+      setSelectedCity("pune");
+    }
+  }, [selectedState]);
+
   const handleSelectReferenceSize = (targetBill: number, targetSpace: number) => {
     setMonthlyBill(targetBill);
     setRoofArea(targetSpace);
@@ -308,6 +319,8 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [tariffIncrease, setTariffIncrease] = useState<number>(4); 
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
   const [maintenanceRate, setMaintenanceRate] = useState<number>(1.0); 
+
+
 
   // Custom visual states for isometric roof planner
   const [roofTilt, setRoofTilt] = useState<"flat" | "inclined">("inclined");
@@ -952,59 +965,88 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     const yr25 = twentyFiveYearNetSavings + installationCost;
 
     return (
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 text-left relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5 text-left relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
         <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
         
         <div className="relative z-10">
           <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mb-1">
             LIFETIME CUMULATIVE RETURN
           </h4>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase">
+          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase font-display">
             Lifetime Savings Timeline
           </h3>
         </div>
         
-        <div className="space-y-4 pt-2.5 relative z-10">
+        <div className="relative border-l-2 border-slate-100 dark:border-slate-800/80 ml-3.5 pl-0 space-y-6 py-2 z-10">
           {[
             { label: "Year 1", amount: yr1 },
             { label: "Year 5", amount: yr5 },
             { label: `Year ${paybackPeriodVal.toFixed(1)} (Break-even)`, amount: installationCost, isPayback: true },
             { label: "Year 10", amount: yr10 },
             { label: "Year 25", amount: yr25 }
-          ].sort((a, b) => a.amount - b.amount).map((item, idx) => (
-            <div key={idx} className="relative">
-              {item.isPayback ? (
-                <div className="flex flex-col gap-1 bg-green-500/10 dark:bg-green-500/20 p-3.5 rounded-2xl border border-green-500/20 my-1.5 hover:border-green-500/40 transition-all">
-                  <div className="flex justify-between items-center text-xs font-black text-green-600 dark:text-primary-green">
-                    <span>⚡ YOU RECOVER SETUP COST HERE</span>
-                    <span>Year <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /></span>
+          ].sort((a, b) => a.amount - b.amount).map((item, idx) => {
+            const pctOfTotal = yr25 > 0 ? Math.round((item.amount / yr25) * 100) : 0;
+            return (
+              <div key={idx} className="relative pl-6">
+                {item.isPayback ? (
+                  <>
+                    {/* Timeline Dot (pulsing emerald) */}
+                    <div className="absolute left-[-7px] top-[18px] w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse" />
+                    
+                    <div className="flex flex-col gap-1 bg-gradient-to-r from-emerald-500/8 via-teal-500/4 to-emerald-500/8 dark:from-emerald-500/15 dark:via-teal-500/5 dark:to-emerald-500/10 p-3.5 rounded-2xl border border-emerald-500/20 my-1 hover:border-emerald-500/40 transition-all shadow-[0_4px_16px_rgba(16,185,129,0.05)]">
+                      <div className="flex justify-between items-center text-xs font-black text-emerald-600 dark:text-primary-green">
+                        <span className="flex items-center gap-1">
+                          <Zap className="w-3.5 h-3.5 fill-current animate-bounce mt-[-1px]" />
+                          YOU RECOVER SETUP COST HERE
+                        </span>
+                        <span className="bg-emerald-500/10 dark:bg-emerald-500/20 px-2 py-0.5 rounded-lg text-[10px] border border-emerald-500/20">
+                          Year <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} />
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-550 dark:text-slate-405 leading-normal font-medium mt-0.5">
+                        Upfront setup costs are completely recovered! Future savings represent net surplus profit.
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Timeline Dot */}
+                    <div className={`absolute left-[-7px] top-[5px] w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 shadow-sm ${
+                      item.label === "Year 25"
+                        ? "bg-emerald-500 shadow-[0_0_6px_#10b981]"
+                        : "bg-blue-500"
+                    }`} />
+                    
+                    <div className="flex justify-between text-[11px] font-bold items-baseline">
+                      <span className="text-slate-550 dark:text-slate-400 flex items-center gap-1.5">
+                        {item.label}
+                        {item.label !== "Year 25" && (
+                          <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md leading-none">
+                            {pctOfTotal}% of total
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-slate-800 dark:text-white font-extrabold flex items-baseline gap-0.5">
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">₹</span>
+                        <AnimatedNumber value={item.amount} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                      </span>
+                    </div>
+                    
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden relative">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-1000 ${
+                          item.label === "Year 25"
+                            ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-primary-green"
+                            : "bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-400"
+                        }`}
+                        style={{ width: isMounted ? `${Math.min(100, (item.amount / (yr25 || 1)) * 100)}%` : "0%" }}
+                      />
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal font-medium mt-0.5">
-                    Upfront setup costs are completely recovered! Future savings represent net surplus profit.
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-slate-550 dark:text-slate-400">{item.label}</span>
-                    <span className="text-slate-900 dark:text-white">
-                      ₹<AnimatedNumber value={item.amount} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${
-                        item.label === "Year 25"
-                          ? "bg-gradient-to-r from-emerald-500 to-primary-green"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-400"
-                      }`}
-                      style={{ width: isMounted ? `${Math.min(100, (item.amount / (yr25 || 1)) * 100)}%` : "0%" }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -1017,6 +1059,29 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       animate="visible"
       className="space-y-8 text-left"
     >
+      {/* ── Hero Banner Strip ── */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-wrap items-center gap-2 px-1"
+      >
+        {[
+          { label: "⚡ Real-time ROI", color: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50" },
+          { label: "🏛 DISCOM Integrated", color: "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50" },
+          { label: "☀️ PM Surya Ghar Ready", color: "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50" },
+          { label: "🌱 Carbon Offset Tracked", color: "bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800/50" },
+        ].map((badge, i) => (
+          <motion.span
+            key={badge.label}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + i * 0.07, type: "spring", stiffness: 280, damping: 22 }}
+            className={`text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wider ${badge.color}`}
+          >
+            {badge.label}
+          </motion.span>
+        ))}
+      </motion.div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Interactive Inputs */}
@@ -1024,133 +1089,178 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           variants={itemVariants}
           className="lg:col-span-6 space-y-6"
         >
-          <div id="solar-savings-planner-card" className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden group">
-            {/* Top right corner glowing wash */}
-            <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-            
+          <div id="solar-savings-planner-card" className="bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/50 dark:border-slate-850/60 shadow-xl space-y-6 relative overflow-hidden group">
+            {/* Ambient glows */}
+            <div className="absolute -right-8 -top-8 w-40 h-40 blur-3xl opacity-10 dark:opacity-5 rounded-full bg-amber-400 pointer-events-none group-hover:scale-125 transition-all duration-700" />
+            <div className="absolute -left-8 -bottom-8 w-32 h-32 blur-3xl opacity-5 dark:opacity-3 rounded-full bg-sky-400 pointer-events-none" />
+
             {/* Header */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 relative z-10">
-              <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500 group-hover:scale-110 transition-transform duration-300">
-                <Sun className="w-6 h-6 animate-spin" style={{ animationDuration: "15s" }} />
+            <div className="flex items-center gap-3.5 pb-5 border-b border-slate-100 dark:border-slate-800/80 relative z-10">
+              {/* Glowing animated sun ring */}
+              <div className="relative shrink-0">
+                <div className="absolute inset-0 rounded-2xl bg-amber-400/30 dark:bg-amber-500/20 animate-ping" style={{ animationDuration: "3s" }} />
+                <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-400/10 dark:from-amber-500/20 dark:to-orange-500/10 text-amber-500 border border-amber-200/50 dark:border-amber-500/20 relative z-10 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                  <Sun className="w-6 h-6 animate-spin" style={{ animationDuration: "15s" }} />
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Solar Savings Planner</h3>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Solar Savings Planner</h3>
+                  {/* Live indicator */}
+                  <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    Live
+                  </span>
+                </div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                  Configure your rooftop space, monthly bill, and solar cell technology.
+                  Configure your rooftop space, monthly bill &amp; solar technology.
                 </p>
               </div>
             </div>
 
-            {/* State & City Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
-              {/* Location State */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
-                  Installation State
-                </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {[
-                    { code: "ap", label: "Andhra Pradesh", short: "AP" },
-                    { code: "ts", label: "Telangana", short: "TS" },
-                    { code: "ka", label: "Karnataka", short: "KA" }
-                  ].map(st => {
-                    const isActive = selectedState === st.code;
-                    return (
-                      <button
-                        key={st.code}
-                        onClick={() => setSelectedState(st.code)}
-                        type="button"
-                        className={`py-2.5 px-1 text-xs font-bold rounded-2xl border transition-all duration-300 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 ${
-                          isActive
-                            ? "border-primary-blue bg-blue-500/5 text-primary-blue shadow-[0_4px_20px_-5px_rgba(59,130,246,0.25)] dark:border-primary-green dark:bg-green-500/5 dark:text-primary-green dark:shadow-[0_4px_20px_-5px_rgba(16,185,129,0.25)]"
-                            : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-705 text-slate-655 dark:text-slate-400"
-                        }`}
-                      >
-                        <MapPin className={`w-4 h-4 transition-colors duration-300 ${
-                          isActive
-                            ? "text-primary-blue dark:text-primary-green animate-bounce"
-                            : "text-slate-450 dark:text-slate-500"
-                        }`} />
-                        <span className="text-[10px] tracking-wide uppercase font-black">{st.short}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Cost Basis City (2026 subsidy lookup) */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">
-                  Subsidy Price Lookup City
-                </label>
-                <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-2xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none focus:border-primary-blue dark:focus:border-primary-green hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-200"
-                >
-                  <option value="pune">Pune (Maharashtra)</option>
-                  <option value="bangalore">Bangalore (Karnataka)</option>
-                  <option value="ahmedabad">Ahmedabad (Gujarat)</option>
-                  <option value="lucknow">Lucknow (Uttar Pradesh)</option>
-                </select>
+            {/* ── Installation State Selector ── */}
+            <div className="space-y-3 relative z-10">
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 text-sky-500" /> Installation State
+              </label>
+              <div className="grid grid-cols-3 gap-2.5">
+                {[
+                  { code: "ap", label: "Andhra Pradesh", short: "AP", color: "from-sky-500/10 to-blue-500/5 border-sky-500/60 text-sky-700 dark:text-sky-400 shadow-sky-500/10" },
+                  { code: "ts", label: "Telangana",      short: "TS", color: "from-violet-500/10 to-purple-500/5 border-violet-500/60 text-violet-700 dark:text-violet-400 shadow-violet-500/10" },
+                  { code: "ka", label: "Karnataka",      short: "KA", color: "from-emerald-500/10 to-teal-500/5 border-emerald-500/60 text-emerald-700 dark:text-emerald-400 shadow-emerald-500/10" },
+                ].map(st => {
+                  const isActive = selectedState === st.code;
+                  return (
+                    <motion.button
+                      key={st.code}
+                      onClick={() => setSelectedState(st.code)}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        y: -5,
+                        boxShadow: isActive ? "0 10px 20px -5px rgba(59,130,246,0.2)" : "0 8px 16px -6px rgba(0,0,0,0.1)"
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                      whileTap={{ scale: 0.96 }}
+                      type="button"
+                      className={`py-3 px-2 rounded-2xl border text-center transition-colors duration-200 flex flex-col items-center gap-0.5 cursor-pointer relative overflow-hidden ${
+                        isActive
+                          ? `bg-gradient-to-br ${st.color} shadow-[0_4px_20px_-4px_var(--tw-shadow-color)]`
+                          : "border-slate-200/80 bg-slate-50/50 dark:border-slate-800/80 dark:bg-slate-900/30 hover:border-slate-350 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      {isActive && <div className="absolute inset-0 bg-gradient-to-br opacity-30 animate-pulse" style={{ animationDuration: "2s" }} />}
+                      <span className={`text-lg font-black leading-none relative z-10 ${isActive ? "" : "text-slate-500 dark:text-slate-400"}`}>{st.short}</span>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider leading-none relative z-10 ${isActive ? "" : "text-slate-450 dark:text-slate-500"}`}>{st.label}</span>
+                      {isActive && <MapPin className="w-2.5 h-2.5 mt-0.5 relative z-10 animate-bounce" />}
+                    </motion.button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Panel Technology Selection */}
-            <div className="space-y-2 relative z-10">
-              <label className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
-                Solar Cell Technology
+            {/* ── Solar Cell Technology ── */}
+            <div className="space-y-3 relative z-10">
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest flex items-center gap-1.5">
+                <Zap className="w-3 h-3 text-emerald-500" /> Solar Cell Technology
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <button
+                {/* TOPCon */}
+                <motion.button
                   onClick={() => setSolarTech("topcon")}
+                  whileHover={{ 
+                    y: -7, 
+                    scale: 1.03, 
+                    boxShadow: "0 16px 28px -6px rgba(16,185,129,0.22)" 
+                  }}
+                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
-                  className={`p-4 rounded-2xl border text-left transition-all duration-300 relative flex flex-col justify-between cursor-pointer hover:scale-[1.02] active:scale-[0.98] group ${
+                  className={`p-4 rounded-3xl border text-left transition-colors duration-250 relative flex flex-col gap-3 cursor-pointer overflow-hidden ${
                     solarTech === "topcon"
-                      ? "border-primary-green bg-green-500/5 dark:bg-green-950/10 shadow-[0_4px_20px_-5px_rgba(16,185,129,0.25)]"
-                      : "border-slate-200 bg-white dark:border-slate-850 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
+                      ? "border-emerald-500/70 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 dark:from-emerald-950/25 dark:to-teal-950/10 shadow-[0_6px_24px_-4px_rgba(16,185,129,0.25)]"
+                      : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-emerald-400/50 hover:bg-emerald-50/20 dark:hover:border-emerald-800/40"
                   }`}
                 >
-                  <div className={`absolute top-2 right-2 text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider transition-all ${
-                    solarTech === "topcon"
-                      ? "bg-green-500 text-slate-950 animate-pulse"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  }`}>
-                    Recommended ⭐
-                  </div>
+                  {/* Recommended badge */}
+                  <div className={`absolute top-2.5 right-2.5 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    solarTech === "topcon" ? "bg-emerald-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                  }`}>⭐ Best</div>
+
+                  {/* SVG Panel Illustration */}
+                  <svg width="40" height="28" viewBox="0 0 40 28" className={`transition-opacity duration-200 ${solarTech === "topcon" ? "opacity-100" : "opacity-40"}`}>
+                    <defs>
+                      <linearGradient id="tc1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#10b981"/><stop offset="100%" stopColor="#0d9488"/></linearGradient>
+                    </defs>
+                    {[[0,0],[14,0],[28,0],[0,10],[14,10],[28,10],[0,20],[14,20],[28,20]].map((coords,i)=>{
+                      const [px,py] = coords;
+                      return <rect key={i} x={px+1} y={py+1} width="11" height="8" rx="1" fill="url(#tc1)" opacity="0.85"/>;
+                    })}
+                  </svg>
+
                   <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 mt-2.5">
-                      <span>TOPCon Premium</span>
-                      {solarTech === "topcon" && <ShieldCheck className="w-3.5 h-3.5 text-primary-green" />}
+                    <div className={`text-xs font-black flex items-center gap-1.5 ${solarTech === "topcon" ? "text-emerald-700 dark:text-emerald-400" : "text-slate-700 dark:text-slate-300"}`}>
+                      TOPCon Premium
+                      {solarTech === "topcon" && <ShieldCheck className="w-3.5 h-3.5 animate-pulse" />}
                     </div>
-                    <div className="text-[10px] text-slate-550 dark:text-slate-450 mt-2 space-y-1">
-                      <div>Efficiency: <span className="font-bold text-slate-750 dark:text-slate-200">26%</span></div>
-                      <div>Lifespan: <span className="font-bold text-slate-750 dark:text-slate-200">30 Years</span></div>
-                      <div className="text-amber-500 font-bold">★★★★★</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-450 mt-1.5 space-y-1">
+                      <div className="flex justify-between"><span>Efficiency</span><span className="font-bold text-slate-700 dark:text-slate-200">26%</span></div>
+                      <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500" style={{ width: "96%" }} />
+                      </div>
+                      <div className="flex justify-between"><span>Lifespan</span><span className="font-bold text-slate-700 dark:text-slate-200">30 Yrs</span></div>
                     </div>
+                    <div className="text-[10px] text-amber-500 font-bold mt-1.5">★★★★★</div>
                   </div>
-                </button>
-                <button
+                </motion.button>
+
+                {/* Mono-PERC */}
+                <motion.button
                   onClick={() => setSolarTech("mono-perc")}
+                  whileHover={{ 
+                    y: -7, 
+                    scale: 1.03, 
+                    boxShadow: "0 16px 28px -6px rgba(59,130,246,0.22)" 
+                  }}
+                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                  whileTap={{ scale: 0.97 }}
                   type="button"
-                  className={`p-4 rounded-2xl border text-left transition-all duration-300 relative flex flex-col justify-between cursor-pointer hover:scale-[1.02] active:scale-[0.98] group ${
+                  className={`p-4 rounded-3xl border text-left transition-colors duration-250 relative flex flex-col gap-3 cursor-pointer overflow-hidden ${
                     solarTech === "mono-perc"
-                      ? "border-primary-blue bg-blue-500/5 dark:bg-blue-950/10 shadow-[0_4px_20px_-5px_rgba(59,130,246,0.25)]"
-                      : "border-slate-200 bg-white dark:border-slate-850 dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
+                      ? "border-blue-500/70 bg-gradient-to-br from-blue-500/10 to-indigo-500/5 dark:from-blue-950/25 dark:to-indigo-950/10 shadow-[0_6px_24px_-4px_rgba(59,130,246,0.25)]"
+                      : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50 hover:border-blue-400/50 hover:bg-blue-50/20 dark:hover:border-blue-800/40"
                   }`}
                 >
+                  {/* Value badge */}
+                  <div className={`absolute top-2.5 right-2.5 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    solarTech === "mono-perc" ? "bg-blue-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                  }`}>Value</div>
+
+                  {/* SVG Panel Illustration */}
+                  <svg width="40" height="28" viewBox="0 0 40 28" className={`transition-opacity duration-200 ${solarTech === "mono-perc" ? "opacity-100" : "opacity-40"}`}>
+                    <defs>
+                      <linearGradient id="mp1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#3b82f6"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
+                    </defs>
+                    {[[0,0],[14,0],[28,0],[0,10],[14,10],[28,10],[0,20],[14,20],[28,20]].map((coords,i)=>{
+                      const [px,py] = coords;
+                      return <rect key={i} x={px+1} y={py+1} width="11" height="8" rx="1" fill="url(#mp1)" opacity="0.85"/>;
+                    })}
+                  </svg>
+
                   <div>
-                    <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5 mt-2.5">
-                      <span>Mono-PERC Standard</span>
-                      {solarTech === "mono-perc" && <ShieldCheck className="w-3.5 h-3.5 text-primary-blue" />}
+                    <div className={`text-xs font-black flex items-center gap-1.5 ${solarTech === "mono-perc" ? "text-blue-700 dark:text-blue-400" : "text-slate-700 dark:text-slate-300"}`}>
+                      Mono-PERC
+                      {solarTech === "mono-perc" && <ShieldCheck className="w-3.5 h-3.5 animate-pulse" />}
                     </div>
-                    <div className="text-[10px] text-slate-550 dark:text-slate-455 mt-2 space-y-1">
-                      <div>Efficiency: <span className="font-bold text-slate-755 dark:text-slate-200">22.5%</span></div>
-                      <div>Lifespan: <span className="font-bold text-slate-755 dark:text-slate-200">25 Years</span></div>
-                      <div className="text-amber-500 font-bold">★★★★☆</div>
+                    <div className="text-[10px] text-slate-550 dark:text-slate-450 mt-1.5 space-y-1">
+                      <div className="flex justify-between"><span>Efficiency</span><span className="font-bold text-slate-700 dark:text-slate-200">22.5%</span></div>
+                      <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-500" style={{ width: "83%" }} />
+                      </div>
+                      <div className="flex justify-between"><span>Lifespan</span><span className="font-bold text-slate-700 dark:text-slate-200">25 Yrs</span></div>
                     </div>
+                    <div className="text-[10px] text-amber-500 font-bold mt-1.5">★★★★☆</div>
                   </div>
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -1190,6 +1300,19 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   }}
                 />
               </div>
+              {/* Quick preset chips */}
+              <div className="flex gap-1.5 flex-wrap">
+                {[2000, 5000, 8000, 12000].map(v => (
+                  <button key={v} type="button" onClick={() => setMonthlyBill(v)}
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border cursor-pointer transition-all duration-150 ${
+                      monthlyBill === v
+                        ? "bg-blue-500 text-white border-blue-500 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:text-blue-600 dark:hover:border-blue-600"
+                    }`}>
+                    ₹{(v/1000).toFixed(0)}K
+                  </button>
+                ))}
+              </div>
               <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-550">
                 <span>₹1,000</span>
                 <span>₹5,000</span>
@@ -1227,13 +1350,26 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   step="50"
                   value={roofArea}
                   onChange={(e) => setRoofArea(parseInt(e.target.value))}
-                  className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
+                  className="premium-slider slider-orange w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
                   style={{
                     background: `linear-gradient(to right, #f59e0b 0%, #facc15 ${roofPercent}%, ${activeTheme === 'dark' ? '#1e293b' : '#e2e8f0'} ${roofPercent}%, ${activeTheme === 'dark' ? '#1e293b' : '#e2e8f0'} 100%)`
                   }}
                 />
               </div>
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-550">
+              {/* Quick preset chips */}
+              <div className="flex gap-1.5 flex-wrap">
+                {[200, 400, 700, 1000].map(v => (
+                  <button key={v} type="button" onClick={() => setRoofArea(v)}
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border cursor-pointer transition-all duration-150 ${
+                      roofArea === v
+                        ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                        : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-amber-400 hover:text-amber-600 dark:hover:border-amber-600"
+                    }`}>
+                    {v} ft²
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-555">
                 <span>50 sq ft</span>
                 <span>500 sq ft</span>
                 <span>1,000 sq ft</span>
@@ -1241,46 +1377,123 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </div>
             </div>
 
-            {/* Sizing Logic Explanation */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400 leading-relaxed space-y-1 relative z-10">
-              <span className="font-bold text-slate-850 dark:text-slate-350 block mb-1">How Sizing Works:</span>
-              <p>
-                To offset a bill of <span className="font-semibold text-slate-700 dark:text-slate-300">₹<AnimatedNumber value={monthlyBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></span> in {getFullStateName(selectedState)}, your house requires a <span className="font-semibold text-slate-705 dark:text-slate-300"><AnimatedNumber value={kwNeededByUsage} formatter={(v) => v.toFixed(1)} /> kW</span> system.
-              </p>
-              <p>
-                Capped by your roof area limit of <span className="font-semibold text-slate-705 dark:text-slate-300"><AnimatedNumber value={maxKwBySpace} formatter={(v) => v.toFixed(1)} /> kW</span> (100 sq ft per kW), the recommended sizing is <span className="font-semibold text-slate-705 dark:text-slate-300"><AnimatedNumber value={recommendedKw} formatter={(v) => v.toFixed(1)} /> kW</span>.
-              </p>
-            </div>
+            {(() => {
+              const isCapped = maxKwBySpace < kwNeededByUsage;
+              return (
+                <motion.div 
+                  key={`diagnostics-${isCapped}-${monthlyBill}-${roofArea}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  whileHover={{ y: -3, scale: 1.005 }}
+                  className={`p-4 rounded-r-2xl rounded-l-lg border-l-4 text-xs leading-relaxed relative z-10 transition-colors duration-250 cursor-pointer ${
+                    isCapped 
+                      ? "border-orange-500 border-y-transparent border-r-transparent bg-orange-500/5 dark:bg-orange-950/10 text-slate-650 dark:text-slate-350 shadow-[0_4px_16px_rgba(245,158,11,0.02)]"
+                      : "border-blue-500 border-y-transparent border-r-transparent bg-blue-500/5 dark:bg-blue-950/10 text-slate-650 dark:text-slate-350 shadow-[0_4px_16px_rgba(59,130,246,0.01)]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-xl shrink-0 ${
+                      isCapped ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    }`}>
+                      {isCapped ? <Scale className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="font-black uppercase tracking-widest text-[9px] text-slate-400 dark:text-slate-500">
+                          Sizing Diagnostics
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                          isCapped ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300" : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                        }`}>
+                          {isCapped ? "Capped by Space" : "Optimized Sizing"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-medium opacity-90 leading-normal">
+                        {isCapped ? (
+                          <>
+                            To fully offset your bill of <span className="font-extrabold text-orange-600 dark:text-orange-400">₹{monthlyBill.toLocaleString('en-IN')}</span> in {getFullStateName(selectedState)}, you require a <span className="font-extrabold text-orange-600 dark:text-orange-400">{kwNeededByUsage.toFixed(1)} kW</span> system. Since your roof area limits capacity to <span className="font-extrabold text-orange-600 dark:text-orange-400">{maxKwBySpace.toFixed(1)} kW</span>, the recommended system size is capped at <span className="font-extrabold text-orange-600 dark:text-orange-400">{recommendedKw.toFixed(1)} kW</span>.
+                          </>
+                        ) : (
+                          <>
+                            Your electricity bill of <span className="font-extrabold text-blue-650 dark:text-blue-400">₹{monthlyBill.toLocaleString('en-IN')}</span> in {getFullStateName(selectedState)} requires a <span className="font-extrabold text-blue-650 dark:text-blue-400">{kwNeededByUsage.toFixed(1)} kW</span> system. This fits comfortably within your roof area limit of <span className="font-extrabold text-blue-650 dark:text-blue-400">{maxKwBySpace.toFixed(1)} kW</span>.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Detailed Net Metering breakdown */}
-            <div className="p-4 bg-blue-50/10 dark:bg-slate-950/25 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-505 dark:text-slate-400 space-y-2 relative z-10">
-              <span className="font-bold text-slate-855 dark:text-slate-300 block">Net Metering Billing Breakdown:</span>
-              <div className="grid grid-cols-2 gap-y-1.5 text-left font-medium">
-                <div className="text-slate-450 dark:text-slate-400">Estimated Monthly Consumption:</div>
-                <div className="font-bold text-slate-800 dark:text-slate-205 text-right"><AnimatedNumber value={kwhNeeded} /> kWh (units)</div>
-                <div className="text-slate-450 dark:text-slate-400">Estimated Monthly Solar Generation:</div>
-                <div className="font-bold text-slate-800 dark:text-slate-205 text-right"><AnimatedNumber value={monthlyGeneration} /> kWh / month</div>
-                <div className="text-slate-450 dark:text-slate-400">New Net Grid Consumption:</div>
-                <div className="font-bold text-slate-800 dark:text-slate-250 text-right"><AnimatedNumber value={newUnits} /> kWh / month</div>
-                <div className="text-slate-450 dark:text-slate-400">Marginal Slab Savings percentage:</div>
-                <div className="font-extrabold text-primary-green text-right"><AnimatedNumber value={billCoveragePercent} />%</div>
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5 text-slate-700 dark:text-slate-300">Monthly Bill with Solar Panels:</div>
-                <div className="font-black text-primary-blue dark:text-primary-green text-right border-t border-slate-100 dark:border-slate-800 pt-1.5 mt-0.5">₹<AnimatedNumber value={newBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /></div>
+            <motion.div 
+              whileHover={{ y: -3, scale: 1.008 }}
+              className="p-5 bg-white dark:bg-slate-900/60 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 text-xs relative z-10 shadow-sm space-y-4 hover:shadow-[0_8px_30px_rgba(59,130,246,0.04)] hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-250 cursor-pointer"
+            >
+              <span className="font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block text-[9px] text-left">
+                Net Metering Calculations
+              </span>
+              
+              <div className="space-y-2">
+                {[
+                  { label: "Estimated Monthly Consumption", val: `${Math.round(kwhNeeded).toLocaleString('en-IN')} kWh`, icon: Zap, color: "text-blue-500 bg-blue-500/10" },
+                  { label: "Estimated Monthly Solar Generation", val: `${Math.round(monthlyGeneration).toLocaleString('en-IN')} kWh`, icon: Sun, color: "text-amber-500 bg-amber-500/10" },
+                  { label: "New Net Grid Consumption", val: `${Math.max(0, Math.round(newUnits)).toLocaleString('en-IN')} kWh`, icon: Scale, color: "text-slate-400 bg-slate-100 dark:bg-slate-800 dark:text-slate-400" },
+                  { label: "Slab Savings Coverage", val: `${Math.round(billCoveragePercent)}%`, icon: Leaf, color: "text-emerald-500 bg-emerald-500/10" }
+                ].map((row, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-2 border-b border-slate-100/40 dark:border-slate-800/30 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/45 px-2 rounded-2xl transition-all duration-250 cubic-bezier(0.16, 1, 0.3, 1) hover:translate-x-2.5 cursor-pointer">
+                    <div className="flex items-center gap-2.5 text-slate-550 dark:text-slate-455 text-left">
+                      <div className={`p-1.5 rounded-lg shrink-0 ${row.color}`}>
+                        <row.icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="font-semibold text-slate-500 dark:text-slate-400 text-[11px]">{row.label}</span>
+                    </div>
+                    <span className="px-3 py-1 text-slate-800 dark:text-slate-200 bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-805/60 rounded-xl font-extrabold text-[11px] shadow-sm min-w-[75px] text-right inline-block">
+                      {row.val}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <div className="text-[10px] text-slate-400 dark:text-slate-550 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                *Calculated using actual DISCOM slab rates in the {getFullStateName(selectedState)} database.
-              </div>
+
+              {/* Monthly Bill with Solar Panels Highlight panel */}
+              <motion.div 
+                whileHover={{ scale: 1.015 }}
+                className="bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-transparent dark:from-emerald-950/10 dark:via-teal-950/5 p-4 rounded-2xl border border-emerald-500/20 hover:border-emerald-500/45 shadow-[0_4px_20px_rgba(16,185,129,0.02)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.08)] transition-colors duration-250 cursor-pointer flex justify-between items-center mt-3"
+              >
+                <div className="text-left">
+                  <span className="text-[10px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-wider block">Monthly Bill with Solar</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-medium mt-0.5">After slab-rate net metering</span>
+                </div>
+                <div className="flex items-center gap-2 text-right">
+                  <span className="text-emerald-600 dark:text-primary-green text-lg font-black flex items-baseline gap-0.5">
+                    <span className="text-[11px] font-extrabold">₹</span>
+                    <AnimatedNumber value={newBill} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                  </span>
+                  {newBill === 0 && (
+                    <span className="flex h-2 w-2 relative shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+
+            <div className="text-[9px] text-slate-400 dark:text-slate-555 pt-1 text-center font-medium leading-normal border-t border-slate-100 dark:border-slate-800/60">
+              *Calculated using actual DISCOM slab rates in the {getFullStateName(selectedState)} database.
             </div>
+          </div>
 
-            {/* Financial Modeling Assumptions (Always Open) */}
+          {/* Financial Modeling Assumptions (Always Open) */}
             <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 relative z-10">
-              <div className="w-full flex justify-between items-center p-4 text-xs font-bold text-slate-700 dark:text-slate-305 border-b border-slate-200 dark:border-slate-800">
-                <span className="flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-slate-400" />
-                  Financial Modeling Assumptions
-                </span>
+              {/* Header */}
+              <div className="w-full flex items-center gap-2 p-4 text-xs font-black text-slate-700 dark:text-slate-300 bg-slate-50/70 dark:bg-slate-950/30 border-b border-slate-200 dark:border-slate-800">
+                <Settings className="w-4 h-4 text-slate-400" />
+                Financial Modeling Assumptions
               </div>
 
+              {/* Content — always visible */}
               <div className="p-4 space-y-4 text-xs bg-white dark:bg-slate-900/50">
                 <div className="space-y-2">
                   <div className="flex justify-between font-semibold text-slate-600 dark:text-slate-400">
@@ -1316,7 +1529,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     step="0.1"
                     value={panelDegradation}
                     onChange={(e) => setPanelDegradation(parseFloat(e.target.value))}
-                    className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
+                    className="premium-slider slider-orange w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
                     style={{
                       background: activeTheme === "dark"
                         ? `linear-gradient(to right, #f59e0b 0%, #f59e0b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b ${((panelDegradation - 0.1) / 1.9) * 100}%, #1e293b 100%)`
@@ -1351,38 +1564,56 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </div>
 
             {/* AI Solar Advisor Widget */}
-            <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 text-left relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🤖</span>
-                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Ask Solar AI Advisor</h4>
+            <div className="bg-gradient-to-br from-indigo-50/40 via-purple-50/10 to-indigo-50/20 dark:from-indigo-950/20 dark:via-purple-950/5 dark:to-indigo-950/10 p-5 rounded-3xl border border-indigo-100/60 dark:border-indigo-950/60 shadow-sm relative overflow-hidden group">
+              {/* Glowing Background Wash */}
+              <div className="absolute -right-12 -top-12 w-32 h-32 blur-2xl opacity-15 dark:opacity-10 rounded-full bg-indigo-500 pointer-events-none group-hover:scale-150 transition-all duration-700" />
+              <div className="absolute -left-12 -bottom-12 w-32 h-32 blur-2xl opacity-10 dark:opacity-5 rounded-full bg-purple-500 pointer-events-none group-hover:scale-150 transition-all duration-700" />
+
+              <div className="flex items-center gap-3 relative z-10 pb-1">
+                <div className="p-2 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shrink-0 shadow-[0_2px_8px_rgba(99,102,241,0.15)] dark:shadow-none animate-pulse">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest leading-none font-display">Ask Solar AI Advisor</h4>
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mt-0.5">Instant Consultation</span>
+                </div>
               </div>
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-405 leading-normal">
-                Click a question below to consult the AI agent about your solar recommendation:
+
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 leading-normal relative z-10">
+                Click a question below to analyze your recommended <span className="text-indigo-600 dark:text-indigo-400 font-bold">{recommendedKw.toFixed(1)} kW</span> system:
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-bold">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] font-bold relative z-10">
                 {[
                   "Can solar eliminate my bill?",
                   "Should I wait another year?",
                   "What size system should I buy?",
                   "Can I charge an EV with this system?"
                 ].map((q, idx) => (
-                  <button
+                  <motion.button
                     key={idx}
+                    whileHover={{ scale: 1.015, y: -0.5 }}
+                    whileTap={{ scale: 0.985 }}
                     type="button"
                     onClick={() => {
                       window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
                         detail: { message: `${q} Based on my Solar Planner recommendation: a ${recommendedKw.toFixed(1)} kW system, costs ₹${installationCost.toLocaleString('en-IN')}, saves ₹${firstYearSavings.toLocaleString('en-IN')}/year, payback in ${paybackPeriodVal.toFixed(1)} years.` } 
                       }));
                     }}
-                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary-blue dark:hover:border-primary-green hover:shadow-[0_4px_12px_rgba(59,130,246,0.15)] text-slate-700 dark:text-slate-300 text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] leading-normal"
+                    className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/60 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/20 dark:hover:from-indigo-950/20 dark:hover:to-purple-950/15 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)] dark:hover:shadow-none text-slate-700 dark:text-slate-350 text-left transition-colors duration-200 cursor-pointer flex justify-between items-center gap-2 group/btn font-semibold"
                   >
-                    {q}
-                  </button>
+                    <span className="leading-snug">{q}</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover/btn:text-indigo-500 dark:group-hover/btn:text-indigo-400 transition-colors shrink-0 duration-200" />
+                  </motion.button>
                 ))}
               </div>
             </div>
-
-          </div>
 
           {/* Panel details sub-section */}
           <div className="bg-slate-50/50 dark:bg-slate-900/30 p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm relative overflow-hidden group hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.15)] hover:border-indigo-500/20 transition-all duration-300">
@@ -1404,7 +1635,10 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
             <div className="grid grid-cols-2 gap-3 relative z-10">
               {/* Card 1: Modules Needed */}
-              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/35 hover:shadow-[0_8px_24px_rgba(99,102,241,0.06)] dark:hover:shadow-none transition-colors duration-250 cursor-pointer group/spec"
+              >
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
                   <Layers className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                   <span className="text-[9px] font-bold uppercase tracking-wider">Required Modules</span>
@@ -1413,14 +1647,17 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
                     {panelsNeeded} Panels
                   </div>
-                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-455 mt-0.5 leading-none">
                     {panelWattage}W Rating ({solarTech === "topcon" ? "TOPCon" : "Mono-PERC"})
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 2: Dimensions */}
-              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/35 hover:shadow-[0_8px_24px_rgba(99,102,241,0.06)] dark:hover:shadow-none transition-colors duration-250 cursor-pointer group/spec"
+              >
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
                   <Ruler className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                   <span className="text-[9px] font-bold uppercase tracking-wider">Dimensions</span>
@@ -1429,14 +1666,17 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
                     {panelSizeLabel.replace("~", "")}
                   </div>
-                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-455 mt-0.5 leading-none">
                     Per Module Size
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 3: Weight */}
-              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/35 hover:shadow-[0_8px_24px_rgba(99,102,241,0.06)] dark:hover:shadow-none transition-colors duration-250 cursor-pointer group/spec"
+              >
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
                   <Scale className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span className="text-[9px] font-bold uppercase tracking-wider">Weight Load</span>
@@ -1445,14 +1685,17 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   <div className="text-sm font-extrabold text-slate-850 dark:text-white leading-tight">
                     ~{panelWeight} kg
                   </div>
-                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-455 mt-0.5 leading-none">
                     Total Load: {panelsNeeded * panelWeight} kg
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 4: Efficiency */}
-              <div className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/30 transition-all duration-200 group/spec">
+              <motion.div 
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="bg-white/60 dark:bg-slate-950/40 p-3 rounded-2xl border border-slate-200/40 dark:border-slate-850/60 flex flex-col justify-between hover:border-indigo-500/35 hover:shadow-[0_8px_24px_rgba(99,102,241,0.06)] dark:hover:shadow-none transition-colors duration-250 cursor-pointer group/spec"
+              >
                 <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mb-1.5">
                   <Zap className="w-3.5 h-3.5 text-emerald-500 shrink-0 animate-pulse" />
                   <span className="text-[9px] font-bold uppercase tracking-wider">Efficiency</span>
@@ -1461,11 +1704,11 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   <div className="text-sm font-extrabold text-emerald-600 dark:text-primary-green leading-tight">
                     {panelEfficiency.toFixed(1)}%
                   </div>
-                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-450 mt-0.5 leading-none">
+                  <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-455 mt-0.5 leading-none">
                     Cell Conversion
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
@@ -1476,43 +1719,69 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           className="lg:col-span-6 space-y-6"
         >
           <div className="space-y-6 relative">
-
-            {/* 1. Centerpiece Hero Result Card */}
-            <div 
-              className="p-6 rounded-3xl border border-emerald-500/20 dark:border-emerald-500/30 flex flex-col justify-between min-h-[220px] bg-gradient-to-br from-emerald-500/10 via-sky-500/10 to-teal-500/5 dark:from-emerald-950/20 dark:via-sky-950/20 dark:to-teal-950/10 shadow-sm relative overflow-hidden text-left group hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/40 transition-all duration-300"
+            {/* ── 1. Hero Recommendation Card ── */}
+            <motion.div 
+              whileHover={{ 
+                y: -7, 
+                scale: 1.015, 
+                boxShadow: "0 22px 40px -10px rgba(16,185,129,0.22)" 
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 22 }}
+              className="p-7 rounded-3xl border border-emerald-500/25 dark:border-emerald-500/35 flex flex-col justify-between min-h-[240px] bg-gradient-to-br from-emerald-500/12 via-sky-500/8 to-teal-500/6 dark:from-emerald-950/25 dark:via-sky-950/15 dark:to-teal-950/10 shadow-md relative overflow-hidden text-left group hover:shadow-[0_16px_48px_rgba(16,185,129,0.2)] hover:border-emerald-500/50 transition-all duration-300 cursor-pointer"
             >
-              {/* Glowing decorative background elements */}
-              <div className="absolute -right-6 -top-6 w-32 h-32 blur-2xl opacity-30 dark:opacity-20 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-125 transition-all duration-500" />
-              <div className="absolute -left-10 -bottom-10 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-sky-500 pointer-events-none group-hover:scale-125 transition-all duration-500" />
+              {/* Multi-layered glows */}
+              <div className="absolute -right-8 -top-8 w-48 h-48 blur-3xl opacity-25 dark:opacity-15 rounded-full bg-emerald-400 pointer-events-none group-hover:scale-110 transition-all duration-700" />
+              <div className="absolute -left-12 -bottom-12 w-36 h-36 blur-2xl opacity-15 dark:opacity-10 rounded-full bg-sky-400 pointer-events-none group-hover:scale-110 transition-all duration-700" />
+              <div className="absolute top-1/2 right-8 -translate-y-1/2 opacity-[0.04] dark:opacity-[0.06] pointer-events-none">
+                <svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="55" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="8 4"/><circle cx="60" cy="60" r="40" fill="none" stroke="#10b981" strokeWidth="0.8" strokeDasharray="5 5"/><circle cx="60" cy="60" r="25" fill="none" stroke="#10b981" strokeWidth="0.6"/></svg>
+              </div>
               
-              <div className="space-y-1 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-primary-green flex items-center gap-1.5">
-                  <Sun className="w-3.5 h-3.5 animate-spin-slow" />
+              <div className="space-y-2 relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <Sun className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "12s" }} />
                   <span>Solar Recommendation</span>
                 </span>
-                <h3 className="text-3xl font-display font-black text-slate-900 dark:text-white mt-1.5 tracking-tight">
-                  <AnimatedNumber value={recommendedKw} formatter={(v) => v.toFixed(1)} /> kW System
-                </h3>
-                <div className="text-lg font-black text-emerald-600 dark:text-primary-green mt-2.5 flex items-center gap-1">
-                  ₹<AnimatedNumber value={firstYearSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} /> Saved Every Year
+                {/* Jumbo kW display */}
+                <div className="flex items-baseline gap-2 mt-1">
+                  <h3 className="text-5xl font-display font-black tracking-tight bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500 dark:from-emerald-400 dark:via-teal-400 dark:to-sky-400 bg-clip-text text-transparent">
+                    <AnimatedNumber value={recommendedKw} formatter={(v) => v.toFixed(1)} />
+                  </h3>
+                  <span className="text-xl font-black text-slate-700 dark:text-slate-200">kW System</span>
                 </div>
-                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
-                  Payback in <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /> Years
+                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1.5">
+                  <span className="text-base">₹</span>
+                  <AnimatedNumber value={firstYearSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">/ year saved</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Payback in <span className="text-slate-700 dark:text-slate-200 font-black"><AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /> yrs</span>
+                  </span>
+                  <span className="h-3.5 w-px bg-slate-300 dark:bg-slate-700" />
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <span className="text-slate-700 dark:text-slate-200 font-black">{panelsNeeded}</span> panels needed
+                  </span>
                 </div>
               </div>
               
-              <button 
+              {/* Shimmer CTA button */}
+              <motion.button 
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
                     detail: { message: `I want to install the recommended ${recommendedKw.toFixed(1)} kW Solar System. What are the installation steps, required solar panel brands, and subsidy approval procedures?` } 
                   }));
                 }}
                 type="button"
-                className="mt-4 px-6 h-11 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider transition-all hover:scale-105 active:scale-95 w-fit shadow-md hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer relative z-10"
+                className="mt-5 px-7 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black rounded-2xl text-xs uppercase tracking-wider shadow-lg hover:shadow-[0_10px_28px_rgba(16,185,129,0.4)] cursor-pointer relative z-10 overflow-hidden group/btn w-fit"
               >
-                Install Solar
-              </button>
-            </div>
+                <span className="relative z-10 flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Install Solar Now
+                </span>
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
+              </motion.button>
+            </motion.div>
 
             {/* 2. Readiness & Roof Space side-by-side grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1525,151 +1794,214 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               {renderRoofMockup()}
             </div>
 
-            {/* 3. Feasibility Review Callout */}
-            <div className={`card-client p-5 rounded-3xl border ${conclusion.colorClass} space-y-4 text-left shadow-sm relative overflow-hidden group`}>
-              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-              <div className="flex justify-between items-center relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-555">
-                  Feasibility Review
-                </span>
-                <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border uppercase tracking-wide ${conclusion.colorClass}`}>
-                  {conclusion.badge}
-                </span>
+            {/* ── 3. Feasibility Review ── */}
+            <motion.div 
+              whileHover={{ 
+                y: -6, 
+                scale: 1.015, 
+                boxShadow: "0 16px 32px -8px rgba(0,0,0,0.12)" 
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 20 }}
+              className={`rounded-3xl overflow-hidden border shadow-sm cursor-pointer transition-all duration-250 ${conclusion.colorClass}`}
+            >
+              <div className="flex items-stretch">
+                {/* Left color stripe */}
+                <div className={`w-1.5 shrink-0 ${paybackPeriodVal <= 5 ? 'bg-emerald-500' : paybackPeriodVal <= 8 ? 'bg-green-500' : paybackPeriodVal <= 12 ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                <div className="flex-1 p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Feasibility Review</span>
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-wide ${conclusion.colorClass}`}>{conclusion.badge}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Financial Score", value: `${Math.max(0, Math.round(100 - (paybackPeriodVal * 3)))}%`, icon: "📊", color: "text-slate-800 dark:text-white" },
+                      { label: "25yr Profit",    value: `₹${Math.round(twentyFiveYearNetSavings).toLocaleString('en-IN')}`, icon: "💹", color: "text-emerald-600 dark:text-emerald-400" },
+                      { label: "Break-Even",     value: `${paybackPeriodVal.toFixed(1)} yrs`, icon: "⏱", color: "text-blue-600 dark:text-blue-400" },
+                      { label: "Risk Level",     value: paybackPeriodVal > 10 ? "Medium" : "Low", icon: "🛡", color: "text-slate-800 dark:text-white" },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white/50 dark:bg-slate-900/30 p-3 rounded-2xl border border-current/10 space-y-0.5">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          <span>{stat.icon}</span>{stat.label}
+                        </span>
+                        <p className={`text-sm font-extrabold ${stat.color}`}>{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-normal">{conclusion.message}</p>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-xs font-semibold relative z-10">
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Financial Score</span>
-                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">
-                    <AnimatedNumber value={Math.round(100 - (paybackPeriodVal * 3))} />%
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Expected Profit</span>
-                  <span className="text-sm font-extrabold text-primary-green">
-                    ₹<AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Break-Even</span>
-                  <span className="text-sm font-extrabold text-primary-blue dark:text-blue-400">
-                    <AnimatedNumber value={paybackPeriodVal} formatter={(v) => v.toFixed(1)} /> Years
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Risk Level</span>
-                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">{paybackPeriodVal > 10 ? "Medium" : "Low"}</span>
-                </div>
-              </div>
-            </div>
+            </motion.div>
 
-            {/* 4. Stripe/Tesla style metric grid */}
+            {/* ── 4. Metric Cards Grid (gradient top-border + stagger) ── */}
             <div className="grid grid-cols-2 gap-4 text-left">
-              {/* Card 1: Investment */}
-              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
-                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">💰 Investment</span>
-                <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight mt-2 relative z-10">
-                  ₹<AnimatedNumber value={installationCost} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">After PM Surya Ghar Subsidy</span>
-              </div>
-
-              {/* Card 2: Annual Return */}
-              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] hover:border-emerald-500/20 transition-all duration-300">
-                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">📈 Annual Return</span>
-                <p className="text-xl font-display font-black text-primary-green leading-tight mt-2 relative z-10">
-                  ₹<AnimatedNumber value={firstYearSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">Year 1 savings estimate</span>
-              </div>
-
-              {/* Card 3: Monthly Savings */}
-              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-cyan-500/20 transition-all duration-300">
-                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-cyan-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">⚡ Monthly Savings</span>
-                <p className="text-xl font-display font-black text-primary-blue dark:text-blue-400 leading-tight mt-2 relative z-10">
-                  ₹<AnimatedNumber value={Math.round(firstYearSavings / 12)} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">Estimated grid bill cut</span>
-              </div>
-
-              {/* Card 4: ROI */}
-              <div className="card-client bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[115px] shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)] hover:border-amber-500/20 transition-all duration-300">
-                <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-10 rounded-full bg-amber-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest relative z-10">🏆 ROI</span>
-                <p className="text-xl font-display font-black text-amber-500 leading-tight mt-2 relative z-10">
-                  <AnimatedNumber value={installationCost > 0 ? ((twentyFiveYearNetSavings + installationCost) / installationCost) : 0.0} formatter={(v) => v.toFixed(1)} />x
-                </p>
-                <span className="text-[9px] text-slate-455 dark:text-slate-500 block relative z-10">25-Year cumulative yield</span>
-              </div>
+              {[
+                { label: "💰 Investment",    value: `₹${Math.round(installationCost).toLocaleString('en-IN')}`, sub: "After PM Surya Ghar Subsidy", topColor: "from-blue-400 to-indigo-500",   glowColor: "bg-blue-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]",  borderHover: "hover:border-blue-400/40",   delay: 0 },
+                { label: "📈 Annual Return", value: `₹${Math.round(firstYearSavings).toLocaleString('en-IN')}`, sub: "Year 1 savings estimate",      topColor: "from-emerald-400 to-teal-500", glowColor: "bg-emerald-500", hoverShadow: "hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)]",  borderHover: "hover:border-emerald-400/40", delay: 75 },
+                { label: "⚡ Monthly Savings",value: `₹${Math.round(firstYearSavings / 12).toLocaleString('en-IN')}`, sub: "Estimated grid bill cut", topColor: "from-cyan-400 to-sky-500",  glowColor: "bg-cyan-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(6,182,212,0.12)]",   borderHover: "hover:border-cyan-400/40",   delay: 150 },
+                { label: "🏆 25yr ROI",      value: `${installationCost > 0 ? ((twentyFiveYearNetSavings + installationCost) / installationCost).toFixed(1) : '0.0'}x`, sub: "25-year cumulative yield", topColor: "from-amber-400 to-orange-500", glowColor: "bg-amber-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(245,158,11,0.12)]", borderHover: "hover:border-amber-400/40",  delay: 225 },
+              ].map((card, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: card.delay / 1000, type: "spring", stiffness: 280, damping: 26 }}
+                  whileHover={{ 
+                    y: -8, 
+                    scale: 1.035, 
+                    boxShadow: "0 22px 35px -8px rgba(0,0,0,0.12)" 
+                  }}
+                  className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[120px] shadow-sm relative overflow-hidden cursor-pointer text-left transition-all duration-250 ${card.hoverShadow} ${card.borderHover}`}
+                >
+                  {/* Gradient top border */}
+                  <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${card.topColor}`} />
+                  <div className={`absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-10 dark:opacity-8 rounded-full ${card.glowColor} pointer-events-none`} />
+                  <div className="p-4 pt-5 flex flex-col justify-between h-full relative z-10">
+                    <span className="text-[9.5px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{card.label}</span>
+                    <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight">{card.value}</p>
+                    <span className="text-[9px] text-slate-450 dark:text-slate-500 block">{card.sub}</span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
 
             {/* 5. Lifetime Savings Timeline */}
             {renderLifetimeTimeline()}
 
-            {/* 6. Environmental Offset Card */}
-            <div className="bg-gradient-to-br from-green-500/5 via-emerald-500/10 to-teal-500/5 dark:from-emerald-950/10 dark:via-emerald-950/20 dark:to-teal-950/10 p-6 rounded-3xl border border-green-500/20 dark:border-green-500/30 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.2)] transition-all duration-300">
-              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-25 dark:opacity-15 rounded-full bg-emerald-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-              <div className="flex items-center gap-2 relative z-10">
-                <span className="text-lg">🌱</span>
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-650 dark:text-primary-green">Carbon Reduction</span>
+            {/* ── 6. Environmental Offset Card ── */}
+            <motion.div
+              whileHover={{ 
+                y: -7, 
+                scale: 1.02, 
+                boxShadow: "0 18px 36px -10px rgba(16,185,129,0.18)" 
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 22 }}
+              className="p-6 rounded-3xl border border-green-500/25 dark:border-green-500/30 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_12px_40px_rgba(16,185,129,0.15)] hover:border-green-500/45 transition-all duration-300 cursor-pointer"
+              style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.05) 0%, rgba(20,184,166,0.08) 50%, rgba(16,185,129,0.04) 100%)" }}
+            >
+              {/* Dot wave pattern background */}
+              <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{
+                backgroundImage: "radial-gradient(circle, #10b981 1px, transparent 1px)",
+                backgroundSize: "20px 20px"
+              }} />
+              <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-20 dark:opacity-15 rounded-full bg-emerald-400 pointer-events-none group-hover:scale-125 transition-all duration-700" />
+
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🌱</span>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 block">Carbon Reduction</span>
+                    <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500">Annual environmental impact</span>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Clean Energy</span>
               </div>
               
               <div className="grid grid-cols-2 gap-4 relative z-10">
-                <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold">Annual Offset</span>
-                  <p className="text-xl font-black text-slate-900 dark:text-white">
-                    <AnimatedNumber value={co2Reduction} formatter={(v) => v.toFixed(1)} /> Tons CO₂
+                <motion.div whileHover={{ y: -3, scale: 1.03 }} className="space-y-1.5 bg-white/60 dark:bg-slate-950/30 p-4 rounded-2xl border border-emerald-500/15 dark:border-emerald-900/20 cursor-pointer">
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase block font-bold tracking-wider">Annual CO₂ Offset</span>
+                  <p className="text-2xl font-black text-slate-800 dark:text-white flex items-baseline gap-1">
+                    <AnimatedNumber value={co2Reduction} formatter={(v) => v.toFixed(1)} />
+                    <span className="text-xs font-bold text-slate-400">Tons</span>
                   </p>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase block font-bold">Tree Equivalent</span>
-                  <p className="text-xl font-black text-primary-green flex items-center gap-1">
-                    🌳 <AnimatedNumber value={treesEquivalent} /> Trees
+                  <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000" style={{ width: isMounted ? `${Math.min(100, co2Reduction * 20)}%` : '0%' }} />
+                  </div>
+                </motion.div>
+                <motion.div whileHover={{ y: -3, scale: 1.03 }} className="space-y-1.5 bg-white/60 dark:bg-slate-950/30 p-4 rounded-2xl border border-emerald-500/15 dark:border-emerald-900/20 cursor-pointer">
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase block font-bold tracking-wider">Tree Equivalent</span>
+                  <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-baseline gap-1">
+                    🌳 <AnimatedNumber value={treesEquivalent} />
+                    <span className="text-xs font-bold text-emerald-500">Trees</span>
                   </p>
-                </div>
+                  <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-1000" style={{ width: isMounted ? `${Math.min(100, treesEquivalent / 5)}%` : '0%' }} />
+                  </div>
+                </motion.div>
               </div>
-              <p className="text-[10px] text-slate-550 dark:text-slate-450 leading-normal border-t border-slate-100 dark:border-slate-800/80 pt-2.5 relative z-10">
+              <p className="text-[10px] text-slate-500 dark:text-slate-450 leading-normal border-t border-emerald-500/10 pt-3 relative z-10">
                 Calculated using grid displacement factors. Offsets your domestic coal power generation footprint over 25 years.
               </p>
-            </div>
+            </motion.div>
 
-            {/* No Solar vs Solar Installed Side-by-Side Comparison */}
-            <div className="bg-slate-50 dark:bg-slate-950/45 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-4 text-left shadow-sm relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] transition-all duration-300">
-              <div className="absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-15 dark:opacity-5 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
-              <h4 className="text-xs font-black text-slate-905 dark:text-white uppercase tracking-wider relative z-10">
-                25-Year Lifetime Cost Comparison
-              </h4>
-              <div className="grid grid-cols-2 gap-4 relative z-10">
-                <div className="space-y-1 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">No Solar (Grid Only)</span>
-                  <p className="text-base font-extrabold text-slate-850 dark:text-white mt-1">
-                    ₹<AnimatedNumber value={totalNoSolarCost25Years} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                  </p>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-550 block">Bills inflated at {tariffIncrease}% p.a.</span>
+            {/* ── 7. 25-Year Cost Comparison (Bar Chart Style) ── */}
+            <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-5 text-left shadow-sm relative z-10">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">25-Year Lifetime Cost Comparison</h4>
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full">at {tariffIncrease}% inflation</span>
+              </div>
+
+              {/* Bar chart */}
+              <div className="flex items-end gap-4 h-28">
+                {/* No Solar bar */}
+                <div className="flex-1 flex flex-col items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 text-center">
+                    ₹{Math.round(totalNoSolarCost25Years / 100000).toLocaleString('en-IN')}L
+                  </span>
+                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
+                    <div
+                      className="absolute bottom-0 w-full bg-gradient-to-t from-red-500/80 to-rose-400/60 rounded-t-xl transition-all duration-1000"
+                      style={{ height: isMounted ? '100%' : '0%' }}
+                    />
+                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
+                      <span className="text-[8px] font-black text-white">Grid Only</span>
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">No Solar</span>
                 </div>
-                <div className="space-y-1 p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/10 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-primary-green uppercase font-black">Solar Installed</span>
-                  <p className="text-base font-extrabold text-primary-green mt-1">
-                    ₹<AnimatedNumber value={totalSolarCost25Years} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
-                  </p>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-555 block">System cost + bills + {maintenanceRate}% maint.</span>
+
+                {/* Solar bar */}
+                <div className="flex-1 flex flex-col items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 text-center">
+                    ₹{Math.round(totalSolarCost25Years / 100000).toLocaleString('en-IN')}L
+                  </span>
+                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
+                    <div
+                      className="absolute bottom-0 w-full bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-xl transition-all duration-1000"
+                      style={{ height: isMounted ? `${Math.round((totalSolarCost25Years / totalNoSolarCost25Years) * 100)}%` : '0%' }}
+                    />
+                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
+                      <span className="text-[8px] font-black text-white">Solar</span>
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">With Solar</span>
+                </div>
+
+                {/* Savings column */}
+                <div className="flex-1 flex flex-col items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 text-center">
+                    ₹{Math.round(twentyFiveYearNetSavings / 100000).toLocaleString('en-IN')}L
+                  </span>
+                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
+                    <div
+                      className="absolute bottom-0 w-full bg-gradient-to-t from-blue-600 to-sky-400 rounded-t-xl transition-all duration-1000"
+                      style={{ height: isMounted ? `${Math.round((twentyFiveYearNetSavings / totalNoSolarCost25Years) * 100)}%` : '0%' }}
+                    />
+                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
+                      <span className="text-[8px] font-black text-white">Profit</span>
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Net Saved</span>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl flex items-center justify-between text-xs relative z-10 hover:border-emerald-500/20 transition-colors">
-                <span className="font-semibold text-slate-550 dark:text-slate-400">Total Net Lifetime Savings:</span>
-                <span className="font-extrabold text-primary-green text-sm">
-                  ₹<AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+
+              {/* Summary row */}
+              <motion.div 
+                whileHover={{ 
+                  y: -4, 
+                  scale: 1.012, 
+                  boxShadow: "0 12px 20px -8px rgba(16,185,129,0.18)" 
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="bg-gradient-to-r from-emerald-500/8 to-teal-500/5 dark:from-emerald-950/20 dark:to-teal-950/10 border border-emerald-500/20 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-emerald-500/40 transition-all duration-200"
+              >
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Total Net Lifetime Savings</span>
+                <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-0.5">
+                  <span className="text-xs">₹</span><AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </span>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Security details note */}
-            <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4">
-              <ShieldCheck className="w-4 h-4 text-green-500" />
-              <span>Slab calculations match active {getFullStateName(selectedState)} net metering rules.</span>
-            </div>
+
           </div>
         </motion.div>
       </div>
@@ -1677,106 +2009,109 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       {/* Sizing and Tech Guide reference section */}
       <motion.div
         variants={itemVariants}
-        className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 relative overflow-hidden"
+        whileHover={{ 
+          y: -5, 
+          scale: 1.006, 
+          boxShadow: "0 20px 35px -10px rgba(0,0,0,0.08)" 
+        }}
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+        className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden"
       >
         {/* Top decorative glow */}
         <div className="absolute -right-16 -top-16 w-36 h-36 blur-3xl opacity-10 rounded-full bg-amber-500 pointer-events-none" />
 
-        {/* Card Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-start gap-3.5">
-            <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-2xl shrink-0 shadow-sm">
-              <Sun className="w-5.5 h-5.5 animate-pulse" />
-            </div>
-            <div className="text-left">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+        {/* Card Header — compact inline */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 16, ease: "linear" }}
+              className="p-3 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-2xl shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+            >
+              <Sun className="w-5 h-5 animate-pulse" />
+            </motion.div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">
                 Rooftop Solar Quick Sizing Reference
               </h3>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
-                Standard guidelines for planning domestic systems in India based on 540W solar modules.
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1">
+                Standard guidelines · India · 540W modules
               </p>
             </div>
           </div>
-          <div className="self-start sm:self-center px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider">
+          <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/45 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] sm:text-xs font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider shrink-0">
             2026 Guidelines
           </div>
         </div>
 
-        {/* Sizing Grid Container */}
-        <div className="space-y-3.5">
-          {/* Header Row (Visible on Desktop) */}
-          <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider text-[9px] border-b border-slate-100 dark:border-slate-800/60 text-left">
-            <div className="col-span-3 pl-2">Solar System Size</div>
-            <div className="col-span-2">Number of Panels (540W)</div>
-            <div className="col-span-2">Shadow-Free Space Needed</div>
-            <div className="col-span-2">Cost in Pune (with Subsidy)*</div>
-            <div className="col-span-3 text-right">25-Yr Expected Savings*</div>
+        {/* Table */}
+        <div className="rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+          {/* Header Row */}
+          <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800 text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <div className="col-span-3">System Size</div>
+            <div className="col-span-2">Panels (540W)</div>
+            <div className="col-span-2">Space Needed</div>
+            <div className="col-span-2">Cost (w/ Subsidy)</div>
+            <div className="col-span-3 text-right">25-Yr Savings</div>
           </div>
 
-          {/* Cards List */}
-          <div className="space-y-2.5">
-            {[
-              { size: "1 kW", panels: "~2 panels", space: "100 sq ft", cost: "~₹60,000", savings: "~₹5.3 Lakhs", color: "bg-sky-500", shadow: "shadow-[0_0_8px_rgba(14,165,233,0.3)]", badge: "Standard", targetBill: 1500, targetSpace: 100 },
-              { size: "2 kW", panels: "~4 panels", space: "200 sq ft", cost: "~₹1.15 Lakh", savings: "~₹10.74 Lakhs", color: "bg-sky-500", shadow: "shadow-[0_0_8px_rgba(14,165,233,0.3)]", badge: "Standard", targetBill: 3000, targetSpace: 200 },
-              { size: "3 kW", panels: "~6 panels", space: "300 sq ft", cost: "~₹1.32 Lakh", savings: "~₹16.11 Lakhs", color: "bg-amber-500", shadow: "shadow-[0_0_8px_rgba(245,158,11,0.3)]", badge: "Popular", targetBill: 4500, targetSpace: 300 },
-              { size: "4 kW", panels: "~8 panels", space: "450 sq ft", cost: "~₹1.77 Lakh", savings: "~₹21.48 Lakhs", color: "bg-amber-500", shadow: "shadow-[0_0_8px_rgba(245,158,11,0.3)]", badge: "Medium Home", targetBill: 6000, targetSpace: 400 },
-              { size: "5 kW", panels: "~10 panels", space: "500 sq ft", cost: "~₹2.32 Lakh", savings: "~₹33.46 Lakhs", color: "bg-emerald-500", shadow: "shadow-[0_0_8px_rgba(16,185,129,0.3)]", badge: "Heavy Usage", targetBill: 7500, targetSpace: 500 },
-              { size: "10 kW", panels: "~19 panels", space: "1,000 sq ft", cost: "~₹4.87 Lakh", savings: "~₹66.92 Lakhs", color: "bg-indigo-500", shadow: "shadow-[0_0_8px_rgba(99,102,241,0.3)]", badge: "Commercial", targetBill: 15000, targetSpace: 1000 }
-            ].map((row, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.995 }}
-                onClick={() => handleSelectReferenceSize(row.targetBill, row.targetSpace)}
-                className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800/85 bg-white/40 dark:bg-slate-950/20 hover:bg-white dark:hover:bg-slate-900/60 hover:border-amber-500/40 dark:hover:border-amber-500/30 hover:shadow-md hover:shadow-slate-200/10 dark:hover:shadow-black/10 transition-all duration-300 cursor-pointer group/row grid grid-cols-12 gap-3.5 items-center relative overflow-hidden text-left"
-              >
-                {/* Glowing left capacity stripe */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${row.color} ${row.shadow} transition-all duration-300`} />
-                
-                {/* 1. Size column */}
-                <div className="col-span-12 md:col-span-3 pl-3.5 flex items-center gap-2.5">
-                  <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tabular-nums">
-                    {row.size}
-                  </span>
-                  <span className="text-[8px] font-black text-slate-450 dark:text-slate-500 uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200/20 dark:border-slate-700/30 tracking-wider">
-                    {row.badge}
-                  </span>
-                </div>
+          {/* Data Rows */}
+          {[
+            { size: "1 kW",  panels: "~2",  space: "100 sq ft",   cost: "~₹60,000",    savings: "~₹5.3 Lakhs",   dot: "bg-sky-400",     badge: "Standard",    targetBill: 1500,  targetSpace: 100  },
+            { size: "2 kW",  panels: "~4",  space: "200 sq ft",   cost: "~₹1.15 Lakh", savings: "~₹10.74 Lakhs", dot: "bg-sky-400",     badge: "Standard",    targetBill: 3000,  targetSpace: 200  },
+            { size: "3 kW",  panels: "~6",  space: "300 sq ft",   cost: "~₹1.32 Lakh", savings: "~₹16.11 Lakhs", dot: "bg-amber-400",   badge: "Popular",     targetBill: 4500,  targetSpace: 300  },
+            { size: "4 kW",  panels: "~8",  space: "450 sq ft",   cost: "~₹1.77 Lakh", savings: "~₹21.48 Lakhs", dot: "bg-amber-400",   badge: "Medium Home", targetBill: 6000,  targetSpace: 400  },
+            { size: "5 kW",  panels: "~10", space: "500 sq ft",   cost: "~₹2.32 Lakh", savings: "~₹33.46 Lakhs", dot: "bg-emerald-400", badge: "Heavy Usage", targetBill: 7500,  targetSpace: 500  },
+            { size: "10 kW", panels: "~19", space: "1,000 sq ft", cost: "~₹4.87 Lakh", savings: "~₹66.92 Lakhs", dot: "bg-indigo-400",  badge: "Commercial",  targetBill: 15000, targetSpace: 1000 },
+          ].map((row, idx, arr) => (
+            <motion.div
+              key={idx}
+              whileHover={{ 
+                backgroundColor: activeTheme === "dark" ? "rgba(245,158,11,0.08)" : "rgba(245,158,11,0.045)", 
+                x: 8 
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+              whileTap={{ scale: 0.995 }}
+              onClick={() => handleSelectReferenceSize(row.targetBill, row.targetSpace)}
+              className={`grid grid-cols-12 gap-2 px-4 py-3.5 items-center cursor-pointer group/row transition-colors duration-200 text-left ${idx < arr.length - 1 ? "border-b border-slate-100 dark:border-slate-800/60" : ""}`}
+            >
+              {/* 1. Size + badge */}
+              <div className="col-span-3 flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${row.dot} group-hover/row:scale-130 transition-transform duration-250`} />
+                <span className="font-bold text-sm text-slate-850 dark:text-slate-100 group-hover/row:text-amber-500 dark:group-hover/row:text-amber-400 tabular-nums transition-colors duration-250">{row.size}</span>
+                <span className="hidden sm:inline text-[9px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md tracking-wider uppercase group-hover/row:bg-slate-200 dark:group-hover/row:bg-slate-700 transition-colors duration-250">{row.badge}</span>
+              </div>
 
-                {/* 2. Panels column */}
-                <div className="col-span-6 md:col-span-2 flex items-center gap-2 text-slate-700 dark:text-slate-350 font-semibold text-xs">
-                  <Layers className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  <span>{row.panels}</span>
-                </div>
+              {/* 2. Panels */}
+              <div className="col-span-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover/row:text-slate-700 dark:group-hover/row:text-slate-300 transition-colors duration-250">
+                <Layers className="w-3.5 h-3.5 text-slate-350 dark:text-slate-600 shrink-0 group-hover/row:text-indigo-400 transition-colors duration-250" />
+                {row.panels} panels
+              </div>
 
-                {/* 3. Space column */}
-                <div className="col-span-6 md:col-span-2 flex items-center gap-2 text-slate-700 dark:text-slate-350 font-semibold text-xs">
-                  <Home className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
-                  <span>{row.space}</span>
-                </div>
+              {/* 3. Space */}
+              <div className="col-span-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 group-hover/row:text-slate-700 dark:group-hover/row:text-slate-300 transition-colors duration-250">
+                <Home className="w-3.5 h-3.5 text-slate-350 dark:text-slate-600 shrink-0 group-hover/row:text-sky-400 transition-colors duration-250" />
+                {row.space}
+              </div>
 
-                {/* 4. Cost column */}
-                <div className="col-span-6 md:col-span-2 flex items-center gap-1">
-                  <span className="text-[9px] font-bold text-slate-450 md:hidden uppercase mr-1">Cost:</span>
-                  <span className="font-extrabold text-slate-850 dark:text-slate-200 tabular-nums text-xs">
-                    {row.cost}
-                  </span>
-                </div>
+              {/* 4. Cost */}
+              <div className="col-span-2 text-xs font-bold text-slate-700 dark:text-slate-300 tabular-nums group-hover/row:text-slate-900 dark:group-hover/row:text-white transition-colors duration-250">
+                {row.cost}
+              </div>
 
-                {/* 5. Savings column */}
-                <div className="col-span-6 md:col-span-3 flex justify-end items-center">
-                  <div className="inline-flex items-center gap-1 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-primary-green px-3 py-1.5 rounded-xl border border-emerald-500/20 dark:border-emerald-500/30 text-xs font-black shadow-sm group-hover/row:shadow-md transition-shadow duration-200">
-                    <span>{row.savings}</span>
-                    <ArrowUpRight className="w-4 h-4 text-emerald-500 dark:text-primary-green shrink-0" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+              {/* 5. Savings */}
+              <div className="col-span-3 flex justify-end">
+                <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/40 px-3 py-1.5 rounded-xl group-hover/row:bg-emerald-500 group-hover/row:text-white dark:group-hover/row:text-slate-950 group-hover/row:border-emerald-500 group-hover/row:shadow-md transition-all duration-250">
+                  {row.savings}
+                  <ArrowUpRight className="w-3.5 h-3.5 shrink-0 group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 transition-transform duration-250" />
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
-        <div className="text-[10px] text-slate-400 dark:text-slate-555 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-4 text-left">
-          *Costs are based on SolarSquare base variant starting prices as of March 2026. Savings calculation considers a 3% annual tariff escalation rate and a 1% annual plant degradation rate. Actual costs and generation vary by configuration and local DISCOM policies.
+        <div className="text-[9px] text-slate-400 dark:text-slate-600 leading-relaxed pt-3 text-left">
+          *Costs based on SolarSquare starting prices, March 2026. Savings assume 3% annual tariff escalation &amp; 1% degradation. Actual results vary by configuration and local DISCOM policies.
         </div>
       </motion.div>
 

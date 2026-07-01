@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { 
   Sparkles, Download, Printer, TrendingDown, RefreshCw, Leaf, 
   ArrowRight, Award
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { calculateBill } from "../../utils/tariffCalculator";
-import type { ApplianceItem } from "../../utils/tariffCalculator";
 
 interface Recommendation {
   id: string;
@@ -109,9 +107,6 @@ interface SavingsAdvisorProps {
   onPrint: () => void;
   onBack: () => void;
   onReset: () => void;
-  stateKey?: string;
-  customFlatRate?: number;
-  activeAppliances?: ApplianceItem[];
 }
 
 export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
@@ -120,30 +115,8 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
   onExportCSV,
   onPrint,
   onBack,
-  onReset,
-  stateKey = "ap",
-  customFlatRate = 7.5,
-  activeAppliances = []
+  onReset
 }) => {
-  const [reduction, setReduction] = useState(20);
-
-  // Find AC usage or fallback
-  const acApp = activeAppliances.find(a => a.id === "ac");
-  const acUnits = acApp ? acApp.quantity * (acApp.watts / 1000) * acApp.hours * 30 : 0;
-  
-  const isAcActive = acUnits > 0;
-  const simulableUnits = isAcActive ? acUnits : (analysisResult.totalUnits * 0.4);
-  const sliderLabel = isAcActive ? "AC consumption reduced" : "Heavy appliance load reduced";
-  
-  const reducedUnits = (simulableUnits * reduction) / 100;
-  const newUnits = Math.max(0, analysisResult.totalUnits - reducedUnits);
-  
-  // Calculate simulated bill
-  const currentBillResult = calculateBill(analysisResult.totalUnits, stateKey, customFlatRate);
-  const simulatedBillResult = calculateBill(newUnits, stateKey, customFlatRate);
-  
-  const savings = Math.max(0, currentBillResult.netEnergyCharge - simulatedBillResult.netEnergyCharge);
-
   // Animation variants
   const listVariants = {
     hidden: { opacity: 0 },
@@ -351,7 +324,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               return activeSchedules.map(item => (
                 <div 
                   key={item.id}
-                  className="group p-4 rounded-2xl border border-cyan-150 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30 dark:hover:border-cyan-500/30"
+                  className="group p-4 rounded-2xl border border-cyan-500/10 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30 dark:hover:border-cyan-500/30"
                 >
                   <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <span className="text-xl font-bold">{item.icon}</span>
@@ -371,7 +344,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               ));
             } else {
               return (
-                <div className="group p-5 rounded-2xl border border-cyan-150 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 md:col-span-2 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30">
+                <div className="group p-5 rounded-2xl border border-cyan-500/10 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 md:col-span-2 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30">
                   <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <span className="text-xl font-bold">⚡</span>
                   </div>
@@ -390,72 +363,6 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
         </div>
       </div>
 
-      {/* ─── BEFORE VS AFTER SAVINGS SIMULATOR ────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-        <div className="text-left">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
-            Interactive Savings Simulator
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-semibold leading-relaxed">
-            Drag the slider to dynamically simulate the financial and environmental impact of reducing heavy appliance loads.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          {/* Slider Controls */}
-          <div className="lg:col-span-5 space-y-4 bg-slate-50/50 dark:bg-slate-950/30 p-5 rounded-2xl border border-slate-150 dark:border-slate-850">
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                {sliderLabel}
-              </span>
-              <span className="text-base font-black text-primary-green font-mono">
-                {reduction}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={reduction}
-              onChange={(e) => setReduction(parseInt(e.target.value))}
-              className="premium-slider bg-slate-200 dark:bg-slate-800 cursor-pointer accent-primary-green"
-            />
-            <div className="flex justify-between text-[9px] text-slate-400 font-black uppercase tracking-wider">
-              <span>0% (No change)</span>
-              <span>100% (Fully Off)</span>
-            </div>
-          </div>
-
-          {/* Results Grid */}
-          <div className="lg:col-span-7 grid grid-cols-3 gap-3.5">
-            {/* Current Usage */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-150 dark:border-slate-850 text-center flex flex-col justify-center">
-              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Current Usage</span>
-              <span className="text-sm sm:text-base font-mono font-black text-slate-800 dark:text-white mt-1 block">
-                {Math.round(analysisResult.totalUnits)} <span className="text-[10px] font-bold text-slate-400">kWh</span>
-              </span>
-            </div>
-
-            {/* Simulated Usage */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-150 dark:border-slate-850 text-center flex flex-col justify-center">
-              <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">New Usage</span>
-              <span className="text-sm sm:text-base font-mono font-black text-primary-blue dark:text-primary-green mt-1 block">
-                {Math.round(newUnits)} <span className="text-[10px] font-bold text-slate-400">kWh</span>
-              </span>
-            </div>
-
-            {/* Estimated Savings */}
-            <div className="p-4 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-2xl border border-emerald-500/10 dark:border-emerald-500/20 text-center flex flex-col justify-center shadow-sm">
-              <span className="text-[9px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest block">Savings</span>
-              <span className="text-sm sm:text-base font-mono font-black text-emerald-600 dark:text-primary-green mt-1 block">
-                ₹{Math.round(savings)}<span className="text-[10px] font-bold">/mo</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Before vs After Recommendations comparison card */}
       <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
         <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest text-left flex items-center gap-1.5">
@@ -465,53 +372,147 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Bill Comparison */}
-          <div className="space-y-2 bg-slate-50/50 dark:bg-slate-955/20 p-4.5 rounded-2xl border border-slate-150 dark:border-slate-850">
-            <span className="text-xs font-bold text-slate-650 dark:text-slate-400 block text-left">
-              Bill Projection (₹)
-            </span>
-            <div className="flex items-center gap-2 pt-1">
-              <div className="flex-1 py-3 px-3 rounded-xl bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border border-red-200/50 dark:border-red-900/20 text-center font-black text-sm sm:text-base font-mono shadow-sm">
-                ₹{analysisResult.billing.netEnergyCharge.toFixed(0)}
+          {(() => {
+            const currentBill = analysisResult.billing.netEnergyCharge;
+            const afterBill = analysisResult.billAfter;
+            const savingsPct = currentBill > 0 ? Math.round(((currentBill - afterBill) / currentBill) * 100) : 0;
+            
+            return (
+              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-950/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-850 hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-slate-550 dark:text-slate-400 uppercase tracking-wider block text-left">
+                    Bill Projection
+                  </span>
+                  {savingsPct > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                      ↓ {savingsPct}%
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3 pt-1">
+                  {/* Current */}
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-50/60 dark:bg-rose-950/10 text-rose-700 dark:text-rose-455 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-rose-450 dark:text-rose-550 uppercase tracking-widest block mb-0.5">Current</span>
+                    <span className="text-base sm:text-lg font-mono font-black">
+                      ₹{currentBill.toFixed(0)}
+                    </span>
+                  </div>
+                  
+                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                  
+                  {/* Projected */}
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
+                    <span className="text-base sm:text-lg font-mono font-black">
+                      ₹{afterBill.toFixed(0)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-              <div className="flex-1 py-3 px-3 rounded-xl bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 border border-green-200/50 dark:border-green-900/20 text-center font-black text-sm sm:text-base font-mono shadow-sm">
-                ₹{analysisResult.billAfter.toFixed(0)}
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Usage Comparison */}
-          <div className="space-y-2 bg-slate-50/50 dark:bg-slate-955/20 p-4.5 rounded-2xl border border-slate-150 dark:border-slate-855">
-            <span className="text-xs font-bold text-slate-650 dark:text-slate-400 block text-left">
-              Energy Usage (kWh)
-            </span>
-            <div className="flex items-center gap-2 pt-1">
-              <div className="flex-1 py-3 px-3 rounded-xl bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border border-red-200/50 dark:border-red-900/20 text-center font-black text-sm sm:text-base font-mono shadow-sm">
-                {analysisResult.totalUnits.toFixed(0)} <span className="text-[9px] font-bold block text-slate-400">kWh</span>
+          {(() => {
+            const currentUnits = analysisResult.totalUnits;
+            const afterUnits = analysisResult.usageAfter;
+            const savingsPct = currentUnits > 0 ? Math.round(((currentUnits - afterUnits) / currentUnits) * 100) : 0;
+            
+            return (
+              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-950/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-850 hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-slate-550 dark:text-slate-400 uppercase tracking-wider block text-left">
+                    Energy Usage
+                  </span>
+                  {savingsPct > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                      ↓ {savingsPct}%
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3 pt-1">
+                  {/* Current */}
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-50/60 dark:bg-rose-950/10 text-rose-700 dark:text-rose-455 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-rose-450 dark:text-rose-550 uppercase tracking-widest block mb-0.5">Current</span>
+                    <span className="text-base sm:text-lg font-mono font-black">
+                      {currentUnits.toFixed(0)}<span className="text-[10px] font-extrabold text-rose-400 dark:text-rose-500 ml-0.5">kWh</span>
+                    </span>
+                  </div>
+                  
+                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                  
+                  {/* Projected */}
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
+                    <span className="text-base sm:text-lg font-mono font-black">
+                      {afterUnits.toFixed(0)}<span className="text-[10px] font-extrabold text-emerald-500 dark:text-primary-green ml-0.5">kWh</span>
+                    </span>
+                  </div>
+                </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-              <div className="flex-1 py-3 px-3 rounded-xl bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 border border-green-200/50 dark:border-green-900/20 text-center font-black text-sm sm:text-base font-mono shadow-sm">
-                {analysisResult.usageAfter.toFixed(0)} <span className="text-[9px] font-bold block text-primary-green">kWh</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Carbon Comparison */}
-          <div className="space-y-2 bg-slate-50/50 dark:bg-slate-955/20 p-4.5 rounded-2xl border border-slate-150 dark:border-slate-855">
-            <span className="text-xs font-bold text-slate-655 dark:text-slate-400 block text-left flex items-center gap-1.5">
-              <Leaf className="w-4 h-4 text-green-600 dark:text-primary-green" />
-              Carbon Footprint (kg CO₂)
-            </span>
-            <div className="flex items-center gap-2 pt-1">
-              <div className="flex-1 py-2 px-2.5 rounded-xl bg-red-50 text-red-700 dark:bg-red-955/20 dark:text-red-400 border border-red-200/50 dark:border-red-900/20 text-center font-bold text-xs sm:text-sm font-mono shadow-sm">
-                {analysisResult.beforeCo2.toFixed(0)} kg <span className="text-[8px] font-semibold block text-slate-400">({analysisResult.beforeTrees.toFixed(0)} trees)</span>
+          {(() => {
+            const currentCo2 = analysisResult.beforeCo2;
+            const afterCo2 = analysisResult.afterCo2;
+            const savingsPct = currentCo2 > 0 ? Math.round(((currentCo2 - afterCo2) / currentCo2) * 100) : 0;
+            
+            return (
+              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-955/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-855 hover:shadow-md transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-slate-555 dark:text-slate-400 uppercase tracking-wider block text-left flex items-center gap-1">
+                    <Leaf className="w-3.5 h-3.5 text-emerald-500" />
+                    Carbon Footprint
+                  </span>
+                  {savingsPct > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                      ↓ {savingsPct}%
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3 pt-1">
+                  {/* Current */}
+                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-rose-50/60 dark:bg-rose-955/10 text-rose-700 dark:text-rose-450 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-rose-455 dark:text-rose-555 uppercase tracking-widest block mb-0.5">Current</span>
+                    <div className="leading-tight">
+                      <span className="text-sm sm:text-base font-mono font-black">
+                        {currentCo2.toFixed(0)}<span className="text-[9px] font-bold text-rose-400 dark:text-rose-550 ml-0.5">kg CO₂</span>
+                      </span>
+                    </div>
+                    <span className="text-[8px] font-bold text-rose-400 dark:text-rose-550 block mt-1 leading-none">
+                      ({analysisResult.beforeTrees.toFixed(0)} trees needed)
+                    </span>
+                  </div>
+                  
+                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                  
+                  {/* Projected */}
+                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
+                    <div className="leading-tight">
+                      <span className="text-sm sm:text-base font-mono font-black">
+                        {afterCo2.toFixed(0)}<span className="text-[9px] font-bold text-emerald-500 dark:text-primary-green ml-0.5">kg CO₂</span>
+                      </span>
+                    </div>
+                    <span className="text-[8px] font-bold text-emerald-500 dark:text-primary-green block mt-1 leading-none">
+                      (Saves {analysisResult.savedTrees.toFixed(0)} trees/yr)
+                    </span>
+                  </div>
+                </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-              <div className="flex-1 py-2 px-2.5 rounded-xl bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 border border-green-200/50 dark:border-green-900/20 text-center font-bold text-xs sm:text-sm font-mono shadow-sm">
-                {analysisResult.afterCo2.toFixed(0)} kg <span className="text-[8px] font-bold block text-primary-green">(-{analysisResult.savedTrees.toFixed(0)} tr offset)</span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -522,7 +523,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             onClick={onBack}
             whileHover={{ y: -1, scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            className="px-5 py-2.5 flex items-center justify-center text-xs font-bold rounded-full text-slate-700 dark:text-slate-350 bg-white border-2 border-slate-200 hover:border-slate-350 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 transition-all cursor-pointer shadow-sm"
+            className="px-5 py-2.5 flex items-center justify-center text-xs font-bold rounded-full text-slate-700 dark:text-slate-350 bg-white border-2 border-slate-200 hover:border-slate-350 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 transition-colors duration-200 cursor-pointer shadow-sm"
           >
             Back to Inputs
           </motion.button>
@@ -530,7 +531,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             onClick={onReset}
             whileHover={{ y: -1, scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            className="group px-5 py-2.5 flex items-center justify-center gap-1.5 text-xs font-bold rounded-full text-slate-750 dark:text-slate-300 bg-white border-2 border-slate-200 hover:border-slate-350 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 transition-all cursor-pointer shadow-sm"
+            className="group px-5 py-2.5 flex items-center justify-center gap-1.5 text-xs font-bold rounded-full text-slate-750 dark:text-slate-300 bg-white border-2 border-slate-200 hover:border-slate-350 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-slate-700 transition-colors duration-200 cursor-pointer shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300 ease-out" />
             Reset Planner
@@ -544,7 +545,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             boxShadow: "0 8px 20px -6px rgba(37, 99, 235, 0.3)" 
           }}
           whileTap={{ scale: 0.98 }}
-          className="group px-6 py-2.5 flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider rounded-full text-white bg-gradient-to-r from-primary-blue to-blue-700 dark:from-primary-green dark:to-emerald-650 dark:text-slate-950 transition-all shadow-md shadow-primary-blue/15 dark:shadow-none cursor-pointer"
+          className="group px-6 py-2.5 flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider rounded-full text-white bg-gradient-to-r from-primary-blue to-blue-700 dark:from-primary-green dark:to-emerald-650 dark:text-slate-950 transition-colors duration-200 shadow-md shadow-primary-blue/15 dark:shadow-none cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500 ease-out" />
           Start New Audit

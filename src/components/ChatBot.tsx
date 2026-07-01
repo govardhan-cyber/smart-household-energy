@@ -4,6 +4,51 @@ import { X, Send, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadTariffs, type TariffState } from "../utils/tariffService";
 import chatbotLogo from "../assets/chatbot-logo.png";
+interface ChatBotLogoProps {
+  className?: string;
+  isHovered?: boolean;
+}
+
+const ChatBotLogo: React.FC<ChatBotLogoProps> = ({ className = "w-10 h-10", isHovered = false }) => {
+  return (
+    <div className={`relative shrink-0 select-none ${className}`}>
+      {/* Spinning outer gradient ring */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
+        className="absolute -inset-[1.5px] rounded-full"
+        style={{
+          background: "conic-gradient(from 0deg, #2563eb, #06b6d4, #10b981, #2563eb)",
+          borderRadius: "50%"
+        }}
+      />
+      {/* Static gap ring to frame the image */}
+      <div className="absolute inset-[1.5px] rounded-full bg-white z-[1]" />
+
+      {/* Outer ambient glow */}
+      <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-blue-500/20 via-cyan-500/10 to-emerald-500/20 blur-[8px] opacity-60" />
+
+      {/* Avatar Image container with bob animation */}
+      <motion.div
+        animate={isHovered
+          ? { scale: 1.1, rotate: [0, -5, 5, 0] }
+          : { y: [0, -3, 0], rotate: [0, 1, -1, 0] }
+        }
+        transition={isHovered
+          ? { duration: 0.4 }
+          : { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
+        }
+        className="absolute inset-[1.5px] rounded-full overflow-hidden z-[2]"
+      >
+        <img
+          src={chatbotLogo}
+          alt="AI Energy Assistant"
+          className="w-full h-full object-cover"
+        />
+      </motion.div>
+    </div>
+  );
+};
 
 interface Message {
   role: "user" | "model";
@@ -30,7 +75,7 @@ export const ChatBot: React.FC = () => {
   useEffect(() => {
     const firstName = user?.fullName ? user.fullName.trim().split(/\s+/)[0] : "";
     const nameStr = firstName ? ` ${firstName}` : "";
-    const greetingText = `Hi${nameStr} 👋\n\nAsk me anything about your energy usage.`;
+    const greetingText = `Hi${nameStr}! 👋\n\nI am your **Energy AI Assistant**. I have secure, direct access to your **appliance logs, uploaded utility bills, and solar simulations**.\n\nHow can I help you optimize your savings today?`;
     
     setMessages(prev => {
       // Set default greeting if messages is empty or has only the initial guest greeting
@@ -233,10 +278,11 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     
     CRITICAL INSTRUCTIONS FOR RESPONSE STYLE:
     1. You have direct access to the user's home profile, appliances, recent calculations, bill history, and solar ROI data. Answer questions utilizing this data without asking the user to provide it.
-    2. Be conversational but extremely direct and brief. Use bullet points or key stats tables where appropriate.
-    3. If the user asks "How am I doing?" or "Explain my energy score", calculate and explain their energy score based on their usage (e.g. usage vs 250 kWh average baseline, tariff slabs, and appliance runtime).
-    4. Keep responses under 4 sentences or a concise list. Use bold formatting like **text** for emphasis.
-    5. Always format currency in Rupees (e.g. ₹500) and units in kWh.`;
+    2. Always explicitly reference or state that you have direct access to their active appliance records, uploaded bills, or solar calculation outputs.
+    3. Be conversational but extremely direct and brief. Use bullet points or key stats tables where appropriate.
+    4. If the user asks "How am I doing?" or "Explain my energy score", calculate and explain their energy score based on their usage (e.g. usage vs 250 kWh average baseline, tariff slabs, and appliance runtime).
+    5. Keep responses under 4 sentences or a concise list. Use bold formatting like **text** for emphasis.
+    6. Always format currency in Rupees (e.g. ₹500) and units in kWh.`;
 
     const geminiContents = [
       ...messages.slice(1).map(msg => ({
@@ -404,16 +450,12 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-blue to-primary-green text-white flex flex-col items-center justify-center shadow-[0_0_16px_rgba(37,99,235,0.3)] hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transition-all cursor-pointer relative group border border-white/10 overflow-hidden"
+          className="w-13 h-13 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 hover:shadow-[0_0_25px_rgba(37,99,235,0.55)] transition-all cursor-pointer relative group border border-white/10 overflow-hidden"
         >
           {isOpen ? (
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 relative z-10" />
           ) : (
-            <img 
-              src={chatbotLogo} 
-              alt="Energy AI Logo" 
-              className="w-full h-full object-cover rounded-full" 
-            />
+            <ChatBotLogo className="w-full h-full" isHovered={false} />
           )}
           {messages.length === 1 && !isOpen && (
             <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
@@ -426,7 +468,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
           </span>
         </button>
       </motion.div>
-
+ 
       {/* Chat Interface Panel (Glassmorphism, 380px x 600px, rounded-3xl [24px], blur-20) */}
       <AnimatePresence>
         {isOpen && (
@@ -438,9 +480,9 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-primary-blue to-primary-green p-4 flex items-center justify-between text-white border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="p-0.5 bg-white/20 rounded-xl overflow-hidden flex items-center justify-center w-8 h-8">
-                  <img src={chatbotLogo} alt="Logo" className="w-6 h-6 object-contain rounded-lg" />
+              <div className="flex items-center gap-2.5">
+                <div className="relative w-9 h-9 shrink-0">
+                  <ChatBotLogo className="w-full h-full" isHovered={true} />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-sm">⚡ Energy Assistant</h3>

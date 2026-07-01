@@ -48,11 +48,11 @@ function AppIcon({ name, cls = "w-6 h-6" }: { name: string; cls?: string }) {
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const COLORS = [
-  { bg: "bg-blue-50 dark:bg-blue-950/20",       icon: "text-blue-500 dark:text-blue-400",       bar: "bg-blue-500 dark:bg-blue-500",       border: "border-blue-100 dark:border-blue-900/30"     },
-  { bg: "bg-emerald-50 dark:bg-emerald-950/20", icon: "text-emerald-600 dark:text-emerald-400",   bar: "bg-emerald-500 dark:bg-emerald-500", border: "border-emerald-100 dark:border-emerald-900/30" },
-  { bg: "bg-orange-50 dark:bg-orange-950/20",   icon: "text-orange-500 dark:text-orange-400",   bar: "bg-orange-500 dark:bg-orange-500",   border: "border-orange-100 dark:border-orange-900/30"   },
-  { bg: "bg-purple-50 dark:bg-purple-950/20",   icon: "text-purple-500 dark:text-purple-400",   bar: "bg-purple-500 dark:bg-purple-500",   border: "border-purple-100 dark:border-purple-900/30"   },
-  { bg: "bg-slate-50 dark:bg-slate-800/40",     icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-slate-100 dark:border-slate-800/60"     },
+  { bg: "bg-blue-50 dark:bg-blue-950/20",       icon: "text-blue-500 dark:text-blue-400",       bar: "bg-blue-500 dark:bg-blue-500",       border: "border-blue-100 dark:border-blue-900/30",       glow: "card-client-blue"    },
+  { bg: "bg-emerald-50 dark:bg-emerald-950/20", icon: "text-emerald-600 dark:text-emerald-400",   bar: "bg-emerald-500 dark:bg-emerald-500", border: "border-emerald-100 dark:border-emerald-900/30", glow: "card-client-emerald" },
+  { bg: "bg-orange-50 dark:bg-orange-950/20",   icon: "text-orange-500 dark:text-orange-400",   bar: "bg-orange-500 dark:bg-orange-500",   border: "border-orange-100 dark:border-orange-900/30",   glow: "card-client-amber"   },
+  { bg: "bg-purple-50 dark:bg-purple-950/20",   icon: "text-purple-500 dark:text-purple-400",   bar: "bg-purple-500 dark:bg-purple-500",   border: "border-purple-100 dark:border-purple-900/30",   glow: "card-client-purple"  },
+  { bg: "bg-slate-50 dark:bg-slate-800/40",     icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-slate-100 dark:border-slate-800/60",       glow: "card-client-slate"   },
 ];
 
 // ── 1. Hero Card ───────────────────────────────────────────────────────────────
@@ -227,6 +227,8 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
         text: "text-blue-600 dark:text-blue-400",
         stroke: "#3b82f6",
         track: "stroke-blue-100 dark:stroke-blue-955/40",
+        badge: "bg-blue-500/5 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/10",
+        cardGlow: "card-client-blue",
       };
     }
     if (n.includes("fan")) {
@@ -236,6 +238,8 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
         text: "text-emerald-600 dark:text-emerald-400",
         stroke: "#10b981",
         track: "stroke-emerald-100 dark:stroke-emerald-955/40",
+        badge: "bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/10",
+        cardGlow: "card-client-emerald",
       };
     }
     if (n.includes("fridge") || n.includes("refrig")) {
@@ -245,6 +249,8 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
         text: "text-cyan-600 dark:text-cyan-400",
         stroke: "#06b6d4",
         track: "stroke-cyan-100 dark:stroke-cyan-955/40",
+        badge: "bg-cyan-500/5 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/10",
+        cardGlow: "card-client-cyan",
       };
     }
     return {
@@ -253,14 +259,16 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
       text: "text-amber-600 dark:text-amber-455",
       stroke: "#f59e0b",
       track: "stroke-amber-100 dark:stroke-amber-950/40",
+      badge: "bg-amber-500/5 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/10",
+      cardGlow: "card-client-amber",
     };
   };
 
   const theme = getApplianceTheme(name);
 
   // SVG Gauge calculations
-  const radius = 30;
-  const strokeWidth = 5;
+  const radius = 35;
+  const strokeWidth = 6;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (Math.min(100, Math.max(0, roundedPct)) / 100) * circumference;
 
@@ -269,7 +277,7 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      className="relative card-client bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[320px] group hover:shadow-md dark:hover:shadow-blue-955/20 transition-all duration-300 overflow-hidden"
+      className={`relative card-client ${theme.cardGlow} bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[330px] group hover:shadow-lg transition-all duration-300 overflow-hidden`}
     >
       {/* Decorative Glow Blob */}
       <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 ${theme.glow} rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700`} />
@@ -291,12 +299,12 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
           {/* Dial & Appliance Info */}
           <div className="flex flex-col items-center justify-center">
             {/* SVG Circular Gauge */}
-            <div className="relative flex items-center justify-center w-20 h-20 mb-1.5">
-              <svg className="w-full h-full transform -rotate-90">
+            <div className="relative flex items-center justify-center w-24 h-24 mb-2.5">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
                 {/* Background Track */}
                 <circle
-                  cx="40"
-                  cy="40"
+                  cx="48"
+                  cy="48"
                   r={radius}
                   className={`${theme.track}`}
                   strokeWidth={strokeWidth}
@@ -304,8 +312,8 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
                 />
                 {/* Colored Progress Circle */}
                 <motion.circle
-                  cx="40"
-                  cy="40"
+                  cx="48"
+                  cy="48"
                   r={radius}
                   stroke={theme.stroke}
                   strokeWidth={strokeWidth}
@@ -315,20 +323,21 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
                   animate={{ strokeDashoffset }}
                   transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
                   strokeLinecap="round"
+                  style={{ filter: `drop-shadow(0 0 3px ${theme.stroke}66)` }}
                 />
               </svg>
               
               {/* Centered Appliance Icon inside Dial */}
-              <div className="absolute w-12 h-12 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <div className="absolute w-14 h-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                 <div className={`${theme.text} group-hover:scale-110 transition-transform duration-300`}>
-                  <AppIcon name={name} cls="w-5.5 h-5.5" />
+                  <AppIcon name={name} cls="w-6.5 h-6.5" />
                 </div>
               </div>
             </div>
 
-            <div className="text-center space-y-0.5">
-              <h4 className="font-black text-slate-900 dark:text-white text-lg sm:text-xl tracking-tight leading-snug">{name}</h4>
-              <span className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-black border bg-slate-500/5 dark:bg-slate-500/10 text-slate-455 dark:text-slate-400 border-slate-500/10">
+            <div className="text-center space-y-1">
+              <h4 className="font-black text-slate-900 dark:text-white text-xl tracking-tight leading-snug group-hover:scale-105 transition-all duration-300">{name}</h4>
+              <span className={`inline-flex px-3 py-0.5 rounded-full text-[11px] font-black border ${theme.badge}`}>
                 {roundedPct}% of total usage
               </span>
             </div>
@@ -336,10 +345,10 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center pt-3 border-t border-slate-100/50 dark:border-slate-800/35 space-y-1 w-full">
-          <p className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-wider">Potential Savings</p>
+        <div className="flex flex-col items-center pt-3 border-t border-slate-100/50 dark:border-slate-800/35 space-y-1.5 w-full">
+          <p className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest leading-none">Potential Savings</p>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl sm:text-3.5xl font-black bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent leading-none font-display">
+            <span className="text-3xl sm:text-3.5xl font-black bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent leading-none font-display drop-shadow-[0_2px_4px_rgba(249,115,22,0.18)]">
               ₹{Math.round(savings).toLocaleString("en-IN")}
             </span>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555">/month</span>
@@ -359,7 +368,7 @@ function ApplianceBreakdown({ items }: {
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-5">Appliance Usage Breakdown</h3>
 
       {/* Appliance tiles */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-3 mb-4">
+      <div className="grid grid-cols-5 gap-2 sm:gap-3 mb-5">
         {items.map((item, i) => {
           const col = COLORS[item.colorIdx % COLORS.length];
           return (
@@ -368,17 +377,19 @@ function ApplianceBreakdown({ items }: {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.06 }}
-              whileHover={{ boxShadow: "0 8px 24px -4px rgba(0,0,0,0.12)" }}
-              className={`card-client ${col.bg} ${col.border} border rounded-xl p-2 sm:p-3 flex flex-col items-center gap-1 cursor-default transition-all duration-200`}
+              whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)" }}
+              className={`card-client ${col.glow} group ${col.bg} ${col.border} border rounded-2xl p-3 sm:p-4 flex flex-col items-center gap-1.5 cursor-default transition-all duration-300 text-center w-full h-full`}
             >
-              <div className={col.icon}>
-                <AppIcon name={item.name} cls="w-5 h-5 sm:w-6 sm:h-6" />
+              <div className={`w-11 h-11 rounded-full ${col.bg} border ${col.border} flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+                <AppIcon name={item.name} cls={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${col.icon}`} />
               </div>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-slate-550 dark:text-slate-400 text-center leading-tight line-clamp-2 mt-0.5">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 leading-none">
                 {item.name}
               </span>
-              <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-200">{Math.round(item.pct)}%</span>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+              <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight mt-0.5 leading-none">
+                {Math.round(item.pct)}%
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-none mt-0.5">
                 ₹{Math.round(item.cost)}/mo
               </span>
             </motion.div>
@@ -387,13 +398,15 @@ function ApplianceBreakdown({ items }: {
       </div>
 
       {/* Multicolor usage bar */}
-      <div className="flex rounded-full overflow-hidden h-2.5 gap-px">
+      <div className="relative rounded-full overflow-hidden h-3 bg-slate-100 dark:bg-slate-800 flex gap-px p-[2px] border border-slate-200/50 dark:border-slate-800/40 shadow-inner">
         {items.map((item) => (
           <div
             key={item.name}
-            className={`${COLORS[item.colorIdx % COLORS.length].bar} h-full transition-all duration-500`}
+            className={`${COLORS[item.colorIdx % COLORS.length].bar} h-full rounded-full transition-all duration-500 relative overflow-hidden`}
             style={{ width: `${item.pct}%` }}
-          />
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/12 to-transparent pointer-events-none" />
+          </div>
         ))}
       </div>
     </div>
@@ -605,7 +618,7 @@ function PowerFlowPanel({ totalUnits }: { totalUnits: number }) {
 function AIRecommendationsPanel({
   recs, totalSavings,
 }: {
-  recs: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string }[];
+  recs: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string; glow: string }[];
   totalSavings: number;
 }) {
   return (
@@ -627,26 +640,26 @@ function AIRecommendationsPanel({
       </div>
 
       {/* Rec rows */}
-      <div className="flex-1 space-y-2.5">
+      <div className="flex-1 space-y-3.5">
         {recs.map((rec, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + i * 0.08 }}
-            whileHover={{ scale: 1.015, translateY: -1 }}
-            className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20 border border-slate-100/70 dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-850 hover:border-blue-100/60 dark:hover:border-blue-900/40 hover:shadow-sm transition-all duration-200 cursor-default group"
+            whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)" }}
+            className={`card-client ${rec.glow} group bg-white dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-all duration-300 shadow-sm`}
           >
-            <div className={`w-9 h-9 rounded-xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0`}>
-              <div className={rec.color}>{rec.icon}</div>
+            <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+              <div className={`${rec.color} transition-transform duration-300 group-hover:scale-110`}>{rec.icon}</div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">{rec.title}</p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-snug line-clamp-2">{rec.sub}</p>
+              <p className="text-[12.5px] font-bold text-slate-750 dark:text-slate-100 leading-snug group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200">{rec.title}</p>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{rec.sub}</p>
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-sm font-black text-emerald-600 dark:text-emerald-450">₹{rec.saving.toLocaleString("en-IN")}</div>
-              <div className="text-[9px] text-slate-400 dark:text-slate-550 leading-none">/month</div>
+            <div className="text-right shrink-0 flex flex-col justify-center">
+              <div className="text-base font-black text-emerald-600 dark:text-emerald-450 font-display leading-none">₹{rec.saving.toLocaleString("en-IN")}</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider leading-none mt-1">/month</div>
             </div>
           </motion.div>
         ))}
@@ -738,7 +751,7 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
   const recs = useMemo(() => {
     const has = (k: string) => activeAppliances.some(a => a.name.toLowerCase().includes(k));
     const sp = savingsPotential;
-    const list: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string }[] = [];
+    const list: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string; glow: string }[] = [];
 
     if (has("air") || has(" ac") || has("conditioner"))
       list.push({
@@ -748,7 +761,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.36),
         color: "text-blue-600 dark:text-blue-400",
         bg: "bg-blue-50/60 dark:bg-blue-950/30",
-        border: "border-blue-100 dark:border-blue-900/40"
+        border: "border-blue-100 dark:border-blue-900/40",
+        glow: "card-client-blue"
       });
     if (has("fan"))
       list.push({
@@ -758,7 +772,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.18),
         color: "text-emerald-600 dark:text-emerald-400",
         bg: "bg-emerald-50/60 dark:bg-emerald-950/30",
-        border: "border-emerald-100 dark:border-emerald-900/40"
+        border: "border-emerald-100 dark:border-emerald-900/40",
+        glow: "card-client-emerald"
       });
     if (has("wash"))
       list.push({
@@ -768,7 +783,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.08),
         color: "text-purple-600 dark:text-purple-400",
         bg: "bg-purple-50/60 dark:bg-purple-950/30",
-        border: "border-purple-100 dark:border-purple-900/40"
+        border: "border-purple-100 dark:border-purple-900/40",
+        glow: "card-client-purple"
       });
     if (list.length < 3 && (has("refrig") || has("fridge")))
       list.push({
@@ -778,7 +794,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.08),
         color: "text-cyan-600 dark:text-cyan-400",
         bg: "bg-cyan-50/60 dark:bg-cyan-950/30",
-        border: "border-cyan-100 dark:border-cyan-900/40"
+        border: "border-cyan-100 dark:border-cyan-900/40",
+        glow: "card-client-cyan"
       });
     if (list.length < 3 && (has("light") || has("bulb") || has("led")))
       list.push({
@@ -788,7 +805,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.10),
         color: "text-amber-600 dark:text-amber-400",
         bg: "bg-amber-50/60 dark:bg-amber-950/30",
-        border: "border-amber-100 dark:border-amber-900/40"
+        border: "border-amber-100 dark:border-amber-900/40",
+        glow: "card-client-amber"
       });
     while (list.length < 3)
       list.push({
@@ -798,7 +816,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         saving: Math.round(sp * 0.06),
         color: "text-orange-600 dark:text-orange-400",
         bg: "bg-orange-50/60 dark:bg-orange-950/30",
-        border: "border-orange-100 dark:border-orange-900/40"
+        border: "border-orange-100 dark:border-orange-900/40",
+        glow: "card-client-amber"
       });
 
     return list.slice(0, 3);
