@@ -7,7 +7,7 @@ import type { ApplianceItem, TariffResult } from "../utils/tariffCalculator";
 import { 
   Zap, ChevronRight,
   ShieldCheck, Sparkles, Check, AlertTriangle, Leaf, Printer, Download,
-  Sun, Wind, Lightbulb, Snowflake
+  Sun, Wind, Lightbulb, Snowflake, SlidersHorizontal, BarChart3
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1056,10 +1056,10 @@ export const Dashboard: React.FC = () => {
           <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 py-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
             <div className="flex items-center w-full max-w-4xl mx-auto">
               {[
-                { step: 1, label: "Appliances",     sub: "Select devices",   icon: "⚡" },
-                { step: 2, label: "Usage",          sub: "Set hours & days", icon: "📅" },
-                { step: 3, label: "Analysis",       sub: "Review usage",     icon: "📊" },
-                { step: 4, label: "Recommendations",sub: "Save energy",      icon: "🌿" }
+                { step: 1, label: "Appliances",      sub: "Select devices",   Icon: Zap              },
+                { step: 2, label: "Usage",            sub: "Set hours & days", Icon: SlidersHorizontal },
+                { step: 3, label: "Analysis",         sub: "Review usage",     Icon: BarChart3         },
+                { step: 4, label: "Recommendations",  sub: "Save energy",      Icon: Leaf              }
               ].map((s, idx, arr) => {
                 const isCompleted = currentStep > s.step;
                 const isActive    = currentStep === s.step;
@@ -1082,7 +1082,7 @@ export const Dashboard: React.FC = () => {
                         )}
                         {isCompleted
                           ? <Check className="w-5 h-5 step-check" />
-                          : <span className={`text-base leading-none ${isActive ? "step-icon-float" : ""}`}>{s.icon}</span>
+                          : <s.Icon className={`w-5 h-5 ${isActive ? "step-icon-float" : ""}`} />
                         }
                       </div>
 

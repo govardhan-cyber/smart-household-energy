@@ -156,14 +156,7 @@ function HeroCard({
   const avg = vsAvgTrend ?? { label: "vs similar homes", value: "24%", trend: "up" as const, type: "negative" as const };
   const badges = [mom, avg];
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: 14 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 280, damping: 24 } },
-  };
+
 
   return (
     <motion.div

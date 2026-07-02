@@ -67,7 +67,8 @@ function FeatureCard({ icon: Icon, title, description, color, gradient, delay }:
       transition={{ duration: 0.5, delay }}
       className={`relative group p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-sm card-client ${glowTypeClass} overflow-hidden text-left cursor-default w-full h-full`}
     >
-      <div className={`absolute inset-0 ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl`} />
+      {/* Resting tint — always slightly visible, intensifies on hover */}
+      <div className={`absolute inset-0 ${gradient} opacity-[0.045] group-hover:opacity-100 transition-opacity duration-300 rounded-3xl`} />
       <div className={`absolute inset-0 ${innerGlow} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl`} />
       <div className="relative z-10 space-y-4">
         <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-sm ${iconClass}`}>
@@ -329,7 +330,7 @@ export const Home: React.FC = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/login"
-                className="px-7 py-4 flex items-center justify-center gap-2 text-base font-bold text-white bg-gradient-to-r from-primary-blue to-blue-600 dark:from-primary-green dark:to-emerald-600 dark:text-slate-955 rounded-2xl transition-all shadow-lg shadow-primary-blue/25 dark:shadow-primary-green/20 hover:shadow-xl hover:shadow-primary-blue/30 dark:hover:shadow-primary-green/25"
+                className="btn-shimmer px-7 py-4 flex items-center justify-center gap-2 text-base font-bold text-white bg-gradient-to-r from-primary-blue to-blue-600 dark:from-primary-green dark:to-emerald-600 dark:text-slate-955 rounded-2xl transition-all shadow-lg shadow-primary-blue/25 dark:shadow-primary-green/20 hover:shadow-xl hover:shadow-primary-blue/30 dark:hover:shadow-primary-green/25"
               >
                 <Sparkles className="w-4.5 h-4.5" />
                 Create free account
@@ -590,8 +591,12 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ══ TESTIMONIALS ══════════════════════════════════════ */}
-      <section className="py-20 border-t border-slate-200/60 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-950/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 border-t border-slate-200/60 dark:border-slate-800/60 bg-gradient-to-b from-slate-50/80 via-emerald-50/15 to-slate-50/80 dark:from-slate-950/50 dark:via-emerald-950/10 dark:to-slate-950/50 overflow-hidden">
+        {/* Ambient glow orbs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-br from-emerald-500/8 via-teal-500/5 to-blue-500/6 dark:from-emerald-500/12 dark:via-teal-500/8 dark:to-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary-blue/5 dark:bg-primary-blue/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary-green/5 dark:bg-primary-green/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -639,11 +644,12 @@ export const Home: React.FC = () => {
           </motion.div>
 
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div className="hidden md:block absolute top-8 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-px bg-gradient-to-r from-primary-blue via-primary-green to-secondary-teal opacity-30" />
+            {/* Connecting gradient line */}
+            <div className="hidden md:block absolute top-8 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] h-[2px] bg-gradient-to-r from-primary-blue via-primary-green to-secondary-teal opacity-40 rounded-full" />
             {[
-              { number: "1", title: "Select Appliances", desc: "Pick AC, TV, Fridge, Fans, Washing Machine from our pre-defined icons.", border: "border-primary-blue", color: "text-primary-blue", glow: "hover:shadow-blue-500/20", delay: 0 },
-              { number: "2", title: "Set Usage Sliders", desc: "Adjust quantity and hours per day. No complex typing needed.", border: "border-primary-green", color: "text-primary-green", glow: "hover:shadow-emerald-500/20", delay: 0.12 },
-              { number: "3", title: "Analyze Results", desc: "Instantly see estimated bills, appliance splits and personalized savings advice.", border: "border-secondary-teal", color: "text-secondary-teal", glow: "hover:shadow-teal-500/20", delay: 0.24 },
+              { number: "1", title: "Select Appliances", desc: "Pick AC, TV, Fridge, Fans, Washing Machine from our pre-defined icons.", gradFrom: "from-primary-blue", gradTo: "to-blue-500", glow: "shadow-blue-500/30", delay: 0 },
+              { number: "2", title: "Set Usage Sliders", desc: "Adjust quantity and hours per day. No complex typing needed.", gradFrom: "from-primary-green", gradTo: "to-emerald-400", glow: "shadow-emerald-500/30", delay: 0.12 },
+              { number: "3", title: "Analyze Results", desc: "Instantly see estimated bills, appliance splits and personalized savings advice.", gradFrom: "from-secondary-teal", gradTo: "to-teal-400", glow: "shadow-teal-500/30", delay: 0.24 },
             ].map((step, i) => (
               <ThreeDCard key={i} maxTilt={10}>
                 <motion.div
@@ -654,13 +660,15 @@ export const Home: React.FC = () => {
                   className="flex flex-col items-center space-y-4 p-6 bg-white dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl shadow-sm h-full hover:border-slate-350 dark:hover:border-slate-700 transition-colors duration-300"
                 >
                   <motion.div
-                    whileHover={{ scale: 1.1, rotate: 4 }}
+                    whileHover={{ scale: 1.12, rotate: 4 }}
                     transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                    className={`relative w-16 h-16 rounded-2xl border-2 ${step.border} bg-slate-50 dark:bg-slate-800 ${step.color} flex items-center justify-center font-display font-extrabold text-2xl shadow-lg transition-all ${step.glow}`}
+                    className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${step.gradFrom} ${step.gradTo} text-white flex items-center justify-center font-display font-extrabold text-2xl shadow-lg ${step.glow} shadow-lg`}
                   >
+                    {/* Soft glow ring */}
+                    <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${step.gradFrom} ${step.gradTo} blur-md opacity-40 scale-110 -z-10`} />
                     {step.number}
                   </motion.div>
-                  <h4 className="font-bold text-slate-900 dark:text-white text-base">{step.title}</h4>
+                  <h4 className="font-display font-bold text-slate-900 dark:text-white text-base">{step.title}</h4>
                   <p className="text-sm text-slate-550 dark:text-slate-400 max-w-[200px] leading-relaxed">{step.desc}</p>
                 </motion.div>
               </ThreeDCard>

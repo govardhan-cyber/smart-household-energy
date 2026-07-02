@@ -29,4 +29,16 @@
   - **Recovery Instruction**:
     - If the user says "recover version 9", run `git checkout version-9`.
 
-
+- **Version 10**: Points to git tag `version-10`.
+  - **Features**:
+    - Card hover lift animation simplified to clean CSS-only `translateY(-10px)` with `transition: transform/box-shadow/border-color 0.3s ease` — removed all Framer Motion `whileHover` from appliance tiles, recommendation items, and biggest consumer card.
+    - Fixed card blinking caused by `transition: all` interfering with Framer Motion opacity entrance animations.
+    - Home page "How It Works" step circles upgraded from plain bordered boxes to rich gradient-filled circles with glow halos (blue, green, teal per step).
+    - Home page feature cards now have a subtle tinted gradient at rest (not just on hover) giving immediate visual personality.
+    - Home page Testimonials section gets ambient radial glow orbs and a gradient background for depth.
+    - Hero primary CTA button ("Create free account") gets a `btn-shimmer` sweep animation via CSS keyframe.
+    - Dashboard wizard stepper replaces emoji icons (⚡📅📊🌿) with proper Lucide React icons (`Zap`, `SlidersHorizontal`, `BarChart3`, `Leaf`) for full UI consistency.
+    - Added `shimmer-sweep` keyframe + `.btn-shimmer` and `.section-ambient-glow` CSS utilities to `index.css`.
+    - Pre-existing unused TypeScript variables (`container`, `item`) in `PremiumDashboard.tsx` cleaned up.
+  - **Recovery Instruction**:
+    - If the user says "recover version 10", run `git checkout version-10`.
