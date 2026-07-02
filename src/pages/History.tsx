@@ -420,7 +420,7 @@ export const History: React.FC = () => {
                     animate="visible"
                     whileHover={{ y: -6 }}
                     onClick={() => setSelectedReport(report)}
-                    className="group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl p-5 shadow-md dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-all duration-300 flex flex-col gap-4"
+                    className="group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl p-5 shadow-md dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-[transform,border-color,box-shadow] duration-300 flex flex-col gap-4"
                   >
                     {/* Card top: date + actions */}
                     <div className="flex items-start justify-between gap-2">

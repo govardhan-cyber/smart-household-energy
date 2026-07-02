@@ -146,7 +146,7 @@ export const FAQ: React.FC = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.04 }}
-                  className={`bg-white/45 dark:bg-slate-900/45 backdrop-blur-md border rounded-2xl overflow-hidden shadow-sm transition-all duration-300 ${
+                  className={`bg-white/45 dark:bg-slate-900/45 backdrop-blur-md border rounded-2xl overflow-hidden shadow-sm transition-[transform,border-color,box-shadow,background-color] duration-300 ${
                     isExpanded
                       ? `${accent.border} bg-white/90 dark:bg-slate-900/90 shadow-md ring-1 ring-offset-0 ${
                           faq.category === "usage"
