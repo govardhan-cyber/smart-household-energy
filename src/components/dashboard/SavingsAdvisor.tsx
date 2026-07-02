@@ -1,7 +1,7 @@
 import React from "react";
 import { 
   Sparkles, Download, Printer, TrendingDown, RefreshCw, Leaf, 
-  ArrowRight, Award
+  ArrowRight, Award, Zap, Activity
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -364,9 +364,9 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
       </div>
 
       {/* Before vs After Recommendations comparison card */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-        <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest text-left flex items-center gap-1.5">
-          <Award className="w-4 h-4 text-emerald-500" />
+      <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/10 dark:from-slate-900 dark:via-slate-950/60 dark:to-blue-950/10 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-[0_8px_32px_rgba(0,0,0,0.02)] space-y-6 hover:shadow-md transition-all duration-300 group/panel">
+        <h3 className="text-xs font-black text-slate-850 dark:text-white uppercase tracking-widest text-left flex items-center gap-2">
+          <Award className="w-4.5 h-4.5 text-emerald-500" />
           Comparative Dashboard Analysis
         </h3>
         
@@ -378,13 +378,16 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             const savingsPct = currentBill > 0 ? Math.round(((currentBill - afterBill) / currentBill) * 100) : 0;
             
             return (
-              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-950/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-850 hover:shadow-md transition-shadow duration-300">
+              <div className="space-y-4 bg-white/40 dark:bg-slate-900/20 backdrop-blur-md p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)] hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 group/card">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-slate-550 dark:text-slate-400 uppercase tracking-wider block text-left">
-                    Bill Projection
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider block text-left">
+                      Bill Projection
+                    </span>
+                  </div>
                   {savingsPct > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.1)]">
                       ↓ {savingsPct}%
                     </span>
                   )}
@@ -392,21 +395,24 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                 
                 <div className="flex items-center gap-3 pt-1">
                   {/* Current */}
-                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-50/60 dark:bg-rose-950/10 text-rose-700 dark:text-rose-455 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-rose-450 dark:text-rose-550 uppercase tracking-widest block mb-0.5">Current</span>
-                    <span className="text-base sm:text-lg font-mono font-black">
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-500/5 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400 border border-rose-500/10 dark:border-rose-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-rose-500/5 dark:bg-rose-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest block mb-0.5 relative z-10">Current</span>
+                    <span className="text-base sm:text-lg font-mono font-black relative z-10">
                       ₹{currentBill.toFixed(0)}
                     </span>
                   </div>
                   
-                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                  {/* Arrow Bridge */}
+                  <div className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shrink-0 shadow-sm transition-transform duration-300 group-hover/card:translate-x-0.5">
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                   
                   {/* Projected */}
-                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
-                    <span className="text-base sm:text-lg font-mono font-black">
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-500/5 dark:bg-emerald-900/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 dark:border-emerald-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-emerald-500/5 dark:bg-emerald-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5 relative z-10">Projected</span>
+                    <span className="text-base sm:text-lg font-mono font-black relative z-10">
                       ₹{afterBill.toFixed(0)}
                     </span>
                   </div>
@@ -422,13 +428,16 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             const savingsPct = currentUnits > 0 ? Math.round(((currentUnits - afterUnits) / currentUnits) * 100) : 0;
             
             return (
-              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-950/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-850 hover:shadow-md transition-shadow duration-300">
+              <div className="space-y-4 bg-white/40 dark:bg-slate-900/20 backdrop-blur-md p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)] hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 group/card">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-slate-550 dark:text-slate-400 uppercase tracking-wider block text-left">
-                    Energy Usage
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
+                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider block text-left">
+                      Energy Usage
+                    </span>
+                  </div>
                   {savingsPct > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.1)]">
                       ↓ {savingsPct}%
                     </span>
                   )}
@@ -436,22 +445,25 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                 
                 <div className="flex items-center gap-3 pt-1">
                   {/* Current */}
-                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-50/60 dark:bg-rose-950/10 text-rose-700 dark:text-rose-455 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-rose-450 dark:text-rose-550 uppercase tracking-widest block mb-0.5">Current</span>
-                    <span className="text-base sm:text-lg font-mono font-black">
-                      {currentUnits.toFixed(0)}<span className="text-[10px] font-extrabold text-rose-400 dark:text-rose-500 ml-0.5">kWh</span>
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-rose-500/5 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400 border border-rose-500/10 dark:border-rose-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-rose-500/5 dark:bg-rose-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest block mb-0.5 relative z-10">Current</span>
+                    <span className="text-base sm:text-lg font-mono font-black relative z-10">
+                      {currentUnits.toFixed(0)}<span className="text-[9px] font-extrabold text-rose-400 dark:text-rose-500 ml-0.5">kWh</span>
                     </span>
                   </div>
                   
-                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                  {/* Arrow Bridge */}
+                  <div className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shrink-0 shadow-sm transition-transform duration-300 group-hover/card:translate-x-0.5">
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                   
                   {/* Projected */}
-                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
-                    <span className="text-base sm:text-lg font-mono font-black">
-                      {afterUnits.toFixed(0)}<span className="text-[10px] font-extrabold text-emerald-500 dark:text-primary-green ml-0.5">kWh</span>
+                  <div className="flex-1 py-3 px-2 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 dark:border-emerald-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-emerald-500/5 dark:bg-emerald-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5 relative z-10">Projected</span>
+                    <span className="text-base sm:text-lg font-mono font-black relative z-10">
+                      {afterUnits.toFixed(0)}<span className="text-[9px] font-extrabold text-emerald-500 dark:text-primary-green ml-0.5">kWh</span>
                     </span>
                   </div>
                 </div>
@@ -466,14 +478,16 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
             const savingsPct = currentCo2 > 0 ? Math.round(((currentCo2 - afterCo2) / currentCo2) * 100) : 0;
             
             return (
-              <div className="space-y-3 bg-slate-50/40 dark:bg-slate-955/20 p-5 rounded-[24px] border border-slate-150 dark:border-slate-855 hover:shadow-md transition-shadow duration-300">
+              <div className="space-y-4 bg-white/40 dark:bg-slate-900/20 backdrop-blur-md p-5 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)] hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 group/card">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold text-slate-555 dark:text-slate-400 uppercase tracking-wider block text-left flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <Leaf className="w-3.5 h-3.5 text-emerald-500" />
-                    Carbon Footprint
-                  </span>
+                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider block text-left">
+                      Carbon Footprint
+                    </span>
+                  </div>
                   {savingsPct > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-emerald-600 dark:text-primary-green bg-emerald-500/10 dark:bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.1)]">
                       ↓ {savingsPct}%
                     </span>
                   )}
@@ -481,31 +495,34 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                 
                 <div className="flex items-center gap-3 pt-1">
                   {/* Current */}
-                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-rose-50/60 dark:bg-rose-955/10 text-rose-700 dark:text-rose-450 border border-rose-100/50 dark:border-rose-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-rose-455 dark:text-rose-555 uppercase tracking-widest block mb-0.5">Current</span>
-                    <div className="leading-tight">
+                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-rose-500/5 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400 border border-rose-500/10 dark:border-rose-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-rose-500/5 dark:bg-rose-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest block mb-0.5 relative z-10">Current</span>
+                    <div className="leading-tight relative z-10">
                       <span className="text-sm sm:text-base font-mono font-black">
-                        {currentCo2.toFixed(0)}<span className="text-[9px] font-bold text-rose-400 dark:text-rose-550 ml-0.5">kg CO₂</span>
+                        {currentCo2.toFixed(0)}<span className="text-[8px] font-bold text-rose-400 dark:text-rose-500 ml-0.5">kg CO₂</span>
                       </span>
                     </div>
-                    <span className="text-[8px] font-bold text-rose-400 dark:text-rose-550 block mt-1 leading-none">
+                    <span className="text-[8px] font-semibold text-rose-500 dark:text-rose-400 block mt-1 leading-none relative z-10">
                       ({analysisResult.beforeTrees.toFixed(0)} trees needed)
                     </span>
                   </div>
                   
-                  <div className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 shrink-0 shadow-inner">
+                  {/* Arrow Bridge */}
+                  <div className="p-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-400 dark:text-slate-500 shrink-0 shadow-sm transition-transform duration-300 group-hover/card:translate-x-0.5">
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                   
                   {/* Projected */}
-                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 border border-emerald-100/50 dark:border-emerald-900/20 text-center shadow-sm">
-                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5">Projected</span>
-                    <div className="leading-tight">
+                  <div className="flex-1 py-2 px-1.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 dark:border-emerald-900/30 text-center shadow-sm relative overflow-hidden group/box">
+                    <div className="absolute inset-0 bg-emerald-500/5 dark:bg-emerald-500/10 opacity-0 group-hover/box:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <span className="text-[9px] font-black text-emerald-600 dark:text-primary-green uppercase tracking-widest block mb-0.5 relative z-10">Projected</span>
+                    <div className="leading-tight relative z-10">
                       <span className="text-sm sm:text-base font-mono font-black">
-                        {afterCo2.toFixed(0)}<span className="text-[9px] font-bold text-emerald-500 dark:text-primary-green ml-0.5">kg CO₂</span>
+                        {afterCo2.toFixed(0)}<span className="text-[8px] font-bold text-emerald-500 dark:text-primary-green ml-0.5">kg CO₂</span>
                       </span>
                     </div>
-                    <span className="text-[8px] font-bold text-emerald-500 dark:text-primary-green block mt-1 leading-none">
+                    <span className="text-[8px] font-semibold text-emerald-600 dark:text-primary-green block mt-1 leading-none relative z-10">
                       (Saves {analysisResult.savedTrees.toFixed(0)} trees/yr)
                     </span>
                   </div>
@@ -515,7 +532,6 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
           })()}
         </div>
       </div>
-
       {/* Bottom navigation buttons */}
       <div className="flex items-center justify-between pt-5 border-t border-slate-200 dark:border-slate-800 no-print">
         <div className="flex gap-3">

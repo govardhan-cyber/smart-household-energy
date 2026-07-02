@@ -139,11 +139,11 @@ export const Profile: React.FC = () => {
 
   const avatarPresets = [
     "initials",
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=Felix`,
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka`,
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=Jack`,
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=Buster`,
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=Molly`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=Cyber`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=Energy`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=Node`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=Grid`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=Eco`,
   ];
 
   const formatDate = (dateStr?: string) => {
@@ -349,7 +349,7 @@ export const Profile: React.FC = () => {
           variants={itemVariants}
           whileHover={{ y: -3, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-6 relative overflow-hidden"
+          className="lg:col-span-4 bg-white/40 dark:bg-slate-900/30 backdrop-blur-md p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-lg hover:shadow-xl hover:border-slate-250 dark:hover:border-slate-700 transition-all duration-300 text-center space-y-6 relative overflow-hidden"
         >
           {/* Top Banner overlay inside card */}
           <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 z-0" />
@@ -410,7 +410,7 @@ export const Profile: React.FC = () => {
             </span>
             <div className="grid grid-cols-2 gap-3.5">
               {/* Reports generated card with mini SVG sparkline */}
-              <div className="bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-3 flex flex-col justify-between min-h-[105px] shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white/10 dark:bg-slate-950/20 backdrop-blur-sm border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-3 flex flex-col justify-between min-h-[105px] shadow-sm hover:shadow-md hover:bg-white/15 dark:hover:bg-slate-955/25 transition-all duration-300">
                 <div className="space-y-0.5">
                   <span className="text-[9px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-wider block">Reports Generated</span>
                   <p className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-1">{totalCalculations}</p>
@@ -422,7 +422,7 @@ export const Profile: React.FC = () => {
               </div>
               
               {/* Average Monthly Bill card with mini SVG sparkline */}
-              <div className="bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-3 flex flex-col justify-between min-h-[105px] shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white/10 dark:bg-slate-950/20 backdrop-blur-sm border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-3 flex flex-col justify-between min-h-[105px] shadow-sm hover:shadow-md hover:bg-white/15 dark:hover:bg-slate-955/25 transition-all duration-300">
                 <div className="space-y-0.5">
                   <span className="text-[9px] font-black text-slate-455 dark:text-slate-500 uppercase tracking-wider block">Average Monthly Bill</span>
                   <p className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-1">₹{averageMonthlyBill || 1250}</p>
@@ -454,7 +454,7 @@ export const Profile: React.FC = () => {
             variants={itemVariants}
             whileHover={{ y: -3, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 text-left"
+            className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-lg hover:shadow-xl hover:border-slate-250 dark:hover:border-slate-700 transition-all duration-300 space-y-6 text-left"
           >
             <div className="flex items-start gap-3.5">
               <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-primary-green shrink-0">
@@ -502,7 +502,7 @@ export const Profile: React.FC = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       required
                       disabled={loading}
-                      className="block w-full pl-10 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-slate-50/70 dark:bg-slate-950/30 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-primary-blue dark:focus:border-primary-green focus:outline-none focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)] transition-all"
+                      className="block w-full pl-10 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-blue-500 dark:focus:border-emerald-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.12)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.12)] transition-all duration-300"
                     />
                     {fullName && fullName.trim().length > 0 && (
                       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-500">
@@ -571,7 +571,7 @@ export const Profile: React.FC = () => {
             variants={itemVariants}
             whileHover={{ y: -3, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 text-left"
+            className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-lg hover:shadow-xl hover:border-slate-250 dark:hover:border-slate-700 transition-all duration-300 space-y-6 text-left"
           >
             <div className="flex items-start gap-3.5">
               <div className="p-2.5 rounded-xl bg-orange-50 dark:bg-orange-955/20 text-orange-500 dark:text-orange-400 shrink-0">
@@ -617,7 +617,7 @@ export const Profile: React.FC = () => {
                       required
                       disabled={loading}
                       placeholder="••••••••"
-                      className="block w-full pl-4 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-slate-50/70 dark:bg-slate-950/30 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.08)] transition-all"
+                      className="block w-full pl-4 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
                     />
                     <button
                       type="button"
@@ -643,7 +643,7 @@ export const Profile: React.FC = () => {
                       required
                       disabled={loading}
                       placeholder="••••••••"
-                      className="block w-full pl-4 pr-16 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-slate-50/70 dark:bg-slate-950/30 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.08)] transition-all"
+                      className="block w-full pl-4 pr-16 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
                     />
                     <button
                       type="button"
