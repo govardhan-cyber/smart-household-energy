@@ -110,6 +110,22 @@ body {
   background: #475569;
 }
 
+/* Native option dropdown dark mode styling overrides */
+select option {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+.dark select option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.dark select optgroup {
+  background-color: #111827 !important;
+  color: #9ca3af !important;
+}
+
 /* Print Styles for PDF Export */
 @media print {
   /* Force color graphics & gradients in print output */

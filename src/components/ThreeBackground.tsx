@@ -257,16 +257,28 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
         className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none mix-blend-screen blur-[100px] transition-opacity duration-500 ${
           isDark 
             ? "bg-[radial-gradient(circle,rgba(34,211,238,0.11)_0%,transparent_70%)]" 
-            : "bg-[radial-gradient(circle,rgba(99,102,241,0.05)_0%,transparent_70%)]"
+            : "bg-[radial-gradient(circle,rgba(99,102,241,0.09)_0%,transparent_70%)]"
         }`}
       />
+
+      {/* Ambient background mesh gradient blobs for light mode */}
+      {!isDark && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Top-Right Soft Indigo Glow */}
+          <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-indigo-200/20 blur-[120px] pointer-events-none" />
+          {/* Center-Left Soft Cyan Glow */}
+          <div className="absolute top-[25%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-cyan-200/20 blur-[140px] pointer-events-none" />
+          {/* Bottom-Right Soft Emerald Glow */}
+          <div className="absolute -bottom-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-emerald-100/25 blur-[110px] pointer-events-none" />
+        </div>
+      )}
 
       {/* Edge Vignette & Light Masking Layer */}
       <div 
         className={`absolute inset-0 pointer-events-none transition-colors duration-700 ${
           isDark 
             ? "bg-[radial-gradient(circle_at_center,transparent_30%,rgba(11,15,25,0.6)_100%)] bg-gradient-to-tr from-emerald-500/[0.08] via-transparent to-cyan-500/[0.08]" 
-            : "bg-[radial-gradient(circle_at_center,transparent_45%,rgba(255,255,255,0.4)_100%)] bg-gradient-to-tr from-blue-500/3 via-transparent to-indigo-500/3"
+            : "bg-[radial-gradient(circle_at_center,transparent_40%,rgba(255,255,255,0.55)_100%)] bg-gradient-to-tr from-blue-500/8 via-transparent to-indigo-500/8"
         }`} 
       />
 

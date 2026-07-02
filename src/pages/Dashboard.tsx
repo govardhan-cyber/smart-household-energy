@@ -1323,7 +1323,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
                         Estimated Monthly Usage
                       </span>
-                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-955/30 border border-blue-100/30 dark:border-blue-900/30 text-primary-blue dark:text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/30 dark:border-blue-900/30 text-primary-blue dark:text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                         <Zap className="w-4 h-4" />
                       </div>
                     </div>

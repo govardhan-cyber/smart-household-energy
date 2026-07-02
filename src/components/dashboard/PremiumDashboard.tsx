@@ -289,150 +289,315 @@ function HeroCard({
 
 
 // ── 2. Biggest Consumer Card ───────────────────────────────────────────────────
+// ── 2. Biggest Consumer Card ───────────────────────────────────────────────────
 function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number; savings: number }) {
   const roundedPct = Math.round(pct);
-  
-  // Custom colors depending on the appliance for a personalized premium feel
+
+  // Appliance-aware color themes
   const getApplianceTheme = (appName: string) => {
     const n = appName.toLowerCase();
     if (n.includes("air") || n.includes(" ac") || n.includes("conditioner")) {
       return {
-        glow: "bg-blue-500/10 dark:bg-blue-600/8",
-        border: "border-blue-100 dark:border-blue-900/35",
+        outerGlow: "rgba(59,130,246,0.28)",
+        outerGlowSoft: "rgba(59,130,246,0.06)",
         text: "text-blue-600 dark:text-blue-400",
+        pctText: "text-blue-600 dark:text-blue-400",
         stroke: "#3b82f6",
-        track: "stroke-blue-100 dark:stroke-blue-955/40",
-        badge: "bg-blue-500/5 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/10",
+        strokeGlow: "rgba(59,130,246,0.45)",
+        strokeGlow2: "rgba(59,130,246,0.15)",
+        trackColor: "rgba(59,130,246,0.08)",
+        outerTrack: "rgba(59,130,246,0.04)",
+        badge: "bg-blue-500/10 text-blue-600 dark:text-blue-300 border-blue-400/20 dark:border-blue-500/30",
         cardGlow: "card-client-blue",
+        iconShadow: "0 0 20px rgba(59,130,246,0.15)",
+        savingsGlow: "rgba(59,130,246,0.08)",
+        shimmer: "from-blue-400/0 via-blue-300/20 to-blue-400/0",
       };
     }
     if (n.includes("fan")) {
       return {
-        glow: "bg-emerald-500/10 dark:bg-emerald-600/8",
-        border: "border-emerald-100 dark:border-emerald-900/35",
+        outerGlow: "rgba(16,185,129,0.28)",
+        outerGlowSoft: "rgba(16,185,129,0.06)",
         text: "text-emerald-600 dark:text-emerald-400",
+        pctText: "text-emerald-600 dark:text-emerald-400",
         stroke: "#10b981",
-        track: "stroke-emerald-100 dark:stroke-emerald-955/40",
-        badge: "bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/10",
+        strokeGlow: "rgba(16,185,129,0.45)",
+        strokeGlow2: "rgba(16,185,129,0.15)",
+        trackColor: "rgba(16,185,129,0.08)",
+        outerTrack: "rgba(16,185,129,0.04)",
+        badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-400/20 dark:border-emerald-500/30",
         cardGlow: "card-client-emerald",
+        iconShadow: "0 0 20px rgba(16,185,129,0.15)",
+        savingsGlow: "rgba(16,185,129,0.08)",
+        shimmer: "from-emerald-400/0 via-emerald-300/20 to-emerald-400/0",
       };
     }
     if (n.includes("fridge") || n.includes("refrig")) {
       return {
-        glow: "bg-cyan-500/10 dark:bg-cyan-600/8",
-        border: "border-cyan-100 dark:border-cyan-900/35",
+        outerGlow: "rgba(6,182,212,0.28)",
+        outerGlowSoft: "rgba(6,182,212,0.06)",
         text: "text-cyan-600 dark:text-cyan-400",
+        pctText: "text-cyan-600 dark:text-cyan-400",
         stroke: "#06b6d4",
-        track: "stroke-cyan-100 dark:stroke-cyan-955/40",
-        badge: "bg-cyan-500/5 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/10",
+        strokeGlow: "rgba(6,182,212,0.45)",
+        strokeGlow2: "rgba(6,182,212,0.15)",
+        trackColor: "rgba(6,182,212,0.08)",
+        outerTrack: "rgba(6,182,212,0.04)",
+        badge: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border-cyan-400/20 dark:border-cyan-500/30",
         cardGlow: "card-client-cyan",
+        iconShadow: "0 0 20px rgba(6,182,212,0.15)",
+        savingsGlow: "rgba(6,182,212,0.08)",
+        shimmer: "from-cyan-400/0 via-cyan-300/20 to-cyan-400/0",
       };
     }
     return {
-      glow: "bg-amber-500/10 dark:bg-amber-600/8",
-      border: "border-amber-100 dark:border-amber-900/35",
-      text: "text-amber-600 dark:text-amber-455",
+      outerGlow: "rgba(245,158,11,0.28)",
+      outerGlowSoft: "rgba(245,158,11,0.06)",
+      text: "text-amber-600 dark:text-amber-400",
+      pctText: "text-amber-600 dark:text-amber-400",
       stroke: "#f59e0b",
-      track: "stroke-amber-100 dark:stroke-amber-950/40",
-      badge: "bg-amber-500/5 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/10",
+      strokeGlow: "rgba(245,158,11,0.45)",
+      strokeGlow2: "rgba(245,158,11,0.15)",
+      trackColor: "rgba(245,158,11,0.08)",
+      outerTrack: "rgba(245,158,11,0.04)",
+      badge: "bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-400/20 dark:border-amber-500/30",
       cardGlow: "card-client-amber",
+      iconShadow: "0 0 20px rgba(245,158,11,0.15)",
+      savingsGlow: "rgba(245,158,11,0.08)",
+      shimmer: "from-amber-400/0 via-amber-300/20 to-amber-400/0",
     };
   };
 
   const theme = getApplianceTheme(name);
 
-  // SVG Gauge calculations
-  const radius = 35;
-  const strokeWidth = 6;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, roundedPct)) / 100) * circumference;
+  // Dual-ring gauge dimensions
+  const size = 120;
+  const cx = 60; const cy = 60;
+  const outerR = 52; const innerR = 42;
+  const strokeW = 5; const innerStrokeW = 7;
+  const outerCirc = 2 * Math.PI * outerR;
+  const innerCirc = 2 * Math.PI * innerR;
+  const outerOffset = outerCirc * 0.25;
+  const innerOffset = innerCirc - (Math.min(100, Math.max(0, roundedPct)) / 100) * innerCirc;
 
   return (
     <motion.div
       variants={biggestConsumerCardVariants}
       initial="hidden"
       animate="visible"
-      className={`relative card-client motion-card ${theme.cardGlow} bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[330px] group hover:shadow-lg transition-shadow duration-300 overflow-hidden`}
+      className={`relative card-client motion-card ${theme.cardGlow} rounded-3xl h-[330px] overflow-hidden group cursor-default bg-white/35 dark:bg-slate-900/30 border border-white/50 dark:border-white/10 shadow-[0_8px_32px_rgba(31,38,135,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] hover:border-white/60 dark:hover:border-white/20`}
+      style={{
+        boxShadow: `0 8px 32px 0 rgba(31, 38, 135, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 0 rgba(255, 255, 255, 0.15)`,
+      }}
     >
-      {/* Decorative Glow Blob */}
-      <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 ${theme.glow} rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700`} />
-      
-      {/* Blueprint Grid Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.015] pointer-events-none bg-[linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
+      {/* ── Background radial spotlight ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 50% 35%, ${theme.outerGlowSoft} 0%, transparent 70%)`,
+        }}
+      />
 
-      <div className="relative z-10 flex flex-col h-full justify-between gap-4">
-        {/* Top/Middle Section */}
-        <div className="flex flex-col space-y-1.5">
-          {/* Header */}
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-1.5 bg-orange-500/8 dark:bg-orange-500/12 px-3 py-1 rounded-full border border-orange-500/20 dark:border-orange-500/30 shadow-sm">
-              <Zap className="w-3 h-3 text-orange-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase text-orange-600 dark:text-orange-400 tracking-wider">Top Consumer</span>
-            </div>
+      {/* ── Diagonal specular gloss reflection ── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.35] dark:opacity-15 bg-gradient-to-tr from-transparent via-white/10 to-white/25"
+        style={{
+          clipPath: "polygon(0 0, 100% 0, 100% 35%, 0 80%)",
+        }}
+      />
+
+      {/* ── Shimmer specular highlight strip ── */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${theme.shimmer} opacity-70`}
+      />
+      <div
+        className="absolute top-0 left-8 right-8 h-[2px] blur-sm opacity-40"
+        style={{ background: `linear-gradient(to right, transparent, ${theme.stroke}, transparent)` }}
+      />
+
+      {/* ── Ambient corner glows ── */}
+      <div
+        className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none group-hover:opacity-35 transition-opacity duration-700"
+        style={{ background: `radial-gradient(circle, ${theme.outerGlow} 0%, transparent 65%)` }}
+      />
+      <div
+        className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full blur-2xl opacity-10 pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${theme.outerGlow} 0%, transparent 65%)` }}
+      />
+
+      {/* Subtle dot-grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(148,163,184,0.3) 1px, transparent 1px)",
+          backgroundSize: "18px 18px",
+        }}
+      />
+
+      {/* ── Content ── */}
+      <div className="relative z-10 flex flex-col h-full px-5 pt-4 pb-4 gap-0">
+
+        {/* TOP CONSUMER badge */}
+        <div className="flex justify-center mb-3">
+          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-[inset_0_0_12px_rgba(249,115,22,0.05)] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
+            </span>
+            <Zap className="w-2.5 h-2.5 text-orange-550 dark:text-orange-455" fill="currentColor" />
+            <span className="text-[9px] font-black uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">
+              Top Consumer
+            </span>
           </div>
+        </div>
 
-          {/* Dial & Appliance Info */}
-          <div className="flex flex-col items-center justify-center">
-            {/* SVG Circular Gauge */}
-            <div className="relative flex items-center justify-center w-24 h-24 mb-2.5">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
-                {/* Background Track */}
-                <circle
-                  cx="48"
-                  cy="48"
-                  r={radius}
-                  className={`${theme.track}`}
-                  strokeWidth={strokeWidth}
-                  fill="transparent"
-                />
-                {/* Colored Progress Circle */}
-                <motion.circle
-                  cx="48"
-                  cy="48"
-                  r={radius}
-                  stroke={theme.stroke}
-                  strokeWidth={strokeWidth}
-                  fill="transparent"
-                  strokeDasharray={circumference}
-                  initial={false}
-                  animate={{ strokeDashoffset }}
-                  transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-                  strokeLinecap="round"
-                  style={{ filter: `drop-shadow(0 0 3px ${theme.stroke}66)` }}
-                />
-              </svg>
-              
-              {/* Centered Appliance Icon inside Dial */}
-              <div className="absolute w-14 h-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                <div className={`${theme.text} group-hover:scale-110 transition-transform duration-300`}>
-                  <AppIcon name={name} cls="w-6.5 h-6.5" />
+        {/* ── Dual-ring gauge ── */}
+        <div className="flex flex-col items-center justify-center flex-1">
+          <div
+            className="relative flex items-center justify-center"
+            style={{ width: size, height: size }}
+          >
+            {/* Outer soft glow halo */}
+            <div
+              className="absolute rounded-full pointer-events-none opacity-20 dark:opacity-40 group-hover:opacity-65 transition-opacity duration-600"
+              style={{
+                inset: -6,
+                background: `radial-gradient(circle, ${theme.outerGlow} 0%, transparent 65%)`,
+                filter: "blur(6px)",
+              }}
+            />
+
+            <svg
+              width={size}
+              height={size}
+              viewBox={`0 0 ${size} ${size}`}
+              className="absolute inset-0"
+              style={{ transform: "rotate(-90deg)" }}
+            >
+              {/* Outer decorative ring — track */}
+              <circle cx={cx} cy={cy} r={outerR} fill="none" stroke={theme.outerTrack} strokeWidth={strokeW} />
+              {/* Outer decorative ring — filled ~75%, dashed feel */}
+              <circle
+                cx={cx} cy={cy} r={outerR}
+                fill="none"
+                stroke={theme.strokeGlow2}
+                strokeWidth={strokeW}
+                strokeLinecap="round"
+                strokeDasharray={`${outerCirc * 0.75} ${outerCirc}`}
+                strokeDashoffset={0}
+                style={{ opacity: 0.6 }}
+              />
+
+              {/* Inner progress ring — track */}
+              <circle cx={cx} cy={cy} r={innerR} fill="none" stroke={theme.trackColor} strokeWidth={innerStrokeW} />
+              {/* Inner progress ring — animated */}
+              <motion.circle
+                cx={cx} cy={cy} r={innerR}
+                fill="none"
+                stroke={theme.stroke}
+                strokeWidth={innerStrokeW}
+                strokeLinecap="round"
+                strokeDasharray={innerCirc}
+                initial={false}
+                animate={{ strokeDashoffset: innerOffset }}
+                transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+                style={{ filter: `drop-shadow(0 0 6px ${theme.strokeGlow})` }}
+              />
+            </svg>
+
+            {/* Centre: icon + percentage */}
+            <div className="relative z-10 flex flex-col items-center justify-center gap-0.5">
+              {/* Icon */}
+              <div
+                className={`flex items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110 bg-white/80 dark:bg-slate-900/60 border border-white/60 dark:border-white/10 shadow-sm`}
+                style={{
+                  width: 38, height: 38,
+                  borderColor: theme.strokeGlow2,
+                  boxShadow: theme.iconShadow,
+                }}
+              >
+                <div className={theme.text}>
+                  <AppIcon name={name} cls="w-5 h-5" />
                 </div>
               </div>
+              {/* Percentage label */}
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+                className={`text-[13px] font-black leading-none ${theme.pctText}`}
+                style={{ textShadow: `0 0 10px ${theme.strokeGlow}` }}
+              >
+                {roundedPct}%
+              </motion.span>
             </div>
+          </div>
 
-            <div className="text-center space-y-1">
-              <h4 className="font-black text-slate-900 dark:text-white text-xl tracking-tight leading-snug group-hover:scale-105 transition-all duration-300">{name}</h4>
-              <span className={`inline-flex px-3 py-0.5 rounded-full text-[11px] font-black border ${theme.badge}`}>
-                {roundedPct}% of total usage
+          {/* Appliance name */}
+          <div className="text-center mt-3 space-y-1.5">
+            <h4 className="font-black text-slate-800 dark:text-white text-[22px] tracking-tight leading-none group-hover:scale-[1.03] transition-transform duration-300 origin-center">
+              {name}
+            </h4>
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border ${theme.badge}`}
+              style={{ background: `${theme.outerGlowSoft}` }}
+            >
+              <span
+                className="inline-block w-[28px] h-1 rounded-full overflow-hidden"
+                style={{ background: "rgba(0,0,0,0.06) dark:rgba(255,255,255,0.12)" }}
+              >
+                <span
+                  className="block h-full rounded-full"
+                  style={{ width: `${roundedPct}%`, background: theme.stroke }}
+                />
               </span>
-            </div>
+              {roundedPct}% of total usage
+            </span>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="flex flex-col items-center pt-3 border-t border-slate-100/50 dark:border-slate-800/35 space-y-1.5 w-full">
-          <p className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest leading-none">Potential Savings</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl sm:text-3.5xl font-black bg-gradient-to-r from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-400 bg-clip-text text-transparent leading-none font-display drop-shadow-[0_2px_4px_rgba(249,115,22,0.18)]">
-              ₹{Math.round(savings).toLocaleString("en-IN")}
+        {/* ── Savings footer ── */}
+        <div
+          className="flex items-center justify-between rounded-2xl px-4 py-3 mt-1 bg-white/30 dark:bg-slate-900/30 border border-white/40 dark:border-white/10 shadow-sm"
+          style={{
+            boxShadow: `inset 0 1px 0 0 rgba(255, 255, 255, 0.4), inset 0 0 20px ${theme.savingsGlow}`,
+          }}
+        >
+          <div className="flex flex-col">
+            <span className="text-[8.5px] font-black uppercase tracking-[0.18em] text-slate-400 dark:text-slate-555 leading-none mb-1">
+              Potential Savings
             </span>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555">/month</span>
+            <div className="flex items-baseline gap-1">
+              <span
+                className="text-[26px] font-black leading-none"
+                style={{
+                  background: "linear-gradient(135deg, #f97316 0%, #fbbf24 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 2px 6px rgba(249,115,22,0.25))",
+                }}
+              >
+                ₹{Math.round(savings).toLocaleString("en-IN")}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">/mo</span>
+            </div>
+          </div>
+          {/* Trend arrow chip */}
+          <div className="flex flex-col items-center justify-center rounded-xl px-3 py-2 gap-0.5 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30">
+            <ArrowRight
+              className="w-3.5 h-3.5 -rotate-45 text-emerald-600 dark:text-emerald-400"
+              style={{ filter: "drop-shadow(0 0 4px rgba(34,197,94,0.3))" }}
+            />
+            <span className="text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wide leading-none">Save</span>
           </div>
         </div>
+
       </div>
     </motion.div>
   );
 }
+
 
 // ── 3. Appliance Breakdown ────────────────────────────────────────────────────
 function ApplianceBreakdown({ items }: {

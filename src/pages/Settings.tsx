@@ -106,7 +106,7 @@ export const Settings: React.FC = () => {
     `block w-full ${hasLeftIcon ? "pl-9" : "pl-4"} ${hasRightIcon ? "pr-12" : "pr-4"} py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 transition-all duration-200 outline-none border-2 bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${
       focusedField === field
         ? "border-primary-blue dark:border-primary-green shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
-        : "border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
+        : "border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
     }`;
 
   // Admin tariff editing states
@@ -603,7 +603,7 @@ export const Settings: React.FC = () => {
                 className={`block w-full px-3.5 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm border-2 outline-none transition-all duration-200 cursor-pointer ${
                   focusedField === "tariffState"
                     ? "border-primary-blue dark:border-primary-green shadow-[0_0_0_4px_rgba(37,99,235,0.08)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
-                    : "border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
+                    : "border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
                 }`}
               >
                 <optgroup label="Andhra Pradesh">

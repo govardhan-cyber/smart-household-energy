@@ -58,6 +58,19 @@ const AnimatedNumber: React.FC<{
 };
 
 export const SurveyData: React.FC = () => {
+  // Detect theme state for Recharts components
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark">(
+    () => (document.documentElement.classList.contains("dark") ? "dark" : "light")
+  );
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setActiveTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
+
   // Navigation & Tabs
   const [activeTab, setActiveTab] = useState<"table" | "analytics">("table");
 
@@ -803,7 +816,18 @@ export const SurveyData: React.FC = () => {
                             <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value) => [`${value} Households`, "Count"]} contentStyle={{ fontSize: "11px", fontWeight: "bold", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                        <Tooltip
+                          formatter={(value) => [`${value} Households`, "Count"]}
+                          contentStyle={{
+                            fontSize: "11px",
+                            fontWeight: "bold",
+                            borderRadius: "12px",
+                            border: activeTheme === "dark" ? "1px solid #334155" : "1px solid #e2e8f0",
+                            backgroundColor: activeTheme === "dark" ? "#1E293B" : "#FFF",
+                            color: activeTheme === "dark" ? "#F8FAFC" : "#0F172A",
+                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                          }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -848,7 +872,18 @@ export const SurveyData: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800" />
                       <XAxis dataKey="count" stroke="#94A3B8" fontSize={9} fontWeight="bold" tickLine={false} />
                       <YAxis stroke="#10B981" fontSize={9} fontWeight="bold" tickLine={false} />
-                      <Tooltip formatter={(value, _name, props) => [`₹${value}`, "Avg Savings", `(${props.payload.countNum} homes)`]} contentStyle={{ fontSize: "11px", fontWeight: "bold", borderRadius: "8px", border: "1px solid #e2e8f0" }} />
+                      <Tooltip
+                        formatter={(value, _name, props) => [`₹${value}`, "Avg Savings", `(${props.payload.countNum} homes)`]}
+                        contentStyle={{
+                          fontSize: "11px",
+                          fontWeight: "bold",
+                          borderRadius: "12px",
+                          border: activeTheme === "dark" ? "1px solid #334155" : "1px solid #e2e8f0",
+                          backgroundColor: activeTheme === "dark" ? "#1E293B" : "#FFF",
+                          color: activeTheme === "dark" ? "#F8FAFC" : "#0F172A",
+                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                        }}
+                      />
                       <Bar dataKey="savings" fill="url(#colorSavings)" radius={[5, 5, 0, 0]} barSize={40} />
                     </BarChart>
                   </ResponsiveContainer>

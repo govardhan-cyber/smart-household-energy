@@ -502,7 +502,7 @@ export const Profile: React.FC = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       required
                       disabled={loading}
-                      className="block w-full pl-10 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-blue-500 dark:focus:border-emerald-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.12)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.12)] transition-all duration-300"
+                      className="block w-full pl-10 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-655 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-blue-500 dark:focus:border-emerald-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(59,130,246,0.12)] dark:focus:shadow-[0_0_0_4px_rgba(16,185,129,0.12)] transition-all duration-300"
                     />
                     {fullName && fullName.trim().length > 0 && (
                       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-500">
@@ -617,7 +617,7 @@ export const Profile: React.FC = () => {
                       required
                       disabled={loading}
                       placeholder="••••••••"
-                      className="block w-full pl-4 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
+                      className="block w-full pl-4 pr-10 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
                     />
                     <button
                       type="button"
@@ -643,7 +643,7 @@ export const Profile: React.FC = () => {
                       required
                       disabled={loading}
                       placeholder="••••••••"
-                      className="block w-full pl-4 pr-16 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
+                      className="block w-full pl-4 pr-16 py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 bg-white/20 dark:bg-slate-955/40 backdrop-blur-sm border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 focus:border-orange-500 focus:outline-none focus:shadow-[0_0_0_4px_rgba(249,115,22,0.12)] transition-all duration-300"
                     />
                     <button
                       type="button"
