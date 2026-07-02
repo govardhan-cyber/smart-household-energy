@@ -244,12 +244,21 @@ export const History: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (!deleteReportId) return;
+    const targetId = deleteReportId;
+    
+    // Optimistic UI Update: instantly delete from local state
+    setReports(prev => prev.filter(r => r.id !== targetId));
+    if (selectedReport?.id === targetId) setSelectedReport(null);
+    
+    // Instantly close the confirm popup
+    setDeleteReportId(null);
+    
+    // Run network delete in background
     try {
-      await reportsService.deleteReport(deleteReportId);
-      setReports(prev => prev.filter(r => r.id !== deleteReportId));
-      if (selectedReport?.id === deleteReportId) setSelectedReport(null);
-    } catch (error) { console.error("Delete failed:", error); }
-    finally { setDeleteReportId(null); }
+      await reportsService.deleteReport(targetId);
+    } catch (error) {
+      console.error("Delete failed on backend:", error);
+    }
   };
 
   /* filter & sort */
