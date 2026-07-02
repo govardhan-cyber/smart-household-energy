@@ -117,8 +117,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
     }
   };
 
-  const currentListVariants = hasAnimated ? undefined : listVariants;
-  const currentItemVariants = hasAnimated ? undefined : itemVariants;
+  const currentListVariants = listVariants;
+  const currentItemVariants = itemVariants;
 
   const toggleUnits = (appId: string) => {
     setExpandedUnits(prev => ({
@@ -193,8 +193,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
       {/* Appliance Config List */}
       <motion.div 
         variants={currentListVariants}
-        initial={hasAnimated ? undefined : "hidden"}
-        animate={hasAnimated ? undefined : "show"}
+        initial={hasAnimated ? false : "hidden"}
+        animate="show"
         className="space-y-4 max-h-[410px] overflow-y-auto pr-2 py-2 text-left"
       >
         {activeAppliances.length === 0 ? (
