@@ -1060,8 +1060,8 @@ export const Dashboard: React.FC = () => {
             <div className="max-w-4xl mx-auto relative z-10">
               {/* Step count label */}
               <div className="flex items-center justify-between mb-6">
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Wizard Progress</span>
-                <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-display">Wizard Progress</span>
+                <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green font-display">
                   Step {currentStep} of 4
                 </span>
               </div>
@@ -1071,22 +1071,22 @@ export const Dashboard: React.FC = () => {
                 {/* Background connector line centered vertically with circles (56px / 2 = 28px = top-7) */}
                 <div className="absolute top-7 left-[28px] right-[28px] h-[3px] bg-slate-100 dark:bg-slate-800 rounded-full" />
                 
-                {/* Active progress connector line */}
+                {/* Active progress connector line with neon glow */}
                 <div 
-                  className="absolute top-7 left-[28px] h-[3px] bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer"
+                  className="absolute top-7 left-[28px] h-[3px] bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer shadow-[0_0_8px_rgba(37,99,235,0.3)]"
                   style={{ width: `calc((${currentStep - 1} / 3) * (100% - 56px))` }}
                 >
                   {/* Glowing traveling comet head */}
                   {currentStep > 1 && (
-                    <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#2563eb] animate-pulse" />
+                    <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#2563eb] animate-pulse" />
                   )}
                 </div>
 
                 {[
-                  { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-500",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-400"    },
-                  { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-primary-blue",   activeShadow: "shadow-violet-500/35",  hintColor: "text-violet-400"  },
-                  { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-400" },
-                  { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-400"    }
+                  { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-600",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-500"    },
+                  { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-indigo-600",   activeShadow: "shadow-indigo-500/35",  hintColor: "text-indigo-500"  },
+                  { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-500" },
+                  { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-555"    }
                 ].map((s) => {
                   const isCompleted = currentStep > s.step;
                   const isActive    = currentStep === s.step;
@@ -1094,75 +1094,88 @@ export const Dashboard: React.FC = () => {
 
                   return (
                     /* Step node */
-                    <button
+                    <motion.button
                       key={s.step}
                       disabled={!isClickable}
                       onClick={() => setCurrentStep(s.step as 1 | 2 | 3 | 4)}
-                      className={`flex flex-col items-center gap-2.5 shrink-0 z-10 focus:outline-none transition-all duration-300 ${
-                        isClickable ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-not-allowed opacity-60"
+                      whileHover={isClickable ? { scale: 1.05 } : {}}
+                      whileTap={isClickable ? { scale: 0.95 } : {}}
+                      className={`flex flex-col items-center gap-2.5 shrink-0 z-10 focus:outline-none transition-all duration-350 ${
+                        isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-50"
                       }`}
                     >
-                      {/* Circle */}
+                      {/* Circle wrapper */}
                       <div className="relative">
-                        {/* Outer glow ring — active only */}
+                        {/* Sliding active glow ring */}
                         {isActive && (
-                          <span className={`absolute -inset-[5px] rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-sm animate-pulse`} />
+                          <motion.div
+                            layoutId="activeStepGlow"
+                            className={`absolute -inset-[6px] rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-md`}
+                            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                          />
                         )}
-                        {/* Ping ring */}
+                        {/* Sliding active outer outline ring */}
                         {isActive && (
-                          <span className={`absolute -inset-[3px] rounded-full border-2 border-primary-blue/30 dark:border-primary-green/30 animate-ping`} />
+                          <motion.div
+                            layoutId="activeStepOutline"
+                            className="absolute -inset-[3px] rounded-full border-2 border-primary-blue/30 dark:border-primary-green/30 animate-pulse"
+                            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                          />
                         )}
 
-                        <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500
+                        <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 overflow-hidden
                           ${isCompleted
                             ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 step-completed"
                             : isActive
                             ? `bg-gradient-to-br ${s.activeGrad} text-white shadow-xl ${s.activeShadow} step-active`
-                            : "bg-white/50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm shadow-sm"
+                            : "bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.4)] text-slate-400 dark:text-slate-555"
                           }`}
                         >
-                          {/* Inner glass overlay for extra depth */}
-                          <div className={`absolute inset-[2.5px] rounded-full backdrop-blur-sm border transition-colors duration-300
+                          {/* Inner glass overlay for specular top reflection */}
+                          <div className={`absolute inset-[1.5px] rounded-full backdrop-blur-sm transition-colors duration-300
                             ${isCompleted 
-                              ? "bg-white/10 border-white/20" 
+                              ? "bg-white/10 border-t border-l border-white/35 border-r-transparent border-b-transparent" 
                               : isActive 
-                              ? "bg-white/15 dark:bg-black/20 border-white/25 dark:border-white/10" 
-                              : "bg-slate-50/50 dark:bg-slate-950/20 border-white/40 dark:border-white/5 group-hover:bg-white/80"
+                              ? "bg-white/15 dark:bg-black/20 border-t border-l border-white/40 dark:border-white/15 border-r-transparent border-b-transparent" 
+                              : "bg-transparent border-t border-l border-white/20 dark:border-white/5 border-r-transparent border-b-transparent group-hover:bg-slate-100/50"
                             }`} 
                           />
 
-                          {isCompleted
-                            ? <Check className="relative z-10 w-5.5 h-5.5 step-check" />
-                            : <s.Icon className={`relative z-10 w-5.5 h-5.5 transition-colors duration-300 ${
-                                isActive ? "step-icon-float drop-shadow-sm" 
-                                : isClickable ? "hover:text-slate-700 dark:hover:text-slate-300"
-                                : ""
-                              }`} />
-                          }
+                          {/* Dynamic content rendering: check (completed) / icon (active) / step number (inactive) */}
+                          <div className="relative z-10 flex items-center justify-center w-full h-full">
+                            {isCompleted ? (
+                              <Check className="w-5.5 h-5.5 step-check" />
+                            ) : isActive ? (
+                              <s.Icon className="w-5.5 h-5.5 step-icon-float drop-shadow-sm" />
+                            ) : (
+                              <span className="text-sm font-black tracking-tight font-display">{s.step}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Labels */}
                       <div className="flex flex-col items-center leading-tight gap-0.5">
-                        <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 ${
+                        <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 font-display ${
                           isActive    ? "text-primary-blue dark:text-primary-green"
                           : isCompleted ? "text-slate-600 dark:text-slate-300"
-                          : "text-slate-400 dark:text-slate-500"
+                          : "text-slate-450 dark:text-slate-500"
                         }`}>
                           {s.label}
                         </span>
-                        <span className={`text-[9px] hidden sm:block step-label font-medium transition-colors duration-300 ${
-                          isActive ? s.hintColor : "text-slate-350 dark:text-slate-600"
+                        <span className={`text-[9px] hidden sm:block step-label font-semibold tracking-wide transition-colors duration-300 ${
+                          isActive ? s.hintColor : "text-slate-350 dark:text-slate-655"
                         }`} style={{ animationDelay: "0.1s" }}>
                           {s.sub}
                         </span>
                       </div>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
             </div>
           </div>
+
 
 
 
