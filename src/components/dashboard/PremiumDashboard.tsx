@@ -48,11 +48,11 @@ function AppIcon({ name, cls = "w-6 h-6" }: { name: string; cls?: string }) {
 
 // ── Color palette ─────────────────────────────────────────────────────────────
 const COLORS = [
-  { bg: "bg-blue-50 dark:bg-blue-950/20",       icon: "text-blue-500 dark:text-blue-400",       bar: "bg-blue-500 dark:bg-blue-500",       border: "border-blue-100 dark:border-blue-900/30",       glow: "card-client-blue"    },
-  { bg: "bg-emerald-50 dark:bg-emerald-950/20", icon: "text-emerald-600 dark:text-emerald-400",   bar: "bg-emerald-500 dark:bg-emerald-500", border: "border-emerald-100 dark:border-emerald-900/30", glow: "card-client-emerald" },
-  { bg: "bg-orange-50 dark:bg-orange-950/20",   icon: "text-orange-500 dark:text-orange-400",   bar: "bg-orange-500 dark:bg-orange-500",   border: "border-orange-100 dark:border-orange-900/30",   glow: "card-client-amber"   },
-  { bg: "bg-purple-50 dark:bg-purple-950/20",   icon: "text-purple-500 dark:text-purple-400",   bar: "bg-purple-500 dark:bg-purple-500",   border: "border-purple-100 dark:border-purple-900/30",   glow: "card-client-purple"  },
-  { bg: "bg-slate-50 dark:bg-slate-800/40",     icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-slate-100 dark:border-slate-800/60",       glow: "card-client-slate"   },
+  { bg: "bg-white/20 dark:bg-slate-900/30 backdrop-blur-md", icon: "text-blue-500 dark:text-blue-400",       bar: "bg-blue-500 dark:bg-blue-550",       border: "border-white/10 dark:border-white/5 hover:border-blue-500/30 dark:hover:border-blue-400/25",       glow: "card-client-blue"    },
+  { bg: "bg-white/20 dark:bg-slate-900/30 backdrop-blur-md", icon: "text-emerald-600 dark:text-emerald-400",   bar: "bg-emerald-500 dark:bg-emerald-550", border: "border-white/10 dark:border-white/5 hover:border-emerald-500/30 dark:hover:border-emerald-400/25", glow: "card-client-emerald" },
+  { bg: "bg-white/20 dark:bg-slate-900/30 backdrop-blur-md", icon: "text-orange-500 dark:text-orange-400",   bar: "bg-orange-500 dark:bg-orange-550",   border: "border-white/10 dark:border-white/5 hover:border-orange-500/30 dark:hover:border-orange-400/25",   glow: "card-client-amber"   },
+  { bg: "bg-white/20 dark:bg-slate-900/30 backdrop-blur-md", icon: "text-purple-500 dark:text-purple-400",   bar: "bg-purple-500 dark:bg-purple-550",   border: "border-white/10 dark:border-white/5 hover:border-purple-500/30 dark:hover:border-purple-400/25",   glow: "card-client-purple"  },
+  { bg: "bg-white/20 dark:bg-slate-900/30 backdrop-blur-md", icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-white/10 dark:border-white/5 hover:border-slate-400/30 dark:hover:border-slate-350/25",       glow: "card-client-slate"   },
 ];
 
 const cardVariants = {
@@ -439,7 +439,7 @@ function ApplianceBreakdown({ items }: {
   items: { name: string; pct: number; cost: number; colorIdx: number }[];
 }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 transition-colors duration-300">
+    <div className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl shadow-lg p-5 sm:p-6 transition-colors duration-300">
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-5">Appliance Usage Breakdown</h3>
 
       {/* Appliance tiles */}
@@ -455,7 +455,7 @@ function ApplianceBreakdown({ items }: {
               animate="visible"
               className={`card-client motion-card ${col.glow} group ${col.bg} ${col.border} border rounded-2xl p-3 sm:p-4 flex flex-col items-center gap-1.5 cursor-default transition-shadow duration-300 text-center w-full h-full`}
             >
-              <div className={`w-11 h-11 rounded-full ${col.bg} border ${col.border} flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
+              <div className="w-11 h-11 rounded-full bg-white/25 dark:bg-slate-900/40 border border-white/10 dark:border-white/5 flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md">
                 <AppIcon name={item.name} cls={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${col.icon}`} />
               </div>
               <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 line-clamp-1 mt-1 leading-none">
@@ -473,7 +473,7 @@ function ApplianceBreakdown({ items }: {
       </div>
 
       {/* Multicolor usage bar */}
-      <div className="relative rounded-full overflow-hidden h-3 bg-slate-100 dark:bg-slate-800 flex gap-px p-[2px] border border-slate-200/50 dark:border-slate-800/40 shadow-inner">
+      <div className="relative rounded-full overflow-hidden h-3 bg-white/20 dark:bg-slate-900/40 flex gap-px p-[2px] border border-white/10 dark:border-slate-850 shadow-inner">
         {items.map((item) => (
           <div
             key={item.name}
@@ -701,12 +701,12 @@ function AIRecommendationsPanel({
       variants={recommendationsPanelVariants}
       initial="hidden"
       animate="visible"
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-shadow duration-300"
+      className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl shadow-lg p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-shadow duration-300"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">EnergyAI Recommendations</h3>
@@ -723,7 +723,7 @@ function AIRecommendationsPanel({
             variants={recommendationItemVariants}
             initial="hidden"
             animate="visible"
-            className={`card-client motion-card ${rec.glow} group bg-white dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-shadow duration-300 shadow-sm`}
+            className={`card-client motion-card ${rec.glow} group bg-white/20 dark:bg-slate-900/30 backdrop-blur-md border border-white/10 dark:border-white/5 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-all duration-300 shadow-sm`}
           >
             <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
               <div className={`${rec.color} transition-transform duration-300 group-hover:scale-110`}>{rec.icon}</div>
@@ -741,7 +741,7 @@ function AIRecommendationsPanel({
       </div>
 
       {/* Total savings box */}
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30">
+      <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/10 dark:to-teal-950/10 rounded-2xl p-4 border border-emerald-500/20 dark:border-emerald-900/25">
         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-450 mb-1.5">Total Potential Savings</p>
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-1">
