@@ -1091,41 +1091,32 @@ export const Dashboard: React.FC = () => {
                           isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-40"
                         }`}
                       >
-                        {/* Circle Icon Container */}
-                        <div className={`relative w-11 h-11 rounded-full flex items-center justify-center border transition-all duration-300 backdrop-blur-md
-                          ${isCompleted
-                            ? "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-450 border-emerald-500/25 shadow-sm"
-                            : isActive
-                            ? "bg-gradient-to-br from-primary-blue/80 to-blue-600/80 dark:from-primary-green/80 dark:to-emerald-500/80 text-white border-white/20 shadow-[0_8px_20px_-6px_rgba(37,99,235,0.4)] dark:shadow-[0_8px_20px_-6px_rgba(16,185,129,0.4)]"
-                            : "bg-slate-50/30 dark:bg-slate-900/25 text-slate-400 dark:text-slate-500 border-slate-200/20 dark:border-slate-800/20"
-                          }`}
-                        >
+                        {/* Floating Icon centered vertically on progress line */}
+                        <div className="relative w-6 h-6 flex items-center justify-center">
                           {/* Sliding active glow ring */}
                           {isActive && (
                             <motion.div
                               layoutId="activeStepGlow"
-                              className={`absolute -inset-2 rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-sm`}
+                              className={`absolute -inset-2.5 rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-sm`}
                               transition={{ type: "spring", stiffness: 320, damping: 24 }}
                             />
                           )}
 
-                          {/* Lucide Icon */}
-                          <s.Icon className={`w-4.5 h-4.5 ${isActive ? "step-icon-float" : ""}`} />
-
-                          {/* Completed Check Badge Overlay */}
-                          {isCompleted && (
-                            <div className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-emerald-500 text-white border border-white dark:border-slate-900 shadow-sm flex items-center justify-center step-check">
-                              <Check className="w-2.5 h-2.5 stroke-[3]" />
-                            </div>
+                          {isCompleted ? (
+                            <Check className="w-5 h-5 text-emerald-500 dark:text-primary-green font-bold drop-shadow-sm step-check" />
+                          ) : (
+                            <s.Icon className={`w-5 h-5 transition-all duration-300 ${
+                              isActive ? "scale-125 text-primary-blue dark:text-primary-green drop-shadow-[0_2px_4px_rgba(37,99,235,0.2)] step-icon-float" : "opacity-60 text-slate-400 dark:text-slate-500"
+                            }`} />
                           )}
                         </div>
 
                         {/* Labels absolute-positioned below the floating icon */}
-                        <div className="absolute top-[48px] flex flex-col items-center whitespace-nowrap leading-tight gap-0.5">
+                        <div className="absolute top-[44px] flex flex-col items-center whitespace-nowrap leading-tight gap-0.5">
                           <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 font-display ${
                             isActive    ? "text-primary-blue dark:text-primary-green"
                             : isCompleted ? "text-slate-600 dark:text-slate-300"
-                            : "text-slate-455 dark:text-slate-500"
+                            : "text-slate-450 dark:text-slate-500"
                           }`}>
                             {s.label}
                           </span>
@@ -1137,9 +1128,9 @@ export const Dashboard: React.FC = () => {
                         </div>
                       </motion.button>
 
-                      {/* Connector Line (Inline, stretches dynamically, aligned vertically with emoji centers) */}
+                      {/* Connector Line (Inline, stretches dynamically, aligned vertically with emoji centers at mt-3) */}
                       {idx < arr.length - 1 && (
-                        <div className="flex-1 h-[2px] rounded-full bg-slate-100 dark:bg-slate-800/85 relative overflow-hidden">
+                        <div className="flex-1 h-[3px] mt-3 mx-2 rounded-full bg-slate-100 dark:bg-slate-800/80 relative overflow-hidden">
                           <div 
                             className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer shadow-[0_0_8px_rgba(37,99,235,0.25)] ${
                               currentStep > s.step ? "w-full" : "w-0"
