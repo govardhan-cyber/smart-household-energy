@@ -306,7 +306,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
       </div>
 
       {/* 🕒 Smart Scheduling & Time-of-Day (ToD) Savings */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+      <div className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 p-6 sm:p-7 rounded-3xl shadow-lg space-y-5">
         <div className="text-left">
           <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
             <span className="p-1 bg-cyan-500/10 text-cyan-600 rounded-lg text-lg">🕒</span>
@@ -324,9 +324,9 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               return activeSchedules.map(item => (
                 <div 
                   key={item.id}
-                  className="group p-4 rounded-2xl border border-cyan-500/10 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30 dark:hover:border-cyan-500/30"
+                  className="group p-4 rounded-2xl border border-white/10 dark:border-white/5 bg-white/20 dark:bg-slate-900/30 backdrop-blur-md flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] hover:border-cyan-500/20 dark:hover:border-cyan-400/20"
                 >
-                  <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
+                  <div className="p-3 bg-white/20 dark:bg-slate-900/40 border border-white/10 dark:border-white/5 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <span className="text-xl font-bold">{item.icon}</span>
                   </div>
                   <div className="space-y-1 text-left">
@@ -336,7 +336,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
                       {item.description}
                     </p>
-                    <span className="inline-block text-[9px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 dark:bg-cyan-950/40 px-2.5 py-1 rounded-md mt-1 border border-cyan-500/10">
+                    <span className="inline-block text-[9px] font-black uppercase tracking-wider text-cyan-600 dark:text-cyan-400 bg-white/20 dark:bg-slate-950/30 px-2.5 py-1 rounded-md mt-1 border border-white/10 dark:border-white/5">
                       {item.savingsText}
                     </span>
                   </div>
@@ -344,8 +344,8 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               ));
             } else {
               return (
-                <div className="group p-5 rounded-2xl border border-cyan-500/10 dark:border-cyan-900/30 bg-cyan-50/5 dark:bg-cyan-950/5 flex items-start gap-4 md:col-span-2 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.12)] hover:border-cyan-300/30">
-                  <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
+                <div className="group p-5 rounded-2xl border border-white/10 dark:border-white/5 bg-white/20 dark:bg-slate-900/30 backdrop-blur-md flex items-start gap-4 md:col-span-2 hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] hover:border-cyan-500/20">
+                  <div className="p-3 bg-white/20 dark:bg-slate-900/40 border border-white/10 dark:border-white/5 rounded-xl text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <span className="text-xl font-bold">⚡</span>
                   </div>
                   <div className="space-y-1.5 text-left">
