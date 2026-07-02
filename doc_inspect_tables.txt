@@ -1,0 +1,230 @@
+Total paragraphs outside tables: 118
+Total tables: 4
+
+=========================================
+Table 0 - Rows: 2, Cols: 2
+=========================================
+  Row 0 cols: 2
+    Cell 0 (len=35): 'Name'
+      Paragraphs in cell: 2
+    Cell 1 (len=36): 'Name'
+      Paragraphs in cell: 2
+  Row 1 cols: 2
+    Cell 0 (len=37): 'Name'
+      Paragraphs in cell: 2
+    Cell 1 (len=34): 'Name'
+      Paragraphs in cell: 2
+=========================================
+Table 1 - Rows: 1, Cols: 2
+=========================================
+  Row 0 cols: 2
+    Cell 0 (len=8): 'Contents'
+      Paragraphs in cell: 1
+    Cell 1 (len=8): 'Page No.'
+      Paragraphs in cell: 1
+=========================================
+Table 2 - Rows: 20, Cols: 2
+=========================================
+  Row 0 cols: 2
+    Cell 0 (len=21): 'List of Abbreviations'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '7'
+      Paragraphs in cell: 1
+  Row 1 cols: 2
+    Cell 0 (len=15): 'List of Figures'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '6'
+      Paragraphs in cell: 1
+  Row 2 cols: 2
+    Cell 0 (len=14): 'List of Tables'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '6'
+      Paragraphs in cell: 1
+  Row 3 cols: 2
+    Cell 0 (len=15): '1. Introduction'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '8'
+      Paragraphs in cell: 1
+  Row 4 cols: 2
+    Cell 0 (len=21): '1.1 Problem Statement'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '8'
+      Paragraphs in cell: 1
+  Row 5 cols: 2
+    Cell 0 (len=21): '1.2 Project Objective'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '8'
+      Paragraphs in cell: 1
+  Row 6 cols: 2
+    Cell 0 (len=24): '1.3 Scope of the Project'
+      Paragraphs in cell: 1
+    Cell 1 (len=1): '9'
+      Paragraphs in cell: 1
+  Row 7 cols: 2
+    Cell 0 (len=20): '2. Literature Survey'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '10'
+      Paragraphs in cell: 1
+  Row 8 cols: 2
+    Cell 0 (len=29): '3. Data Gathering / Data Used'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '11'
+      Paragraphs in cell: 1
+  Row 9 cols: 2
+    Cell 0 (len=30): '4. Methodology / System Design'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '12'
+      Paragraphs in cell: 1
+  Row 10 cols: 2
+    Cell 0 (len=27): '5. Implementation / Modules'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '14'
+      Paragraphs in cell: 1
+  Row 11 cols: 2
+    Cell 0 (len=20): '6. Results / Outputs'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '16'
+      Paragraphs in cell: 1
+  Row 12 cols: 2
+    Cell 0 (len=20): '7. Impact Assessment'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '17'
+      Paragraphs in cell: 1
+  Row 13 cols: 2
+    Cell 0 (len=19): '8. Challenges Faced'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '17'
+      Paragraphs in cell: 1
+  Row 14 cols: 2
+    Cell 0 (len=13): '9. Conclusion'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '18'
+      Paragraphs in cell: 1
+  Row 15 cols: 2
+    Cell 0 (len=15): '10. Future Work'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '18'
+      Paragraphs in cell: 1
+  Row 16 cols: 2
+    Cell 0 (len=10): 'References'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '19'
+      Paragraphs in cell: 1
+  Row 17 cols: 2
+    Cell 0 (len=50): 'Appendix A: Packages, Tools Used & Working Process'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '20'
+      Paragraphs in cell: 1
+  Row 18 cols: 2
+    Cell 0 (len=23): 'Appendix B: Source Code'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '21'
+      Paragraphs in cell: 1
+  Row 19 cols: 2
+    Cell 0 (len=27): 'Paper Publications (if any)'
+      Paragraphs in cell: 1
+    Cell 1 (len=2): '24'
+      Paragraphs in cell: 1
+=========================================
+Table 3 - Rows: 22, Cols: 4
+=========================================
+  Row 0 cols: 4
+    Cell 0 (len=21601): 'LIST OF ABBREVIATIONS'
+      Paragraphs in cell: 302
+    Cell 1 (len=21601): 'LIST OF ABBREVIATIONS'
+      Paragraphs in cell: 302
+    Cell 2 (len=21601): 'LIST OF ABBREVIATIONS'
+      Paragraphs in cell: 302
+    Cell 3 (len=0): ''
+      Paragraphs in cell: 1
+  Row 1 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 2 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 3 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 4 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 5 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 6 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 7 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 8 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 9 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 10 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 11 cols: 1
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+  Row 12 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 13 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 14 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 15 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 16 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 17 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 18 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 19 cols: 2
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+  Row 20 cols: 4
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 2 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 3 (len=0): ''
+      Paragraphs in cell: 1
+  Row 21 cols: 4
+    Cell 0 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 1 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 2 (len=0): ''
+      Paragraphs in cell: 1
+    Cell 3 (len=0): ''
+      Paragraphs in cell: 1

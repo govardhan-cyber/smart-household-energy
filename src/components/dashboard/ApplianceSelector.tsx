@@ -77,21 +77,49 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
   hasSelection
 }) => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [hasAnimated, setHasAnimated] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasAnimated(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: {},
     show: {
-      opacity: 1,
       transition: {
-        staggerChildren: 0.03
+        staggerChildren: 0.04
+      }
+    }
+  };
+
+  const categoryVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.02
       }
     }
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 120, damping: 15 } }
+    hidden: { opacity: 0, y: 10 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15
+      }
+    }
   };
+
+  const currentContainerVariants = hasAnimated ? undefined : containerVariants;
+  const currentCategoryVariants = hasAnimated ? undefined : categoryVariants;
+  const currentCardVariants = hasAnimated ? undefined : cardVariants;
 
   const activeCategories = activeCategory === "all"
     ? CATEGORIES
@@ -136,10 +164,9 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
 
       {/* Grid Container */}
       <motion.div 
-        layout
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
+        variants={currentContainerVariants}
+        initial={hasAnimated ? undefined : "hidden"}
+        animate={hasAnimated ? undefined : "show"}
         className="space-y-8 max-h-[440px] overflow-y-auto pr-2 py-2 scroll-smooth"
       >
         <AnimatePresence mode="popLayout">
@@ -149,10 +176,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
             return (
               <motion.div 
                 key={category.id} 
-                layout 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                variants={currentCategoryVariants}
                 className="space-y-4"
               >
                 {/* Category Header */}
@@ -164,77 +188,74 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  <AnimatePresence mode="popLayout">
-                    {categoryAppliances.map(app => {
-                      const isSelected = app.quantity > 0;
-                      return (
-                        <motion.button
-                          key={app.id}
-                          layout
-                          variants={cardVariants}
-                          whileHover="hover"
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => toggleAppliance(app.id)}
-                          className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
+                  {categoryAppliances.map(app => {
+                    const isSelected = app.quantity > 0;
+                    return (
+                      <motion.button
+                        key={app.id}
+                        variants={currentCardVariants}
+                        whileHover={hasAnimated ? {} : "hover"}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleAppliance(app.id)}
+                        className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-colors duration-300 relative overflow-hidden cursor-pointer ${
+                          isSelected
+                            ? "border-primary-blue bg-gradient-to-br from-blue-50/40 to-blue-100/10 dark:border-primary-green dark:from-green-950/15 dark:to-green-950/5 shadow-[0_4px_20px_-4px_rgba(37,99,235,0.15)] dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]"
+                            : "border-slate-200 bg-white/60 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/30 shadow-sm hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-md"
+                        }`}
+                      >
+                        {/* Active state ambient glow */}
+                        <AnimatePresence>
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1.2, opacity: 0.28 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute -right-6 -top-6 w-16 h-16 blur-xl bg-primary-blue dark:bg-primary-green pointer-events-none rounded-full"
+                            />
+                          )}
+                        </AnimatePresence>
+
+                        {/* Active state check indicator */}
+                        <AnimatePresence>
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -25, opacity: 0 }}
+                              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                              exit={{ scale: 0, rotate: 25, opacity: 0 }}
+                              transition={{ type: "spring", stiffness: 450, damping: 20 }}
+                              className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary-blue dark:bg-primary-green text-white dark:text-slate-950 flex items-center justify-center shadow-sm z-20"
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Icon with micro-bounce and rotate */}
+                        <motion.div 
+                          variants={{
+                            hover: { scale: 1.1, rotate: [0, -6, 6, -3, 3, 0], transition: { duration: 0.4 } }
+                          }}
+                          className={`p-2.5 rounded-xl border transition-all relative z-10 ${
                             isSelected
-                              ? "border-primary-blue bg-gradient-to-br from-blue-50/40 to-blue-100/10 dark:border-primary-green dark:from-green-950/15 dark:to-green-950/5 shadow-[0_4px_20px_-4px_rgba(37,99,235,0.15)] dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]"
-                              : "border-slate-200 bg-white/60 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/30 shadow-sm hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-md"
+                              ? "bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 border-transparent shadow-md"
+                              : "bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-slate-200 dark:border-slate-800 group-hover:bg-slate-100 dark:group-hover:bg-slate-800"
                           }`}
                         >
-                          {/* Active state ambient glow */}
-                          <AnimatePresence>
-                            {isSelected && (
-                              <motion.div
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1.2, opacity: 0.28 }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                className="absolute -right-6 -top-6 w-16 h-16 blur-xl bg-primary-blue dark:bg-primary-green pointer-events-none rounded-full"
-                              />
-                            )}
-                          </AnimatePresence>
-
-                          {/* Active state check indicator */}
-                          <AnimatePresence>
-                            {isSelected && (
-                              <motion.div
-                                initial={{ scale: 0, rotate: -25, opacity: 0 }}
-                                animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                                exit={{ scale: 0, rotate: 25, opacity: 0 }}
-                                transition={{ type: "spring", stiffness: 450, damping: 20 }}
-                                className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary-blue dark:bg-primary-green text-white dark:text-slate-950 flex items-center justify-center shadow-sm z-20"
-                              >
-                                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          {/* Icon with micro-bounce and rotate */}
-                          <motion.div 
-                            variants={{
-                              hover: { scale: 1.1, rotate: [0, -6, 6, -3, 3, 0], transition: { duration: 0.4 } }
-                            }}
-                            className={`p-2.5 rounded-xl border transition-all relative z-10 ${
-                              isSelected
-                                ? "bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 border-transparent shadow-md"
-                                : "bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-slate-200 dark:border-slate-800 group-hover:bg-slate-100 dark:group-hover:bg-slate-800"
-                            }`}
-                          >
-                            {getIconComponent(app.icon)}
-                          </motion.div>
-                          
-                          {/* Labels */}
-                          <div className="w-full relative z-10">
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                              {app.name}
-                            </h4>
-                            <span className="text-[10px] font-semibold text-slate-455 dark:text-slate-500 block truncate mt-0.5">
-                              {app.hint}
-                            </span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </AnimatePresence>
+                          {getIconComponent(app.icon)}
+                        </motion.div>
+                        
+                        {/* Labels */}
+                        <div className="w-full relative z-10">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                            {app.name}
+                          </h4>
+                          <span className="text-[10px] font-semibold text-slate-455 dark:text-slate-500 block truncate mt-0.5">
+                            {app.hint}
+                          </span>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
                 </div>
               </motion.div>
             );

@@ -108,6 +108,44 @@ const getIconComponent = (name: string) => {
   return <Zap className="w-5 h-5 text-yellow-500" />;
 };
 
+const heroStatVariants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as any }
+  })
+};
+
+const historyCardVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.25, delay: index * 0.05 }
+  })
+};
+
+const historyBarVariants = {
+  hidden: { width: 0 },
+  visible: (custom: { index: number; barWidth: number }) => ({
+    width: `${custom.barWidth}%`,
+    transition: { duration: 0.7, delay: custom.index * 0.06 + 0.25, ease: "easeOut" as const }
+  })
+};
+
+const modalOverlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 }
+};
+
+const modalContentVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.95, y: 20 }
+};
+
 /* ── HeroStat chip with count-up + stagger slide-in ────────────────── */
 interface HeroStatProps {
   icon: React.ElementType;
@@ -124,9 +162,10 @@ const HeroStat: React.FC<HeroStatProps> = ({
   const counted = useCountUp(raw, 1.4, delay + 0.15);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
+      custom={delay}
+      variants={heroStatVariants}
+      initial="hidden"
+      animate="visible"
       className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3 text-white"
     >
       <div className="flex items-center gap-1.5 mb-1">
@@ -369,11 +408,13 @@ export const History: React.FC = () => {
                 return (
                   <motion.div
                     key={report.id}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, delay: index * 0.05 }}
+                    custom={index}
+                    variants={historyCardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover={{ y: -6 }}
                     onClick={() => setSelectedReport(report)}
-                    className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-all duration-200 flex flex-col gap-4"
+                    className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-colors duration-200 flex flex-col gap-4"
                   >
                     {/* Card top: date + actions */}
                     <div className="flex items-start justify-between gap-2">
@@ -418,9 +459,10 @@ export const History: React.FC = () => {
                       {/* Animated bill bar — blue→green gradient */}
                       <div className="mt-2 h-1.5 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
                         <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${barWidth}%` }}
-                          transition={{ duration: 0.7, delay: index * 0.06 + 0.25, ease: "easeOut" }}
+                          custom={{ index, barWidth }}
+                          variants={historyBarVariants}
+                          initial="hidden"
+                          animate="visible"
                           className="h-full rounded-full bg-gradient-to-r from-primary-blue to-primary-green"
                         />
                       </div>
@@ -463,15 +505,19 @@ export const History: React.FC = () => {
         {selectedReport && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 print-modal-parent">
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              variants={modalOverlayVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               onClick={() => setSelectedReport(null)}
               className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              variants={modalContentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               className="relative bg-white/95 dark:bg-slate-950/90 backdrop-blur-md w-full max-w-2xl rounded-3xl border border-slate-200/60 dark:border-slate-850 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 text-left"
             >
               {/* ─── PRINT ONLY MODAL HEADER ────────────────────────────────────────── */}

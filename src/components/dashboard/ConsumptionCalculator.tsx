@@ -86,6 +86,39 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
   onAnalyze
 }) => {
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({});
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasAnimated(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const listVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.03
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
+  const currentListVariants = hasAnimated ? undefined : listVariants;
+  const currentItemVariants = hasAnimated ? undefined : itemVariants;
 
   const toggleUnits = (appId: string) => {
     setExpandedUnits(prev => ({
@@ -159,17 +192,9 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
 
       {/* Appliance Config List */}
       <motion.div 
-        variants={{
-          hidden: { opacity: 0 },
-          show: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.05
-            }
-          }
-        }}
-        initial="hidden"
-        animate="show"
+        variants={currentListVariants}
+        initial={hasAnimated ? undefined : "hidden"}
+        animate={hasAnimated ? undefined : "show"}
         className="space-y-4 max-h-[410px] overflow-y-auto pr-2 py-2 text-left"
       >
         {activeAppliances.length === 0 ? (
@@ -194,11 +219,8 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
             return (
               <motion.div 
                 key={app.id} 
-                variants={{
-                  hidden: { opacity: 0, y: 15 },
-                  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } }
-                }}
-                className="p-5 rounded-[24px] border border-slate-200/50 dark:border-slate-800/40 bg-white/60 dark:bg-slate-900/30 backdrop-blur-md shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700/80 transition-all duration-300 relative overflow-hidden space-y-4"
+                variants={currentItemVariants}
+                className="p-5 rounded-[24px] border border-slate-200/50 dark:border-slate-800/40 bg-white/60 dark:bg-slate-900/30 backdrop-blur-md shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700/80 transition-colors duration-300 relative overflow-hidden space-y-4"
               >
                 {/* Appliance Info and Quantity control */}
                 <div className="flex items-center justify-between relative z-10">

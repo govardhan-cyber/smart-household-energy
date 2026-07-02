@@ -55,6 +55,87 @@ const COLORS = [
   { bg: "bg-slate-50 dark:bg-slate-800/40",     icon: "text-slate-500 dark:text-slate-400",     bar: "bg-slate-400 dark:bg-slate-550",     border: "border-slate-100 dark:border-slate-800/60",       glow: "card-client-slate"   },
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as any } 
+  }
+};
+
+const heroContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
+
+const heroItemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 280, damping: 24 } },
+};
+
+const savingsNumberVariants = {
+  hidden: { opacity: 0, scale: 0.88 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { delay: 0.3, type: "spring" as const, stiffness: 220, damping: 18 }
+  }
+};
+
+const heroBadgeVariants = {
+  hidden: { opacity: 0, x: -8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: 0.42 + i * 0.09, type: "spring" as const, stiffness: 220, damping: 22 }
+  })
+};
+
+const biggestConsumerCardVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as any, delay: 0.05 }
+  }
+};
+
+const applianceTileVariants = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { delay: i * 0.06 }
+  })
+};
+
+const recommendationsPanelVariants = {
+  hidden: { opacity: 0, x: 10 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.45, delay: 0.12 }
+  }
+};
+
+const recommendationItemVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: 0.2 + i * 0.08 }
+  })
+};
+
+const tipStripVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { delay: 0.3 }
+  }
+};
+
 // ── 1. Hero Card ───────────────────────────────────────────────────────────────
 function HeroCard({
   userName, savingsPotential, onRunAudit, momTrend, vsAvgTrend,
@@ -86,10 +167,10 @@ function HeroCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative rounded-3xl overflow-hidden h-[320px] group shadow-lg hover:shadow-xl transition-all duration-500 border border-white/60 dark:border-slate-700/50"
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      className="relative rounded-3xl overflow-hidden h-[320px] group shadow-lg hover:shadow-xl transition-shadow duration-500 border border-white/60 dark:border-slate-700/50"
     >
       {/* ── Full-card background: sky gradient + house image ── */}
       <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-850 dark:to-indigo-950/60" />
@@ -116,12 +197,12 @@ function HeroCard({
       {/* ── Left: content panel — always above image ── */}
       <motion.div
         className="relative z-20 h-full flex flex-col justify-between p-7 sm:p-8 w-full sm:max-w-[50%] lg:max-w-[52%]"
-        variants={container}
+        variants={heroContainerVariants}
         initial="hidden"
-        animate="show"
+        animate="visible"
       >
         {/* Top: Greeting */}
-        <motion.div variants={item} className="space-y-0.5">
+        <motion.div variants={heroItemVariants} className="space-y-0.5">
           <p className="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
             <span>{greetingEmoji}</span>
             <span>{greeting}</span>
@@ -140,16 +221,16 @@ function HeroCard({
         </motion.div>
 
         {/* Middle: Savings amount */}
-        <motion.div variants={item} className="space-y-1">
+        <motion.div variants={heroItemVariants} className="space-y-1">
           <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
             Your home could save
           </p>
           <div className="flex items-baseline gap-1.5">
             <motion.span
               className="text-[2.6rem] sm:text-5xl font-black leading-none bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 bg-clip-text text-transparent tabular-nums"
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 220, damping: 18 }}
+              variants={savingsNumberVariants}
+              initial="hidden"
+              animate="visible"
             >
               ₹{savingsPotential.toLocaleString("en-IN")}
             </motion.span>
@@ -158,7 +239,7 @@ function HeroCard({
         </motion.div>
 
         {/* Badges */}
-        <motion.div className="flex flex-wrap gap-2" variants={item}>
+        <motion.div className="flex flex-wrap gap-2" variants={heroItemVariants}>
           {badges.map((b: any, i: number) => {
             let badgeStyle = "bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 backdrop-blur-sm";
             if (b.type === "positive") {
@@ -171,9 +252,10 @@ function HeroCard({
             return (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.42 + i * 0.09, type: "spring", stiffness: 220, damping: 22 }}
+                custom={i}
+                variants={heroBadgeVariants}
+                initial="hidden"
+                animate="visible"
                 whileHover={{ scale: 1.05 }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border shadow-sm cursor-default select-none transition-transform duration-200 ${badgeStyle}`}
               >
@@ -185,7 +267,7 @@ function HeroCard({
         </motion.div>
 
         {/* CTA Button */}
-        <motion.div variants={item}>
+        <motion.div variants={heroItemVariants}>
           <motion.button
             whileHover={{
               scale: 1.04,
@@ -274,10 +356,10 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      className={`relative card-client ${theme.cardGlow} bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[330px] group hover:shadow-lg transition-all duration-300 overflow-hidden`}
+      variants={biggestConsumerCardVariants}
+      initial="hidden"
+      animate="visible"
+      className={`relative card-client motion-card ${theme.cardGlow} bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-955/60 dark:to-blue-955/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 flex flex-col justify-between h-[330px] group hover:shadow-lg transition-shadow duration-300 overflow-hidden`}
     >
       {/* Decorative Glow Blob */}
       <div className={`absolute top-0 right-0 -mt-10 -mr-10 w-44 h-44 ${theme.glow} rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-700`} />
@@ -319,7 +401,7 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
                   strokeWidth={strokeWidth}
                   fill="transparent"
                   strokeDasharray={circumference}
-                  initial={{ strokeDashoffset: circumference }}
+                  initial={false}
                   animate={{ strokeDashoffset }}
                   transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
                   strokeLinecap="round"
@@ -374,11 +456,11 @@ function ApplianceBreakdown({ items }: {
           return (
             <motion.div
               key={item.name}
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.06 }}
-              whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)" }}
-              className={`card-client ${col.glow} group ${col.bg} ${col.border} border rounded-2xl p-3 sm:p-4 flex flex-col items-center gap-1.5 cursor-default transition-all duration-300 text-center w-full h-full`}
+              custom={i}
+              variants={applianceTileVariants}
+              initial="hidden"
+              animate="visible"
+              className={`card-client motion-card ${col.glow} group ${col.bg} ${col.border} border rounded-2xl p-3 sm:p-4 flex flex-col items-center gap-1.5 cursor-default transition-shadow duration-300 text-center w-full h-full`}
             >
               <div className={`w-11 h-11 rounded-full ${col.bg} border ${col.border} flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md`}>
                 <AppIcon name={item.name} cls={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${col.icon}`} />
@@ -623,10 +705,10 @@ function AIRecommendationsPanel({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.45, delay: 0.12 }}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-all duration-300"
+      variants={recommendationsPanelVariants}
+      initial="hidden"
+      animate="visible"
+      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/60 shadow-sm p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-shadow duration-300"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -644,11 +726,11 @@ function AIRecommendationsPanel({
         {recs.map((rec, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + i * 0.08 }}
-            whileHover={{ boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)" }}
-            className={`card-client ${rec.glow} group bg-white dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-all duration-300 shadow-sm`}
+            custom={i}
+            variants={recommendationItemVariants}
+            initial="hidden"
+            animate="visible"
+            className={`card-client motion-card ${rec.glow} group bg-white dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-shadow duration-300 shadow-sm`}
           >
             <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
               <div className={`${rec.color} transition-transform duration-300 group-hover:scale-110`}>{rec.icon}</div>
@@ -684,9 +766,9 @@ function AIRecommendationsPanel({
 function TipStrip({ tip }: { tip: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.3 }}
+      variants={tipStripVariants}
+      initial="hidden"
+      animate="visible"
       className="flex items-center gap-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl px-4 sm:px-5 py-3 cursor-default hover:bg-blue-100/60 dark:hover:bg-blue-950/30 transition-colors group"
     >
       <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/35 flex items-center justify-center shrink-0">

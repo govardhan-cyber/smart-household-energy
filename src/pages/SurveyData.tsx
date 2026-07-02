@@ -332,7 +332,8 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.25)] hover:border-blue-500/30 dark:hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between [backface-visibility:hidden] [transform-style:preserve-3d] group"
+          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.25)] hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-blue-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -356,7 +357,8 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.25)] hover:border-orange-500/30 dark:hover:border-orange-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between [backface-visibility:hidden] [transform-style:preserve-3d] group"
+          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.25)] hover:border-orange-500/30 dark:hover:border-orange-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-orange-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -381,7 +383,8 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(234,179,8,0.25)] hover:border-yellow-500/30 dark:hover:border-yellow-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between [backface-visibility:hidden] [transform-style:preserve-3d] group"
+          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(234,179,8,0.25)] hover:border-yellow-500/30 dark:hover:border-yellow-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-yellow-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -407,7 +410,8 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between [backface-visibility:hidden] [transform-style:preserve-3d] group"
+          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-emerald-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">

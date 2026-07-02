@@ -1,0 +1,64 @@
+Nested tables count: 7
+
+--- TABLE 0 (17x2) ---
+  Row 0: ['AI', 'Artificial Intelligence']
+  Row 1: ['API', 'Application Programming   Interface']
+  Row 2: ['CSS', 'Cascading Style Sheets']
+  Row 3: ['DISCOM', 'Distribution Company (Electricity Board)']
+  Row 4: ['FAQ', 'Frequently Asked Questions']
+  Row 5: ['HTML', 'Hyper Text Markup Language']
+  Row 6: ['IoT', 'Internet of Things']
+  Row 7: ['JSON', 'JavaScript Object Notation']
+  Row 8: ['JSX', 'JavaScript XML']
+  Row 9: ['OCR', 'Optical Character Recognition']
+  Row 10: ['ROI', 'Return on Investment']
+  Row 11: ['SPA', 'Single Page Application']
+  Row 12: ['SVG', 'Scalable Vector Graphics']
+  Row 13: ['TSX', 'TypeScript XML']
+  Row 14: ['UI', 'User Interface']
+  Row 15: ['UX', 'User Experience']
+  Row 16: ['Vite', 'Frontend Tooling Framework (Fast Build Tool)']
+
+--- TABLE 1 (8x4) ---
+  Row 0: ['Figure 4.1', 'System Architecture Block Diagram', '8', '8']
+  Row 1: ['Figure 4.2', 'Framer Motion Animation State Transition Chart', '10', '10']
+  Row 2: ['Figure 5.1', 'Split-Screen Login and Registration Layout', 'Split-Screen Login and Registration Layout', '12']
+  Row 3: ['Figure 5.2', 'Interactive Main Dashboard Tab Selector', 'Interactive Main Dashboard Tab Selector', '13']
+  Row 4: ['Figure 5.3', 'AI Home Audit Laser Sweep Scanning Simulation', 'AI Home Audit Laser Sweep Scanning Simulation', '14']
+  Row 5: ['Figure 5.4', 'Solar ROI Interactive Sizing Capacities & 3D Canvas', 'Solar ROI Interactive Sizing Capacities & 3D Canvas', '15']
+  Row 6: ['Figure 5.5', 'Bill Analyzer Multi-Card AI Insight Breakdown', 'Bill Analyzer Multi-Card AI Insight Breakdown', '16']
+  Row 7: ['Figure 5.6', 'DISCOM Slab Administration Editor UI', 'DISCOM Slab Administration Editor UI', '17']
+
+--- TABLE 2 (4x3) ---
+  Row 0: ['Table 2.1', 'Literature Review & Comparative Analysis of Existing Systems', '5']
+  Row 1: ['Table 3.1', 'Standard Domestic Appliance Load Estimations', '6']
+  Row 2: ['Table 4.1', 'DISCOM Tariff Database Structure in Cloud Firestore', '11']
+  Row 3: ['Table 5.1', 'Interactive Solar Sizing & Module Specifications Grid', '15']
+
+--- TABLE 3 (4x4) ---
+  Row 0: ['System / Product', 'Key Features', 'Strengths', 'Limitations']
+  Row 1: ['Hardware IoT Monitors (e.g., Sense, Emporia)', 'Clamps onto main breakers, measures current waveforms to detect appliances.', 'Very accurate real-time data, sub-second tracking.', "Expensive hardware installation, requires electrician, doesn't parse bills or handle manual solar ROI."]
+  Row 2: ['Utility Portals (DISCOM websites)', 'Provides historical bills and monthly bar graphs.', 'Reliable utility data.', 'Static charts, no predictive modeling, no appliance-level advice, fixed to utility rules with no user simulation.']
+  Row 3: ['Static Energy Web Apps', 'Form-based inputs for basic appliance load totals.', 'Free and simple to use.', 'Outdated interfaces, lacks animations, tables fail on mobile viewports, lacks real-time database syncing or AI helper capabilities.']
+
+--- TABLE 4 (6x4) ---
+  Row 0: ['Appliance Type', 'Standard Wattage (W)', 'Average Daily Use (Hours)', 'Est. Monthly Energy (kWh)']
+  Row 1: ['Air Conditioner (1.5 Ton, Inverter)', '1500 W', '8.0 hours', '360.0 kWh']
+  Row 2: ['Refrigerator (Double Door)', '250 W', '24.0 hours (active 50% cycle)', '90.0 kWh']
+  Row 3: ['Ceiling Fan (BLDC)', '35 W', '12.0 hours', '12.6 kWh']
+  Row 4: ['LED Television (55 inch)', '100 W', '4.0 hours', '12.0 kWh']
+  Row 5: ['Induction Cooktop', '1800 W', '1.5 hours', '81.0 kWh']
+
+--- TABLE 5 (5x4) ---
+  Row 0: ['Field Name', 'Data Type', 'Description', 'Example Value']
+  Row 1: ['stateName', 'string', 'Identifier for regional state utility.', "'Maharashtra (MSEDCL)'"]
+  Row 2: ['fixedCharge', 'number', 'Monthly static fee added for meter connection.', '125.00']
+  Row 3: ['taxRate', 'number', 'Percentage of duty tax added to subtotal.', '0.16 (16%)']
+  Row 4: ['slabs', 'array of objects', 'JSON array representing tiered units and corresponding charges.', "[{ 'limit': 100, 'rate': 4.5 }, { 'limit': 300, 'rate': 7.2 }]"]
+
+--- TABLE 6 (5x5) ---
+  Row 0: ['System Size', 'Required Modules', 'Roof Area Required', 'Est. Cost', '25-Yr Savings']
+  Row 1: ['1 - 2 kW (Standard)', '4 - 8 Panels', '80 - 160 sq ft', '₹65,000', '₹4.5 Lakhs']
+  Row 2: ['3 - 4 kW (Popular)', '12 - 16 Panels', '240 - 320 sq ft', '₹1,20,000', '₹9.2 Lakhs']
+  Row 3: ['5 kW (Heavy)', '20 Panels', '400 sq ft', '₹1,60,000', '₹12.5 Lakhs']
+  Row 4: ['10 kW (Commercial)', '40 Panels', '800 sq ft', '₹3,10,000', '₹26.0 Lakhs']

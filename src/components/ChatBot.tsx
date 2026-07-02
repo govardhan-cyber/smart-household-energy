@@ -11,22 +11,12 @@ interface ChatBotLogoProps {
 
 const ChatBotLogo: React.FC<ChatBotLogoProps> = ({ className = "w-10 h-10", isHovered = false }) => {
   return (
-    <div className={`relative shrink-0 select-none ${className}`}>
-      {/* Spinning outer gradient ring */}
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
-        className="absolute -inset-[1.5px] rounded-full"
-        style={{
-          background: "conic-gradient(from 0deg, #2563eb, #06b6d4, #10b981, #2563eb)",
-          borderRadius: "50%"
-        }}
-      />
-      {/* Static gap ring to frame the image */}
-      <div className="absolute inset-[1.5px] rounded-full bg-white z-[1]" />
-
-      {/* Outer ambient glow */}
-      <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-blue-500/20 via-cyan-500/10 to-emerald-500/20 blur-[8px] opacity-60" />
+    <div className={`relative shrink-0 select-none rounded-full overflow-hidden ${className}`}>
+      {/* Translucent Glassmorphic Background */}
+      <div className="absolute inset-0 rounded-full bg-white/15 dark:bg-white/10 backdrop-blur-[6px]" />
+      
+      {/* Soft Ambient Internal Glow */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/15 via-blue-500/5 to-emerald-500/15 opacity-80" />
 
       {/* Avatar Image container with bob animation */}
       <motion.div
@@ -38,12 +28,12 @@ const ChatBotLogo: React.FC<ChatBotLogoProps> = ({ className = "w-10 h-10", isHo
           ? { duration: 0.4 }
           : { repeat: Infinity, duration: 2.5, ease: "easeInOut" }
         }
-        className="absolute inset-[1.5px] rounded-full overflow-hidden z-[2]"
+        className="absolute inset-[1.5px] rounded-full overflow-hidden flex items-center justify-center z-[2]"
       >
         <img
           src={chatbotLogo}
           alt="AI Energy Assistant"
-          className="w-full h-full object-cover"
+          className="w-[90%] h-[90%] object-contain"
         />
       </motion.div>
     </div>
@@ -450,7 +440,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-13 h-13 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:scale-105 hover:shadow-[0_0_25px_rgba(37,99,235,0.55)] transition-all cursor-pointer relative group border border-white/10 overflow-hidden"
+          className="w-13 h-13 rounded-full bg-white/10 dark:bg-slate-900/35 backdrop-blur-[12px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:scale-105 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all cursor-pointer relative group overflow-hidden text-slate-800 dark:text-white"
         >
           {isOpen ? (
             <X className="w-5 h-5 relative z-10" />

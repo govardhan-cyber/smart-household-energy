@@ -5,9 +5,17 @@ export const ThreeCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+  const isVisibleRef = useRef(true);
 
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current) return;
+
+    // Use IntersectionObserver to pause loop when out of viewport
+    const visObserver = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+    }, { threshold: 0.01 });
+
+    visObserver.observe(containerRef.current);
 
     // --- SETUP SCENE, CAMERA, RENDERER ---
     const scene = new THREE.Scene();
@@ -136,7 +144,7 @@ export const ThreeCanvas: React.FC = () => {
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      if (document.hidden || window.matchMedia("print").matches) return;
+      if (!isVisibleRef.current || document.hidden || window.matchMedia("print").matches) return;
 
       const elapsed = clock.getElapsedTime();
 
@@ -197,6 +205,7 @@ export const ThreeCanvas: React.FC = () => {
     return () => {
       cancelAnimationFrame(animId);
       ro.disconnect();
+      visObserver.disconnect();
       themeObs.disconnect();
       window.removeEventListener("mousemove", onMM);
       

@@ -22,6 +22,18 @@ import { AIHomeAudit } from "../components/dashboard/AIHomeAudit";
 import { DashboardWelcomeState } from "../components/dashboard/DashboardHero";
 import { PremiumDashboard } from "../components/dashboard/PremiumDashboard";
 
+const tabVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { duration: 0.2, ease: "easeInOut" as const } 
+  },
+  exit: { 
+    opacity: 0, 
+    transition: { duration: 0.2, ease: "easeInOut" as const } 
+  }
+};
+
 
 // Count-up/down animation component for premium feel
 const AnimatedNumber: React.FC<{
@@ -983,10 +995,10 @@ export const Dashboard: React.FC = () => {
         {renderedTab === "solar" && (
           <motion.div
             key="solar"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            variants={tabVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="w-full"
           >
             <SolarCalculator tariffState={user?.tariffState || "ap"} activeTheme={activeTheme} />
@@ -996,10 +1008,10 @@ export const Dashboard: React.FC = () => {
         {renderedTab === "audit" && (
           <motion.div
             key="audit"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            variants={tabVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="w-full"
           >
             <AIHomeAudit 
@@ -1015,10 +1027,10 @@ export const Dashboard: React.FC = () => {
         {renderedTab === "wizard" && (
           <motion.div
             key="wizard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            variants={tabVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="w-full space-y-8"
           >
             {activeAppliances.length === 0 && !hasInitiated ? (
@@ -1112,29 +1124,19 @@ export const Dashboard: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
                   {/* STEP 1 CONTENT: Appliance selector grid */}
                   {currentStep === 1 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="space-y-6"
-                    >
+                    <div className="space-y-6">
                       <ApplianceSelector
                         appliances={appliances}
                         toggleAppliance={toggleAppliance}
                         onNext={() => setCurrentStep(2)}
                         hasSelection={activeAppliances.length > 0}
                       />
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* STEP 2 CONTENT: Quantities and daily sliders */}
                   {currentStep === 2 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className=""
-                    >
+                    <div className="">
                       <ConsumptionCalculator
                         activeAppliances={activeAppliances}
                         updateQuantity={updateQuantity}
@@ -1148,17 +1150,12 @@ export const Dashboard: React.FC = () => {
                         onBack={() => setCurrentStep(1)}
                         onAnalyze={handleAnalyze}
                       />
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* STEP 3 CONTENT: Calculation report details */}
                   {currentStep === 3 && analysisResult && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className="space-y-6"
-                    >
+                    <div className="space-y-6">
                       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <div>
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 text-left">
@@ -1273,7 +1270,7 @@ export const Dashboard: React.FC = () => {
                           <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
               </div>

@@ -1,0 +1,199 @@
+SCREENSHOTS SUMMARY
+===================
+
+File: Screenshot 2026-06-22 123848.png
+Key Categories: Appliance Audit, Bill Analyzer, Settings/Slabs
+Snippet: Smart Household Energy Consumption & Saving Analysis @ Built for AP DISCOM LT-l Slab Billing • FAQ (Y Sign in Get started ?459 estimated Make your home energy cheaper. Pick your appliances, drag a sli
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis @ Built for AP DISCOM LT-l Slab Billing • FAQ (Y Sign in Get started ?459 estimated Make your home energy cheaper. Pick your appliances, drag a slider, and get an instant monthly estimate with slab-accurate billing and personalized savings tips — tailored for Andhra Pradesh DISCOMs. THIS MONTH 132 kWh Estimated bill ?459 AC Fridge Fan -18% High 72 kWh Medium 36 kWh Low 24 kWh Create free account I already have an account Slab o Tip: Shift AC to 260C after 10 pm to drop a billing slab and save ?312/month. -accurate +2k Trusted by 2,000+ households in AP DISCOM verified Eco Focused
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 153740.png
+Key Categories: Bill Analyzer
+Snippet: Smart Household Energy Consumption & Saving Analysis + EnergyAI SMART ENERGY ANALYTICS Monitor. Analyse. Save Energy. Track your household energy consumption, get Al-powered bill insights, and reduce 
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis + EnergyAI SMART ENERGY ANALYTICS Monitor. Analyse. Save Energy. Track your household energy consumption, get Al-powered bill insights, and reduce your carbon footprint. FAQ (Y Create account Already have an account? Sign In Full Name R John Doe Email Address name@example.com Password Confirm Password Sign up OR Sign in Get started 40% Avg. savings Al Bill analysis 100% Data private 0 2026 EnergyAl • Secure & Private Sign up with Google @ Secure data isolation • Firebase encrypted
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 153913.png
+Key Categories: Appliance Audit, Solar ROI, Bill Analyzer, Settings/Slabs
+Snippet: Smart Household Energy Consumption & Saving Analysis Good Afternoon Govardhan Your home could save e508 per month. Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Solar ROI Calcul
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis Good Afternoon Govardhan Your home could save e508 per month. Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Solar ROI Calculator Al Home Audit 0% vs last month n." 24% vs typical home Govardhan RUN ENERGY AUDIT SOLAR OFFSET 100% With recommended 2.5 kW system MONTHLY CONSUMPTION 279 kWh Based on active audit configuration R ENERGY HEALTH SCORE Excellent Status Top 5% Efficient Homes +15 Since Last Audit ESTIMATED BILL a,305 calculated using ANDHRA PRADESH (APSPDCL - SOUTHERN) rates 94 | 100 GRADE POTENTIAL SAVINGS e508 Apply smart appliance settings QUICK ACTIONS Speed up your energy diagnostics workflow. Run Energy Audit Solar Planner Calculate ROI O Settings Manage preferences
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 154132.png
+Key Categories: Appliance Audit, Solar ROI, Bill Analyzer, Settings/Slabs
+Snippet: Smart Household Energy Consumption & Saving Analysis O ADVANCED DIAGNOSTICS AI Home Energy Audit Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Govardhan Solar ROI Calculator RUN
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis O ADVANCED DIAGNOSTICS AI Home Energy Audit Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Govardhan Solar ROI Calculator RUN HOME AUDIT Scan your appliance load, identify baseline waste ratios, and generate slab-accurate saving recommendations. 91 SCORE EXCELLENT ENERGY IMPACT BREAKDOWN Identify which devices consume the most units. Refrigerator (x Air Cooler (x CRITICAL A1 INSIGHTS ABOVE BASELINE CONSUMPTION Your monthly usage of 293 kWh is above the regional baseline of 250 kWh, increasing your unit slab rate. Estimated Units: 293 kWh/mo 158 kWh (54%) 48 kWh (16%) Estimated Bill: «,425 - SOLAR SAVINGS POTENTIAL 25 KWSIZE Based on your consumption of 293 kWh, a 2.5 kW solar system can offset 100% of your electricity grid dependency, saving about Al Home Audit AUDIT LOGS HISTORY Sync past audit reports directly with your account. Score: 92 (Excellent) JUN 20, 2026 Score: 91 (Excellent) JUN 19, 2026 Score: 91 (Excellent) JUN 19, 2026 Score: 100 (Excellent) 100 JUN 19, 2026 Score: 93 (Excellent) 93 JUN 18, 2026 Score: 75 (Good) 75 JUN 18, 2026 Score: 75 (Good) 75 JUN 18, 2026 AUDIT ECO IMPACT
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 154415.png
+Key Categories: Appliance Audit, Solar ROI, Bill Analyzer, Settings/Slabs
+Snippet: Smart Household Energy Consumption & Saving Analysis SOLAR SAVINGS PLANNER Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Solar ROI Calculator Al Home Audit Configure your roofto
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis SOLAR SAVINGS PLANNER Dashboard Home Audit Wizard Bill Analyzer My History Survey Data FAQ Solar ROI Calculator Al Home Audit Configure your rooftop space, monthly bill, and solar cell technology. SOLAR RECOMMENDATION 3.0 kW System 24,888 Saved Every Year INSTALLATION STATE SOLAR CELL TECHNOLOGY MMENDE TOPCon Premium Efficiency: 26% Lifespan: 30 Years Average Monthly Bill e3,ooo es,ooo Available Roof Space Area O 300 sqn SUBSIDY PRICE LOOKUP CITY Payback in 5.2 Years INSTALL SOLAR SOLAR READINESS GOOD CANDIDATE High suitability for residential solar setup. Govardhan YIELD: 100% Pune (Maharashtra) Mono-PERC Standard Efficiency: 22.5% Lifespan: 25 Years e10,ooo ROOFTOP PLACEMENT MAP ISOMETRIC ROOFTOP 100 3,000 05,ooo 300 sq ft Usable Area 300 sq ft Solar Yield 360 kWh/mo DISCOM Provider GOOD POTENTIAL Score >75 indicates high suitability. PLANNER ROOF TILT PITCHED TOGGLE SHADING C) Andhra Pradesh Why it's a good fit Ample roof space 8 high yield for maximum savings. Score based on roof, yield, and DISCOM provid«. FLAT (00) (150) PANELS: 6 (0 SHADED) ORIENTATION SOUTH EAST WEST COVERAGE: 100% FEASIBILITY REVIEW HIGHLY RECOMMENDED
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 154559.png
+Key Categories: Bill Analyzer
+Snippet: ELECTRICITY BILL ANALYZER Upload images or PDFs to extract consumption, charges, and Al intelligence insights. UPLOAD UTILITY BILL Drop your electricity bill here or click to upload Supports JPG, PNG,
+Full Text sample:
+  ELECTRICITY BILL ANALYZER Upload images or PDFs to extract consumption, charges, and Al intelligence insights. UPLOAD UTILITY BILL Drop your electricity bill here or click to upload Supports JPG, PNG, WEBP, PDF (Max IOMB) Smart Household Energy Consumption & Saving Analysis (7e.a*) (Is.a*) Dashboard Bill Analyzer My History Survey Data FAQ & EXPORT CSV Govardhan e PRINT PDF REPORT EXTRACTED CONSUMPTION 132 kWh JUNE 2026 CONSUMER METADATA CONSUMER NAME ERO Distribution Category EXTRACTED BILL AMOUNT 098 TARIFF: AP DOMESTIC LT-l ENERGY EFFICIENCY SCORE 91 noo BEE GRADE RATING GRADE COST FORECAST (NEXT MONTH) e1452 CONFIDENCE INDEX: 95% CHARGE STRUCTURE BREAKDOWN Energy Charge Fixed Charge *629 *135 TOTAL BILL Ø CARBON FOOTPRINT C02 EMISSION INDEX UNITS 132 kWh FACTOR kg\kWh
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 154748.png
+Key Categories: Settings/Slabs
+Snippet: DISCOM Tariff Administration DATABASE ADMIN Hide Admin Editor Modify global slab rates and subsidies stored in Firestore. All user dashboards update instantly. TARIFF DATABASE EDITOR Edit slab interva
+Full Text sample:
+  DISCOM Tariff Administration DATABASE ADMIN Hide Admin Editor Modify global slab rates and subsidies stored in Firestore. All user dashboards update instantly. TARIFF DATABASE EDITOR Edit slab intervals, charges, and state-wide subsidies. Select Electricity Board to Edit APSPDCL (Southern) Display Title Andhra Pradesh (APSPDCL - Southern) Subsidy Value 184.5 TARIFF SLAB BREAKDOWN SLAB LABEL RATE LABEL O — 30 units tl.90 SLAB LABEL RATE LABEL 31-75 units 0.00 Subsidy Type Fixed Amount Reduction (e) Min Gross Charge for Subsidy (e) ACTIVE BOARD: AP_APSPDCL + Add Slab o MAX UNITS 30 MAX UNITS 45 SLAB OFFSET o SLAB OFFSET 30
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 154834.png
+Key Categories: Settings/Slabs
+Snippet: SLAB LABEL 76 -125 units RATE LABEL ?4.50 MAX UNITS 50 SLAB OFFSET 75 B update DISCOM Tariff Rates Save Configurations
+Full Text sample:
+  SLAB LABEL 76 -125 units RATE LABEL ?4.50 MAX UNITS 50 SLAB OFFSET 75 B update DISCOM Tariff Rates Save Configurations
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160036.png
+Key Categories: Appliance Audit, Solar ROI, Bill Analyzer, Profile Page
+Snippet: POTENTIAL SAVINGS: DETAILED PERFORMANCE BREAKDOWN Consumption E) Carbon Impact + SMART ENERGY INSIGHTS UPGRADE REFRIGERATOR 50 | 50 20 / 20 e5081 month O Explain Score 14 | 20 10 | 10 Appliance Effici
+Full Text sample:
+  POTENTIAL SAVINGS: DETAILED PERFORMANCE BREAKDOWN Consumption E) Carbon Impact + SMART ENERGY INSIGHTS UPGRADE REFRIGERATOR 50 | 50 20 / 20 e5081 month O Explain Score 14 | 20 10 | 10 Appliance Efficiency Solar Gen Potential MEDIUM Analyze your home Save up to Z500/mo Start Audit RECENT ACTIVITY Audit completed HARD Payback in 4.5 yrs Plan Solar Score improved +0 Update profile Configure Potential savings e.. EASY Switching to a 5-star energy rated refrigerator could save you ROOF SOLAR POTENTIAL ACTIVE Your roof space supports a 2.5 kW system. It is estimated to ELIMINATE STANDBY LOADS Standby power draws —50/0 of your energy. Unplugging el,334/year. ESTIMATED IMPACT: Appliances Select devices n,334/yr offset 100% of your electricity demand. ESTIMATED IMPACT: Usage Set hours & days 100% Offset Analysis Review usage appliances when not in use saves ?783/year. ESTIMATED IMPACT: Recommendations Save energy 0831yr
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160351.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: Appliances Select devices Select appliances in your home Usage Set hours & days Analysis Review usage Summary Recommendations Save energy Click each card to toggle appliances on or off. You'll specify
+Full Text sample:
+  Appliances Select devices Select appliances in your home Usage Set hours & days Analysis Review usage Summary Recommendations Save energy Click each card to toggle appliances on or off. You'll specify quantities on the next step. @ ESSENTIAL APPLIANCES (MUST ADD) Calculations based on selected options. ESTIMATED MONTHLY USAGE 279 kWh (Units) ESTIMATED MONTHLY BILL e1305 Refrigerator Double Door 3-star LED Bulb gw-12W LED Bulbs Water Heater (Geyser) 15L Storage Geyser Air Conditioner 1.5 Ton 5-Star Inverter Television 55" smart LED TV Ceiling Fan High-speed BLDC Fan Washing Machine Fully Automatic Front Load Next: Configure Usage After Subsidy Andhra Pradesh (APSPDCL - Southern) Net You spend 24% more than similar homes. Average household bill: *1051 (250 kWh) BUDGET TRACKING Safe Zone: Consuming within your budget target. ?1305 / 0000
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160423.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: Appliances Select devices Configure appliances usage Adjust how many units you own and how many hours they run daily. LED Bulb Usage Set hours & days Analysis Review usage Summary Recommendations Save
+Full Text sample:
+  Appliances Select devices Configure appliances usage Adjust how many units you own and how many hours they run daily. LED Bulb Usage Set hours & days Analysis Review usage Summary Recommendations Save energy o PRESETS: 12 WATTS LED Bulb (SW) Tube Light (40W) Modify Selection HOW MANY UNITS? 2 Avg: 6 hrs/day 6 hrs/day 6 hrs/day Analyze & Save + Calculations based on selected options. ESTIMATED MONTHLY USAGE 279 kWh (Units) ESTIMATED MONTHLY BILL e1305 After Subsidy Configure 2 units individually Unit Durations Unit #1 usage Unit #2 usage Back Andhra Pradesh (APSPDCL - Southern) Net You spend 24% more than similar homes. Average household bill: *1051 (250 kWh) BUDGET TRACKING Safe Zone: Consuming within your budget target. ?1305 / 0000
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160450.png
+Key Categories: Appliance Audit, Bill Analyzer, Settings/Slabs
+Snippet: Appliances Select devices Analysis Completed Your calculations have been saved to your account. Usage Set hours & days Export CSV Analysis Review usage Summary Recommendations Save energy Print PDF Yo
+Full Text sample:
+  Appliances Select devices Analysis Completed Your calculations have been saved to your account. Usage Set hours & days Export CSV Analysis Review usage Summary Recommendations Save energy Print PDF Your bill is 24% more than the average similar household (Average: ?1051 for 250 kWh). Compare against the typical 250 kWh slab category. Check recommendations next to optimize your category. ANDHRA PRADESH (APSPDCL - SOUTHERN) SLAB BREAKDOWN (CALCULATED FOR 279 UNITS) Calculations based on selected options. ESTIMATED MONTHLY USAGE 279 kWh (Units) ESTIMATED MONTHLY BILL e1305 Consumption Slab O — 30 units (30.0 units) 31- 75 units (45.0 units) 76 -125 units (50.0 units) 126 - 225 units (100.0 units) 226 - 400 units (54.0 units) Gross Energy Charge: Less Govt. Subsidy: Net Energy Charges: Tariff Rate ?1.90 0.00 u.50 0.75 Charges ?57.oo e135.oo Z225.oo GOO.oo ü72.50 e1489.50 -?184.50 e1305.oo After Subsidy Andhra Pradesh (APSPDCL - Southern) Net You spend 24% more than similar homes. Average household bill: *1051 (250 kWh) BUDGET TRACKING Safe Zone: Consuming within your budget target. ?1305 / 0000 E) ENVIRONMENTAL CARBON FOOTPRINT
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160521.png
+Key Categories: Profile Page
+Snippet: Your monthly energy usage generates estimated C02 emissions of 228.8 kg. It requires 125 trees to absorb these emissions. Switch to Step 4 to see how optimizations can reduce your footprint! Back Rese
+Full Text sample:
+  Your monthly energy usage generates estimated C02 emissions of 228.8 kg. It requires 125 trees to absorb these emissions. Switch to Step 4 to see how optimizations can reduce your footprint! Back Reset @ SaaS encryption active. Data is private to your profile. Next: Recommendations >
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160615.png
+Key Categories: Appliance Audit, Bill Analyzer, Settings/Slabs
+Snippet: Appliances Select devices SAVING ADVISORY ENGINE Usage Set hours & days Analysis Review usage Energy Saving Recommendations Personalized conservation strategies designed to optimize slab utilization t
+Full Text sample:
+  Appliances Select devices SAVING ADVISORY ENGINE Usage Set hours & days Analysis Review usage Energy Saving Recommendations Personalized conservation strategies designed to optimize slab utilization thresholds and shrink your carbon footprints. Export csv Report print PDF CUSTOMIZED SAVING ACTIONS o HIGH SAVINGS Switch to LED bulbs Replace conventional bulbs with LED to save —75% energy per bulb Recommendations Save energy TOTAL POTENTIAL SAVINGS e614.71n» MEDIUM SAVINGS Set optimal refrigerator temperature Maintain 3-50C for fridge and -180C for freezer to save -150/0 SAVINGS SHARE SAVINGS 31% energy SAVINGS SHARE SAVINGS DIFFICULTY EASY IMPACT HIGH DIFFICULTY EASY IMPACT MEDIUM
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160644.png
+Key Categories: Appliance Audit, Bill Analyzer, Settings/Slabs
+Snippet: MINOR SAVINGS MEDIUM SAVINGS Eliminate standby power Unplug unused appliances or use smart power strips to cut Switch to BLDC fans Replace standard ceiling fans (75W) with 5-star brushless DC (BLDC) f
+Full Text sample:
+  MINOR SAVINGS MEDIUM SAVINGS Eliminate standby power Unplug unused appliances or use smart power strips to cut Switch to BLDC fans Replace standard ceiling fans (75W) with 5-star brushless DC (BLDC) fans (35W) to save —50% energy per fan phantom load SAVINGS SHARE SAVINGS SAVINGS SHARE SAVINGS 23% DIFFICULTY EASY IMPACT LOW DIFFICULTY EASY IMPACT HIGH o SMART APPLIANCE LOAD SCHEDULING Shift high-draw appliances to off-peak slots to minimize slab surges and maintain low bill bands. Run Washing Machine After IO PM Shift heavy wash loads to off-peak periods (10 PM — 6 AM) to align with national grid load management directives. SAVE t120/MONTH Optimize Refrigerator Vent & Placement Keep a 5-10cm gap from walls and clean condenser coils twice a year to maintain optimal heat exchange. SAVE t100/MONTH Automate TV Standby Shutoff Phantom power draws IOW-20W continuously when set-top boxes and LED TVs are left on standby overnight. SAVE t90/MONTH Maximize Natural Daylighting Position workspaces near windows and turn off LEDs in empty rooms. Consider motion sensor triggers. SAVE t80/MONTH
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160719.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: INTERACTIVE SAVINGS SIMULATOR Drag the slider to dynamically simulate the financial and environmental impact of reducing heavy appliance loads. HEAVY APPLIANCE LOAD REDUCED O 0% (NO CHANGE) CURRENT US
+Full Text sample:
+  INTERACTIVE SAVINGS SIMULATOR Drag the slider to dynamically simulate the financial and environmental impact of reducing heavy appliance loads. HEAVY APPLIANCE LOAD REDUCED O 0% (NO CHANGE) CURRENT USAGE 279 100% (FULLY OFF) NEW USAGE 257 COMPARATIVE DASHBOARD ANALYSIS Energy Usage (kWh) 279 2e1 kWh Carbon Footprint (kg C02) 229 kg (125 t SAVINGS *1951m 165 kg (-35 tr offset) Bill Projection (Z) *1305 Back to Inputs *690 C Reset Planner C START NEW AUDIT
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160736.png
+Key Categories: Appliance Audit
+Snippet: Consumption & Appliance Analytics Detailed breakdown of how your appliances drive monthly consumption. ENERGY SHARE DISTRIBUTION Appliance Energy Contribution 279 TOTAL KWH Refrigerator (57%) Air cool
+Full Text sample:
+  Consumption & Appliance Analytics Detailed breakdown of how your appliances drive monthly consumption. ENERGY SHARE DISTRIBUTION Appliance Energy Contribution 279 TOTAL KWH Refrigerator (57%) Air cooler (15%) ceiling Fan (9%) Rice cooker (4%) Wi-Fi Router (4%) Water Pump (4%) Washing Machine (3%) Television (2%) LED (1%) Laptop (1%) + Refrigerator is your primary energy driver, accounting for 57% of consumption. Target this appliance first for savings. CONSUMPTION HISTORY 6-Month Energy Trend (kWh) 225 Jan Feb Mar Apr Dashboard May Energy Flow Jun HISTORICAL COMPARISON BASIS Calculations compare your current load against seasonal parameters. Uses actual report records saved. This month you used 12% more than the average home baseline (250 kWh). Peak usage typically occurs during summer months.
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160809.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: O ENERGY REPORTS My Energy History Access, compare, and manage your previously saved energy reports. Search by date, appliance, bill amount, or consumption... SHOWING 11 OF 11 RECORDS ld! REPORTS 11 T
+Full Text sample:
+  O ENERGY REPORTS My Energy History Access, compare, and manage your previously saved energy reports. Search by date, appliance, bill amount, or consumption... SHOWING 11 OF 11 RECORDS ld! REPORTS 11 TOP USER Refrigerator + AVGBILL u,303/mo 21 JUN 2026 07:52 prn ESTIMATED BILL e1305 UNITS 279 21 JUN 2026 01:17 pm ESTIMATED BILL e1305 @ TOTAL KWH 3,066 kWh SAVINGS 22 JUN 2026 04:04 prn ESTIMATED BILL e1305 UNITS 279kWh 21 JUN 2026 07:41 pm ESTIMATED BILL e1305 SAVINGS &14.7 TOP USER Refrigerator 21 JUN 2026 07:53 pm ESTIMATED BILL e1305 Imo UNITS 279 21 JUN 2026 01:18 pm ESTIMATED BILL r1305 Imo SAVINGS &14.7 u SAVINGS &14.7 Newest First TOP USER Refrigerator
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160835.png
+Key Categories: Settings/Slabs, Profile Page
+Snippet: Govardhan govardhan4705@gmail.com My Profile O Energy History Settings Sign out
+Full Text sample:
+  Govardhan govardhan4705@gmail.com My Profile O Energy History Settings Sign out
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 160957.png
+Key Categories: Solar ROI, Bill Analyzer, Settings/Slabs, AI Chatbot
+Snippet: Energy Assistant & Ready CONTEXT-AWARE ASSISTANT Hi Govardhan Ask me anything about your energy usage. Explain my electricity bill and tariff charge breakdown Govardhan, your latest uploaded bill from
+Full Text sample:
+  Energy Assistant & Ready CONTEXT-AWARE ASSISTANT Hi Govardhan Ask me anything about your energy usage. Explain my electricity bill and tariff charge breakdown Govardhan, your latest uploaded bill from June 19th was ?898 for 132 kWh, making your average cost ?6.80 per kWh. Andhra Pradesh tariffs are structured in escalating slabs; for example, the first 30 units are el.90/unit, 31-75 units are 0.00, 76-125 sn ant-1 nn SUGGESTED QUICK ACTIONS Explain My Bill Solar Advice Reduce My Costs Carbon Footprint Energy Score Compare Homes Ask about bills, tariffs, saving tips...
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161106.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: Smart Household Energy Consumption & Saving Analysis CONSUMER METADATA (7e.aX) (Is.a*) (8. ax) Dashboard Bill Analyzer CHARGE STRUCTURE BREAKDOWN CONSUMER NAME ERO Distribution Category My History Ene
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis CONSUMER METADATA (7e.aX) (Is.a*) (8. ax) Dashboard Bill Analyzer CHARGE STRUCTURE BREAKDOWN CONSUMER NAME ERO Distribution Category My History Energy Charge Fixed Charge Tax / Duty Other Charges Survey Data *629 *135 FAQ Ø CARBON FOOTPRINT C02 EMISSION INDEX UNITS 132 EMISSION 108 KG coa Govardhan FACTOR kg/kWh CONNECTION NO Unknown SC BILLING ADDRESS CUSTOMER ID unknown CID TOTAL BILL 898 Al ENERGY INSIGHTS Extracted locally from document text via smart heuristics (Al Offline) BILLING INFORMATION BILL DATE 6/19/2026 METER READINGS PREVIOUS 1000 kWh EXPLAIN MY BILL DUE DATE 713/2026 CURRENT 1132 k A1 INTELLIGENCE Explain with Al Heuristic Parser: Extracted 132 units from document. Gemini Al was rate-limited (429). Used client-side smart regex fallback. To run full Al optimization insights, try uploading at off-peak times. PERSONALIZED ENERGY SAVING RECOMMENDATIONS Set AC to 240C Save about 12% on cooling units Replace Old Fans with BLDC Save up to 8% on continuous fan Offset needs 59 trees/mo. Unplug Idle Standby Appliances Standby phantom draws cost about dynamically. SAVINGS *119/mo ventilation loads. SAVINGS *79/mo 4% of billing rates. SAVINGS *4Ø/mo
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161140.png
+Key Categories: Solar ROI, Settings/Slabs
+Snippet: ROOFTOP SOLAR QUICK SIZING REFERENCE Standard guidelines for planning domestic systems in India based on 540W solar modules. SOLAR SYSTEM SIZE 10 kW STANDARD STANDARD POPULAR MEDI"" HOME HEAVY uSAGE C
+Full Text sample:
+  ROOFTOP SOLAR QUICK SIZING REFERENCE Standard guidelines for planning domestic systems in India based on 540W solar modules. SOLAR SYSTEM SIZE 10 kW STANDARD STANDARD POPULAR MEDI"" HOME HEAVY uSAGE COMMERCIAL NUMBER OF PANELS (540W) —2 panels —4 panels —6 panels —8 panels —10 panels —19 panels SHADOW-FREE SPACE NEEDED 100 sq ft 200 sq ft 300 sq ft 450 sq ft 500 sq ft 1,000 sq ft COST IN PUNE (WITH SUBSIDY)• -GO,ooo -u.15 Lakh -u.32 Lakh -u. 77 Lakh -t2.32 Lakh -u.87 Lakh 2026 GUIDELINES 25-YR EXPECTED SAVINGS• -es.3Lakhs Lakhs 7 -t16.11Lakhs -Ql.48 Lakhs -03.46 Lakhs Lakhs *Costs are based on SolarSquare base variant starting prices as of March 2026. Savings calculation considers a 3% annual tariff escalation rate and a 1% annual plant degradation rate. Actual costs and generation vary by configuration and local DISCOM policies.
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161153.png
+Key Categories: Solar ROI, Bill Analyzer
+Snippet: Solar Return on Investment Analytics Visualizing solar offsets, monthly utility bills, and the investment payback timeline. SEASONAL BILL COMPARISON 12-Month utility Bills g) 2550 1700 Jan SEASONAL MO
+Full Text sample:
+  Solar Return on Investment Analytics Visualizing solar offsets, monthly utility bills, and the investment payback timeline. SEASONAL BILL COMPARISON 12-Month utility Bills g) 2550 1700 Jan SEASONAL MODEL Mar Apr May Jun Aug Sep Oct Nov Dec INVESTMENT TIMELINE Cumulative Savings & Payback R) 450000 300000 150000 •150000 Yrl BREAK-EVEN PARAMETERS Yr 4 Yr10 Yr 11 Yr12 Yr13 Yr14 Yr 15 original Bill With solar Bill Simulates reduced generation in monsoon months (July-Aug) and peak production during spring (Mar- May). Solar panels will offset your bill year-round. Annual estimated utility savings reach Assumes a 3 kW setup cost of (net PM Surya Ghar subsidy) and adjustable inflation/degradation factors. Solar payback is reached in 5.2 years. Cumulative savings after 10 years will reach
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161633.png
+Key Categories: Appliance Audit, Bill Analyzer, Settings/Slabs
+Snippet: 41: SYSTEM CONFIGURATIONS Settings Control Panel Configure visual settings, notification thresholds, appliance wattages, and manage regional tariff rates. APPEARANCE Toggle light/dark visual display m
+Full Text sample:
+  41: SYSTEM CONFIGURATIONS Settings Control Panel Configure visual settings, notification thresholds, appliance wattages, and manage regional tariff rates. APPEARANCE Toggle light/dark visual display mode. Light Theme Clean, high-contrast visual palette MONTHLY ENERGY BUDGETS Dark Theme Sleek, low-light mode for energy savers (D Define your monthly spending and energy targets. Exceeding these will trigger active warning alerts on your dashboard. Target Monthly Bill 3000 Target Monthly Consumption 400 KWH
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161708.png
+Key Categories: Bill Analyzer, Settings/Slabs, Profile Page
+Snippet: Smart Household Energy Consumption & Saving Analysis Dashboard Bill Analyzer My History Survey Data FAQ Govardhan 0 ACCOUNT CONTROL CENTER My Profile Settings Manage your personal credentials, customi
+Full Text sample:
+  Smart Household Energy Consumption & Saving Analysis Dashboard Bill Analyzer My History Survey Data FAQ Govardhan 0 ACCOUNT CONTROL CENTER My Profile Settings Manage your personal credentials, customize visual avatars, track calculator report statistics, and update security parameters. Govardhan govardhan47e5@gmai1.com a Joined Activity g REPORTS 11 18 June 2026 18 June 2026 AVG BILL e1303 o Profile Information Customize your name and select an avatar picture representation. FULL NAME Govardhan SELECT AVATAR PRESET GO P Change Password For security reasons, we recommend updating your password periodically. Save Profile Sign out of account NEW PASSWORD CONFIRM NEW PASSWORD
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161741.png
+Key Categories: Appliance Audit, Bill Analyzer
+Snippet: Household Survey Analytics Explore and analyze appliance surveys and energy baselines across 30 domestic households in Andhra Pradesh. HOUSEHOLDS 30 / 30 Matched active connections AVG MONTHLY BILL e1
+Full Text sample:
+  Household Survey Analytics Explore and analyze appliance surveys and energy baselines across 30 domestic households in Andhra Pradesh. HOUSEHOLDS 30 / 30 Matched active connections AVG MONTHLY BILL e1727 overall avg: e1727 TOTAL USAGE 8100 kWh Total baseline: 8100 kWh Records Table SAVINGS POTENTIAL 0955 : 0955 Q Search by household name, member 'D, or highest energy consumer... ld! Analytics Charts Filters
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161801.png
+Key Categories: Bill Analyzer
+Snippet: Energy Consumption vs. Estimated Monthly Bill Correlation of monthly usage (kWh) and bill amount (e) across sorted households 6000 4500 3000 1500 Ramesh Priya Ananya Lakshmi Karan Divya Vikram Me era 
+Full Text sample:
+  Energy Consumption vs. Estimated Monthly Bill Correlation of monthly usage (kWh) and bill amount (e) across sorted households 6000 4500 3000 1500 Ramesh Priya Ananya Lakshmi Karan Divya Vikram Me era Harish Rajesh Kavitha Nithin Sunitha Swati Rohan Neelam Pooja Rashmi ka Allu Mahesh Prabhas Ram
+--------------------------------------------------
+
+File: Screenshot 2026-06-22 161819.png
+Key Categories: Appliance Audit
+Snippet: Highest Consumer Distribution Which appliance consumes the most power 30 HOMES AC (12) Fridge (12) water Heater (6) Avg Savings Potential by Appliance Load Average potential savings (e) grouped by num
+Full Text sample:
+  Highest Consumer Distribution Which appliance consumes the most power 30 HOMES AC (12) Fridge (12) water Heater (6) Avg Savings Potential by Appliance Load Average potential savings (e) grouped by number of appliances owned 1000 750 500 250 3 Apps 4 Apps 5 Apps 6 Apps 7 Apps
+--------------------------------------------------
+

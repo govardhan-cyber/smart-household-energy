@@ -17,7 +17,7 @@ import {
   Sun,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThreeCanvas } from "../components/ThreeCanvas";
+import { EnergyMatrixBackground } from "../components/EnergyMatrixBackground";
 import { ThreeDCard } from "../components/ThreeDCard";
 
 
@@ -401,9 +401,9 @@ export const Home: React.FC = () => {
         <div className="lg:col-span-5 relative flex flex-col items-center justify-center min-h-[500px]">
           <div className="absolute -inset-6 bg-gradient-to-tr from-primary-blue/12 to-primary-green/12 dark:from-primary-blue/20 dark:to-primary-green/20 rounded-[3rem] blur-3xl -z-10" />
 
-          {/* 3D Canvas Background */}
+          {/* Energy Matrix Background */}
           <div className="absolute inset-0 w-full h-full z-0 overflow-hidden rounded-[2.5rem]">
-            <ThreeCanvas />
+            <EnergyMatrixBackground />
           </div>
 
           {/* Dedicated card wrapper that defines the coordinate system for the card and its floating badges */}

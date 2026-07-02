@@ -18,6 +18,7 @@ interface Spark {
 
 export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-z-10" }) => {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+  const isVisibleRef = useRef(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,10 +27,16 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
   const mouseY = useMotionValue(0);
   const scaleValue = useMotionValue(1.02);
 
+  // Motion values for hardware-accelerated spotlight
+  const spotlightX = useMotionValue(typeof window !== "undefined" ? window.innerWidth / 2 : 0);
+  const spotlightY = useMotionValue(typeof window !== "undefined" ? window.innerHeight / 2 : 0);
+
   // Springs for smooth hardware acceleration
   const springX = useSpring(mouseX, { stiffness: 45, damping: 20 });
   const springY = useSpring(mouseY, { stiffness: 45, damping: 20 });
   const springScale = useSpring(scaleValue, { stiffness: 120, damping: 14 });
+  const springSpotlightX = useSpring(spotlightX, { stiffness: 80, damping: 26 });
+  const springSpotlightY = useSpring(spotlightY, { stiffness: 80, damping: 26 });
 
   const mouseRaw = useRef({ x: 0, y: 0 });
 
@@ -50,11 +57,8 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       mouseRaw.current.x = e.clientX;
       mouseRaw.current.y = e.clientY;
 
-      // Update CSS custom properties on container for spotlight hover tracking
-      if (containerRef.current) {
-        containerRef.current.style.setProperty("--mouse-x", `${e.clientX}px`);
-        containerRef.current.style.setProperty("--mouse-y", `${e.clientY}px`);
-      }
+      spotlightX.set(e.clientX);
+      spotlightY.set(e.clientY);
     };
 
     // Trigger elastic background zoom-pulse on click
@@ -73,12 +77,21 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleMouseDown);
     };
-  }, [mouseX, mouseY, scaleValue]);
+  }, [mouseX, mouseY, scaleValue, spotlightX, spotlightY]);
 
   // Particle engine for floating sparks
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Use IntersectionObserver to pause loop when out of viewport
+    const visObserver = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+    }, { threshold: 0.01 });
+
+    if (containerRef.current) {
+      visObserver.observe(containerRef.current);
+    }
 
     const ctx = canvas.getContext("2d")!;
     let W = window.innerWidth;
@@ -107,14 +120,14 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
         radius: 0.8 + Math.random() * 1.4,
         alpha: 0.1 + Math.random() * 0.5,
         decay: 0.002 + Math.random() * 0.004,
-        hue: Math.random() > 0.55 ? 160 : 190 // Emerald green vs Teal blue
+        hue: Math.random() > 0.55 ? 160 : 190
       });
     }
 
     let animId = 0;
     const animateSparks = () => {
       animId = requestAnimationFrame(animateSparks);
-      if (document.hidden || window.matchMedia("print").matches) return;
+      if (!isVisibleRef.current || document.hidden || window.matchMedia("print").matches) return;
 
       const dark = document.documentElement.classList.contains("dark");
       ctx.clearRect(0, 0, W, H);
@@ -224,7 +237,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
           alt="Luxury Technology Background"
           className={`w-full h-full object-cover transition-all duration-700 ${
             isDark 
-              ? "opacity-50 brightness-[0.75] contrast-[1.08]" 
+              ? "opacity-65 brightness-[0.82] contrast-[1.12]" 
               : "opacity-55 brightness-[1.03] contrast-[0.98]"
           }`}
         />
@@ -233,12 +246,18 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       {/* Floating Spark & Constellation Canvas Overlay */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
-      {/* Dynamic Cursor Spotlight Layer */}
-      <div 
-        className={`absolute inset-0 pointer-events-none transition-opacity duration-500 mix-blend-screen ${
+      {/* Dynamic Cursor Spotlight Layer (Hardware Accelerated translate3d) */}
+      <motion.div
+        style={{
+          x: springSpotlightX,
+          y: springSpotlightY,
+          translateX: "-50%",
+          translateY: "-50%"
+        }}
+        className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none mix-blend-screen blur-[100px] transition-opacity duration-500 ${
           isDark 
-            ? "bg-[radial-gradient(circle_300px_at_var(--mouse-x,_50%)_var(--mouse-y,_50%),rgba(52,211,153,0.06),transparent_100%)]" 
-            : "bg-[radial-gradient(circle_250px_at_var(--mouse-x,_50%)_var(--mouse-y,_50%),rgba(99,102,241,0.04),transparent_100%)]"
+            ? "bg-[radial-gradient(circle,rgba(34,211,238,0.11)_0%,transparent_70%)]" 
+            : "bg-[radial-gradient(circle,rgba(99,102,241,0.05)_0%,transparent_70%)]"
         }`}
       />
 
@@ -246,14 +265,14 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       <div 
         className={`absolute inset-0 pointer-events-none transition-colors duration-700 ${
           isDark 
-            ? "bg-[radial-gradient(circle_at_center,transparent_30%,rgba(15,23,42,0.5)_100%)] bg-gradient-to-tr from-emerald-500/5 via-transparent to-cyan-500/5" 
+            ? "bg-[radial-gradient(circle_at_center,transparent_30%,rgba(11,15,25,0.6)_100%)] bg-gradient-to-tr from-emerald-500/[0.08] via-transparent to-cyan-500/[0.08]" 
             : "bg-[radial-gradient(circle_at_center,transparent_45%,rgba(255,255,255,0.4)_100%)] bg-gradient-to-tr from-blue-500/3 via-transparent to-indigo-500/3"
         }`} 
       />
 
       {/* Tech Grid Mask */}
       <div 
-        className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.007)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.007)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)] opacity-80"
+        className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(34,211,238,0.009)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.009)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)] opacity-80"
       />
     </div>
   );
