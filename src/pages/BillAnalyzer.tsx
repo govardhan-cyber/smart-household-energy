@@ -1336,16 +1336,16 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Consumer details (Card 1) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-primary-blue/30 dark:hover:border-primary-green/30 transition-all duration-300 relative overflow-hidden group space-y-4"
+              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-primary-blue/30 dark:hover:border-primary-green/30 transition-all duration-300 relative overflow-hidden group space-y-4"
             >
               <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-primary-blue dark:bg-primary-green group-hover:scale-150 transition-transform duration-500" />
-              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/80 pb-2.5 relative z-10">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-white/10 dark:border-slate-800/50 pb-2.5 relative z-10">
                 <FileText className="w-4 h-4 text-primary-blue" />
                 Consumer Metadata
               </h3>
               
               <div className="space-y-3 text-xs sm:text-sm relative z-10">
-                <div className="p-3 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200 flex items-start gap-3">
+                <div className="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200 flex items-start gap-3">
                   <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-primary-blue dark:text-primary-green mt-0.5 shrink-0">
                     <User className="w-4 h-4" />
                   </div>
@@ -1355,7 +1355,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200 flex items-start gap-3">
+                  <div className="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200 flex items-start gap-3">
                     <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 dark:text-indigo-400 mt-0.5 shrink-0">
                       <Hash className="w-4 h-4" />
                     </div>
@@ -1364,7 +1364,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                       <p className="font-mono font-bold text-slate-850 dark:text-slate-200 mt-0.5 truncate">{activeBill.parsedData.serviceNumber}</p>
                     </div>
                   </div>
-                  <div className="p-3 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200 flex items-start gap-3">
+                  <div className="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200 flex items-start gap-3">
                     <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-500 dark:text-purple-400 mt-0.5 shrink-0">
                       <Fingerprint className="w-4 h-4" />
                     </div>
@@ -1374,7 +1374,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                     </div>
                   </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200 flex items-start gap-3">
+                <div className="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200 flex items-start gap-3">
                   <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-primary-green mt-0.5 shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
@@ -1389,17 +1389,17 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Bill Details (Card 2) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-amber-500/30 dark:hover:border-amber-400/20 transition-all duration-300 relative overflow-hidden group space-y-4"
+              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-amber-500/30 dark:hover:border-amber-400/20 transition-all duration-300 relative overflow-hidden group space-y-4"
             >
               <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-amber-400 dark:bg-amber-600 group-hover:scale-150 transition-transform duration-500" />
-              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/80 pb-2.5 relative z-10">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-white/10 dark:border-slate-800/50 pb-2.5 relative z-10">
                 <Calendar className="w-4 h-4 text-amber-500" />
                 Billing Information
               </h3>
               
               <div className="space-y-3 text-xs sm:text-sm relative z-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200">
+                  <div className="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200">
                     <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Bill Date</span>
                     <p className="font-extrabold text-slate-850 dark:text-slate-250 mt-1">{activeBill.parsedData.billDate}</p>
                   </div>
@@ -1408,7 +1408,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                     <p className="font-extrabold text-red-650 dark:text-red-450 mt-1">{activeBill.parsedData.dueDate}</p>
                   </div>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-150/40 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200">
+                <div className="p-3.5 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 transition-colors duration-200">
                   <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Meter Readings</span>
                   <div className="grid grid-cols-2 divide-x divide-slate-150 dark:divide-slate-800 text-xs">
                     <div className="pr-3">
@@ -1427,7 +1427,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Explain My Bill (Card 3) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-primary-green/30 dark:hover:border-primary-green/20 transition-all duration-300 relative overflow-hidden group space-y-3"
+              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-4 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-primary-green/30 dark:hover:border-primary-green/20 transition-all duration-300 relative overflow-hidden group space-y-3"
             >
               <div className="absolute -right-10 -top-10 w-20 h-20 blur-xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-primary-green dark:bg-emerald-500 group-hover:scale-150 transition-transform duration-500" />
               <div className="flex items-center justify-between relative z-10">
@@ -1435,7 +1435,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   <Sparkles className="w-3.5 h-3.5 text-primary-green animate-pulse" />
                   Explain My Bill
                 </h3>
-                <span className="text-[9px] font-extrabold text-primary-blue dark:text-primary-green border border-primary-blue/20 dark:border-primary-green/20 bg-blue-50 dark:bg-blue-950/30 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+                <span className="text-[9px] font-extrabold text-primary-blue dark:text-primary-green border border-white/10 dark:border-white/5 bg-white/20 dark:bg-slate-950/30 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
                   AI Intelligence
                 </span>
               </div>
@@ -1460,7 +1460,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
               {/* Cost breakdown Pie Chart (Card 4) */}
               <motion.div 
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
+                className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
               >
                 <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full pointer-events-none bg-blue-500 dark:bg-emerald-500 group-hover:scale-150 transition-transform duration-500" />
                 <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 relative z-10">
@@ -1503,7 +1503,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                         <motion.div 
                           key={i}
                           whileHover={{ x: 4 }}
-                          className="flex items-center justify-between p-2 rounded-xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-all duration-205"
+                          className="flex items-center justify-between p-2 rounded-xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-slate-900/50 transition-all duration-205"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="w-2.5 h-2.5 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: PIE_COLORS[i] }} />
@@ -1523,7 +1523,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
               {/* Carbon Footprint Gauge (Card 5) */}
               <motion.div 
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-emerald-500/30 dark:hover:border-emerald-450/20 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
+                className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-emerald-500/30 dark:hover:border-emerald-450/20 transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
               >
                 <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full pointer-events-none bg-emerald-500 dark:bg-teal-500 group-hover:scale-150 transition-transform duration-500" />
                 <div className="relative z-10">
@@ -1576,22 +1576,22 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   {/* Metrics & Environmental Impact Card */}
                   <div className="flex-1 w-full space-y-2.5">
                     <div className="grid grid-cols-2 gap-2 text-left">
-                      <div className="p-2.5 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200">
+                      <div className="p-2.5 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-slate-900/50 transition-colors duration-200">
                         <span className="text-[8px] font-bold text-slate-400 dark:text-slate-550 uppercase block tracking-widest">UNITS</span>
                         <span className="text-[10px] font-mono font-bold text-slate-800 dark:text-white mt-0.5 block">{activeBill.parsedData.unitsConsumed} <span className="text-[8px] text-slate-400 font-bold font-sans">kWh</span></span>
                       </div>
-                      <div className="p-2.5 rounded-2xl bg-slate-50/30 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/60 transition-colors duration-200">
+                      <div className="p-2.5 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-slate-900/50 transition-colors duration-200">
                         <span className="text-[8px] font-bold text-slate-400 dark:text-slate-550 uppercase block tracking-widest">FACTOR</span>
                         <span className="text-[10px] font-mono font-bold text-slate-800 dark:text-white mt-0.5 block">0.82 <span className="text-[8px] text-slate-400 font-bold font-sans">kg/kWh</span></span>
                       </div>
                     </div>
 
                     {/* Tree offset block */}
-                    <div className="p-2.5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/10 dark:to-teal-950/10 border border-emerald-100/40 dark:border-emerald-900/30 rounded-2xl flex gap-2.5 items-center text-left">
+                    <div className="p-2.5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/10 dark:to-teal-950/10 border border-emerald-100/20 dark:border-emerald-900/25 rounded-2xl flex gap-2.5 items-center text-left">
                       <div className="p-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 dark:text-primary-green shrink-0 animate-pulse">
                         <Leaf className="w-3.5 h-3.5" />
                       </div>
-                      <p className="text-[9.5px] leading-normal font-semibold text-slate-600 dark:text-slate-350">
+                      <p className="text-[9.5px] leading-normal font-semibold text-slate-655 dark:text-slate-350">
                         Offset needs <span className="font-extrabold text-emerald-600 dark:text-primary-green text-xs">{Math.round((calcs?.co2 || 0) / 1.83)} trees</span>/mo.
                       </p>
                     </div>
@@ -1603,10 +1603,10 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* AI Insights list (Card 6) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 relative overflow-hidden group"
+              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 relative overflow-hidden group"
             >
               <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full pointer-events-none bg-emerald-500 dark:bg-teal-500 group-hover:scale-150 transition-transform duration-500" />
-              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-150 dark:border-slate-800/80 pb-2.5 relative z-10">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-white/10 dark:border-slate-800/50 pb-2.5 relative z-10">
                 <Sparkles className="w-4 h-4 text-primary-green animate-pulse" />
                 AI Energy Insights
               </h4>
@@ -1616,7 +1616,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   <motion.li 
                     key={idx} 
                     whileHover={{ x: 3 }}
-                    className="flex gap-3.5 items-start p-2 rounded-2xl bg-slate-50/10 dark:bg-slate-950/20 border border-slate-100/20 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950/50 hover:border-slate-150 dark:hover:border-slate-800 transition-all duration-200"
+                    className="flex gap-3.5 items-start p-2 rounded-2xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 hover:bg-white/35 dark:hover:bg-slate-900/50 hover:border-white/30 dark:hover:border-slate-800 transition-all duration-200"
                   >
                     <span className="w-6 h-6 flex items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white text-[10px] font-black shrink-0 mt-0.5 shadow-md shadow-emerald-500/20">
                       0{idx + 1}
@@ -1630,7 +1630,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Recommendations savings cards (Card 7) */}
             <motion.div 
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-lg shadow-slate-100/30 dark:shadow-none hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 relative overflow-hidden group print:border-slate-300 print:shadow-none"
+              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-slate-350 dark:hover:border-slate-750 transition-all duration-300 text-left space-y-4 relative overflow-hidden group print:border-slate-300 print:shadow-none"
             >
               <div className="absolute -right-10 -top-10 w-24 h-24 blur-xl opacity-15 dark:opacity-5 rounded-full pointer-events-none bg-amber-400 dark:bg-indigo-500 group-hover:scale-150 transition-transform duration-500" />
               <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 relative z-10">
@@ -1643,7 +1643,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   <motion.div 
                     key={i} 
                     whileHover={{ y: -6, boxShadow: "0 10px 20px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.05)" }}
-                    className="p-4 bg-slate-50/40 dark:bg-slate-900/50 rounded-2xl border border-slate-150 dark:border-slate-800 flex flex-col justify-between gap-3.5 text-xs hover:border-primary-blue/20 dark:hover:border-primary-green/20 transition-all duration-300"
+                    className="p-4 bg-white/20 dark:bg-slate-900/30 backdrop-blur-md rounded-2xl border border-white/10 dark:border-white/5 flex flex-col justify-between gap-3.5 text-xs hover:border-primary-blue/20 dark:hover:border-primary-green/20 transition-all duration-300"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-2">
@@ -1654,7 +1654,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                       </div>
                       <p className="text-[10.5px] sm:text-xs text-slate-500 dark:text-slate-400 font-normal leading-relaxed">{rec.desc}</p>
                     </div>
-                    <div className="flex justify-between items-center border-t border-slate-150 dark:border-slate-800/80 pt-2.5 mt-1">
+                    <div className="flex justify-between items-center border-t border-white/10 dark:border-slate-800/80 pt-2.5 mt-1">
                       <span className="text-[9px] text-slate-450 dark:text-slate-500 font-extrabold uppercase tracking-widest">Savings</span>
                       <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-primary-green font-mono font-extrabold text-[11px] sm:text-xs shadow-sm">
                         ₹{rec.savings}/mo
