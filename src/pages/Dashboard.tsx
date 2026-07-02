@@ -1053,7 +1053,7 @@ export const Dashboard: React.FC = () => {
                 />
 
               {/* Step Progress Bar */}
-              <div id="wizard-progress-bar" className="bg-white/60 dark:bg-slate-900/50 backdrop-blur-xl px-6 py-5 rounded-2xl border border-white/40 dark:border-slate-700/40 shadow-sm no-print">
+              <div id="wizard-progress-bar" className="bg-white/60 dark:bg-slate-900/50 backdrop-blur-xl px-6 py-5 rounded-2xl border border-white/40 dark:border-slate-700/40 shadow-sm no-print max-w-2xl mx-auto w-full">
                 <div className="flex items-center w-full">
                   {[
                     { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap              },
