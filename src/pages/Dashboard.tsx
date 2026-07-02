@@ -1052,98 +1052,79 @@ export const Dashboard: React.FC = () => {
                   solarOffsetPercent={solarOffsetPercent}
                 />
 
-              {/* Step Progress Bar (Full Width) */}
-              {/* Step Progress Bar (Full Width) */}
-          <div id="wizard-progress-bar" className="relative bg-white/30 dark:bg-slate-950/20 backdrop-blur-3xl px-8 py-6 pb-16 rounded-3xl border border-white/20 dark:border-white/5 shadow-[0_8px_32px_rgba(31,38,135,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.25)] overflow-hidden no-print">
-            {/* Subtle gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-blue/[0.01] via-transparent to-primary-green/[0.01] dark:from-primary-blue/[0.03] dark:to-primary-green/[0.03] pointer-events-none rounded-3xl" />
+              {/* Step Progress Bar */}
+              <div id="wizard-progress-bar" className="bg-white/60 dark:bg-slate-900/50 backdrop-blur-xl px-6 py-5 rounded-2xl border border-white/40 dark:border-slate-700/40 shadow-sm no-print">
+                <div className="flex items-center w-full">
+                  {[
+                    { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap              },
+                    { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal },
+                    { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3         },
+                    { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf              },
+                  ].map((s, idx, arr) => {
+                    const isCompleted = currentStep > s.step;
+                    const isActive    = currentStep === s.step;
+                    const isClickable = s.step <= currentStep || activeAppliances.length > 0;
+                    return (
+                      <React.Fragment key={s.step}>
+                        {/* Step node */}
+                        <motion.button
+                          disabled={!isClickable}
+                          onClick={() => setCurrentStep(s.step as 1 | 2 | 3 | 4)}
+                          whileHover={isClickable ? { scale: 1.05 } : {}}
+                          whileTap={isClickable ? { scale: 0.96 } : {}}
+                          className={`flex flex-col items-center gap-2.5 shrink-0 focus:outline-none transition-opacity duration-300 ${isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-35"}`}
+                        >
+                          {/* Circle */}
+                          <div className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300
+                            ${isCompleted
+                              ? "bg-emerald-500 shadow-md shadow-emerald-500/25"
+                              : isActive
+                              ? "bg-primary-blue dark:bg-primary-green shadow-lg shadow-primary-blue/30 dark:shadow-primary-green/30"
+                              : "bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/40"
+                            }`}
+                          >
+                            {/* Pulse ring on active */}
+                            {isActive && (
+                              <span className="absolute inset-0 rounded-full animate-ping bg-primary-blue/20 dark:bg-primary-green/20" />
+                            )}
+                            {isCompleted ? (
+                              <Check className="w-5 h-5 text-white stroke-[2.5]" />
+                            ) : (
+                              <s.Icon className={`w-4.5 h-4.5 ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
+                            )}
+                          </div>
 
-            <div className="relative z-10">
-              {/* Step count label */}
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-display">Wizard Progress</span>
-                <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green font-display">
-                  Step {currentStep} of 4
-                </span>
-              </div>
+                          {/* Labels */}
+                          <div className="flex flex-col items-center leading-tight">
+                            <span className={`text-[11px] sm:text-xs font-bold transition-colors duration-300 font-display ${
+                              isActive    ? "text-primary-blue dark:text-primary-green"
+                              : isCompleted ? "text-slate-700 dark:text-slate-300"
+                              : "text-slate-400 dark:text-slate-500"
+                            }`}>
+                              {s.label}
+                            </span>
+                            <span className={`text-[9px] hidden sm:block font-medium tracking-wide transition-colors duration-300 ${
+                              isActive    ? "text-primary-blue/70 dark:text-primary-green/70"
+                              : "text-slate-350 dark:text-slate-600"
+                            }`}>
+                              {s.sub}
+                            </span>
+                          </div>
+                        </motion.button>
 
-              {/* Stepper Container */}
-              <div className="relative flex items-center justify-between w-full">
-                {[
-                  { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,              activeGrad: "from-primary-blue to-blue-600",    hintColor: "text-blue-500"    },
-                  { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-indigo-600",   hintColor: "text-indigo-500"  },
-                  { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,         activeGrad: "from-primary-green to-teal-500",    hintColor: "text-emerald-500" },
-                  { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   hintColor: "text-teal-555"    }
-                ].map((s, idx, arr) => {
-                  const isCompleted = currentStep > s.step;
-                  const isActive    = currentStep === s.step;
-                  const isClickable = s.step <= currentStep || activeAppliances.length > 0;
-
-                  return (
-                    <React.Fragment key={s.step}>
-                      {/* Step node */}
-                      <motion.button
-                        disabled={!isClickable}
-                        onClick={() => setCurrentStep(s.step as 1 | 2 | 3 | 4)}
-                        whileHover={isClickable ? { scale: 1.08 } : {}}
-                        whileTap={isClickable ? { scale: 0.95 } : {}}
-                        className={`relative flex flex-col items-center w-14 shrink-0 z-10 focus:outline-none transition-all duration-350 ${
-                          isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-40"
-                        }`}
-                      >
-                        {/* Floating Icon centered vertically on progress line */}
-                        <div className="relative w-6 h-6 flex items-center justify-center">
-                          {/* Sliding active glow ring */}
-                          {isActive && (
-                            <motion.div
-                              layoutId="activeStepGlow"
-                              className={`absolute -inset-2.5 rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-sm`}
-                              transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                            />
-                          )}
-
-                          {isCompleted ? (
-                            <Check className="w-5 h-5 text-emerald-500 dark:text-primary-green font-bold drop-shadow-sm step-check" />
-                          ) : (
-                            <s.Icon className={`w-5 h-5 transition-all duration-300 ${
-                              isActive ? "scale-125 text-primary-blue dark:text-primary-green drop-shadow-[0_2px_4px_rgba(37,99,235,0.2)] step-icon-float" : "opacity-60 text-slate-400 dark:text-slate-500"
-                            }`} />
-                          )}
-                        </div>
-
-                        {/* Labels absolute-positioned below the floating icon */}
-                        <div className="absolute top-[44px] flex flex-col items-center whitespace-nowrap leading-tight gap-0.5">
-                          <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 font-display ${
-                            isActive    ? "text-primary-blue dark:text-primary-green"
-                            : isCompleted ? "text-slate-600 dark:text-slate-300"
-                            : "text-slate-450 dark:text-slate-500"
-                          }`}>
-                            {s.label}
-                          </span>
-                          <span className={`text-[9px] hidden sm:block step-label font-semibold tracking-wide transition-colors duration-300 ${
-                            isActive ? s.hintColor : "text-slate-350 dark:text-slate-655"
-                          }`} style={{ animationDelay: "0.1s" }}>
-                            {s.sub}
-                          </span>
-                        </div>
-                      </motion.button>
-
-                      {/* Connector Line (Inline, stretches dynamically, aligned vertically with emoji centers at mt-3) */}
-                      {idx < arr.length - 1 && (
-                        <div className="flex-1 h-[3px] mt-3 mx-2 rounded-full bg-slate-100 dark:bg-slate-800/80 relative overflow-hidden">
-                          <div 
-                            className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer shadow-[0_0_8px_rgba(37,99,235,0.25)] ${
+                        {/* Connector */}
+                        {idx < arr.length - 1 && (
+                          <div className="flex-1 h-[2px] mx-3 mb-9 rounded-full bg-slate-200/70 dark:bg-slate-700/50 relative overflow-hidden">
+                            <div className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-500 to-primary-blue dark:from-primary-green dark:to-emerald-400 transition-all duration-700 ease-in-out ${
                               currentStep > s.step ? "w-full" : "w-0"
-                            }`} 
-                          />
-                        </div>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
+                            }`} />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
 
 
 
