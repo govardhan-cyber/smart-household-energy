@@ -1053,49 +1053,69 @@ export const Dashboard: React.FC = () => {
                 />
 
               {/* Step Progress Bar (Full Width) */}
-          <div id="wizard-progress-bar" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-6 py-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm no-print">
-            <div className="flex items-center w-full max-w-4xl mx-auto">
+          <div id="wizard-progress-bar" className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl px-8 py-6 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] overflow-hidden no-print">
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-blue/[0.02] via-transparent to-primary-green/[0.02] dark:from-primary-blue/[0.04] dark:to-primary-green/[0.04] pointer-events-none rounded-3xl" />
+
+            {/* Step count label */}
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Wizard Progress</span>
+              <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green">
+                Step {currentStep} of 4
+              </span>
+            </div>
+
+            <div className="flex items-center w-full max-w-4xl mx-auto relative z-10">
               {[
-                { step: 1, label: "Appliances",      sub: "Select devices",   Icon: Zap              },
-                { step: 2, label: "Usage",            sub: "Set hours & days", Icon: SlidersHorizontal },
-                { step: 3, label: "Analysis",         sub: "Review usage",     Icon: BarChart3         },
-                { step: 4, label: "Recommendations",  sub: "Save energy",      Icon: Leaf              }
+                { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-500",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-400"    },
+                { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-primary-blue",   activeShadow: "shadow-violet-500/35",  hintColor: "text-violet-400"  },
+                { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-400" },
+                { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-400"    }
               ].map((s, idx, arr) => {
                 const isCompleted = currentStep > s.step;
                 const isActive    = currentStep === s.step;
                 return (
                   <React.Fragment key={s.step}>
                     {/* Step node */}
-                    <div className="flex flex-col items-center gap-2 shrink-0">
+                    <div className="flex flex-col items-center gap-2.5 shrink-0">
                       {/* Circle */}
-                      <div className={`relative w-11 h-11 rounded-full flex items-center justify-center text-sm font-black
-                        ${isCompleted
-                          ? "bg-emerald-500 text-white shadow-md step-completed"
-                          : isActive
-                          ? "bg-primary-blue dark:bg-primary-green text-white shadow-lg step-active"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
-                        }`}
-                      >
-                        {/* Glow ring for active */}
+                      <div className="relative">
+                        {/* Outer glow ring — active only */}
                         {isActive && (
-                          <span className="absolute inset-0 rounded-full bg-primary-blue/20 dark:bg-primary-green/20 animate-ping" />
+                          <span className={`absolute -inset-[5px] rounded-full bg-gradient-to-br ${s.activeGrad} opacity-20 blur-sm animate-pulse`} />
                         )}
-                        {isCompleted
-                          ? <Check className="w-5 h-5 step-check" />
-                          : <s.Icon className={`w-5 h-5 ${isActive ? "step-icon-float" : ""}`} />
-                        }
+                        {/* Ping ring */}
+                        {isActive && (
+                          <span className={`absolute -inset-[3px] rounded-full border-2 border-primary-blue/30 dark:border-primary-green/30 animate-ping`} />
+                        )}
+
+                        <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500
+                          ${isCompleted
+                            ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 step-completed"
+                            : isActive
+                            ? `bg-gradient-to-br ${s.activeGrad} text-white shadow-xl ${s.activeShadow} step-active`
+                            : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700"
+                          }`}
+                        >
+                          {isCompleted
+                            ? <Check className="w-5 h-5 step-check" />
+                            : <s.Icon className={`w-5 h-5 ${isActive ? "step-icon-float drop-shadow-sm" : ""}`} />
+                          }
+                        </div>
                       </div>
 
                       {/* Labels */}
-                      <div className="flex flex-col items-center leading-tight">
+                      <div className="flex flex-col items-center leading-tight gap-0.5">
                         <span className={`text-[11px] sm:text-xs font-bold step-label transition-colors duration-300 ${
                           isActive    ? "text-primary-blue dark:text-primary-green"
-                          : isCompleted ? "text-slate-700 dark:text-slate-300"
+                          : isCompleted ? "text-slate-600 dark:text-slate-300"
                           : "text-slate-400 dark:text-slate-500"
                         }`}>
                           {s.label}
                         </span>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-600 hidden sm:block step-label" style={{ animationDelay: "0.1s" }}>
+                        <span className={`text-[9px] hidden sm:block step-label font-medium transition-colors duration-300 ${
+                          isActive ? s.hintColor : "text-slate-350 dark:text-slate-600"
+                        }`} style={{ animationDelay: "0.1s" }}>
                           {s.sub}
                         </span>
                       </div>
@@ -1103,8 +1123,8 @@ export const Dashboard: React.FC = () => {
 
                     {/* Connector */}
                     {idx < arr.length - 1 && (
-                      <div className="flex-1 h-[2px] mx-3 rounded-full bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                        <div className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-primary-blue dark:from-primary-green dark:to-emerald-400 transition-all duration-700 ease-in-out ${
+                      <div className="flex-1 h-[3px] mx-4 rounded-full bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                        <div className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full ${
                           currentStep > s.step ? "w-full connector-shimmer" : "w-0"
                         }`} />
                       </div>
