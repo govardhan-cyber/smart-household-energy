@@ -1057,27 +1057,37 @@ export const Dashboard: React.FC = () => {
             {/* Subtle gradient background */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary-blue/[0.02] via-transparent to-primary-green/[0.02] dark:from-primary-blue/[0.04] dark:to-primary-green/[0.04] pointer-events-none rounded-3xl" />
 
-            {/* Step count label */}
-            <div className="flex items-center justify-between mb-5 relative z-10">
-              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Wizard Progress</span>
-              <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green">
-                Step {currentStep} of 4
-              </span>
-            </div>
+            <div className="max-w-4xl mx-auto relative z-10">
+              {/* Step count label */}
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Wizard Progress</span>
+                <span className="text-[11px] font-bold text-primary-blue dark:text-primary-green">
+                  Step {currentStep} of 4
+                </span>
+              </div>
 
-            <div className="flex items-center w-full max-w-4xl mx-auto relative z-10">
-              {[
-                { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-500",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-400"    },
-                { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-primary-blue",   activeShadow: "shadow-violet-500/35",  hintColor: "text-violet-400"  },
-                { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-400" },
-                { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-400"    }
-              ].map((s, idx, arr) => {
-                const isCompleted = currentStep > s.step;
-                const isActive    = currentStep === s.step;
-                return (
-                  <React.Fragment key={s.step}>
-                    {/* Step node */}
-                    <div className="flex flex-col items-center gap-2.5 shrink-0">
+              {/* Stepper Container */}
+              <div className="relative flex items-center justify-between w-full">
+                {/* Background connector line centered vertically with circles (48px / 2 = 24px = top-6) */}
+                <div className="absolute top-6 left-[24px] right-[24px] h-[3px] bg-slate-100 dark:bg-slate-800 rounded-full" />
+                
+                {/* Active progress connector line */}
+                <div 
+                  className="absolute top-6 left-[24px] h-[3px] bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer"
+                  style={{ width: `calc((${currentStep - 1} / 3) * (100% - 48px))` }}
+                />
+
+                {[
+                  { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-500",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-400"    },
+                  { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-primary-blue",   activeShadow: "shadow-violet-500/35",  hintColor: "text-violet-400"  },
+                  { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-400" },
+                  { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-400"    }
+                ].map((s) => {
+                  const isCompleted = currentStep > s.step;
+                  const isActive    = currentStep === s.step;
+                  return (
+                    /* Step node */
+                    <div key={s.step} className="flex flex-col items-center gap-2.5 shrink-0 z-10">
                       {/* Circle */}
                       <div className="relative">
                         {/* Outer glow ring — active only */}
@@ -1094,7 +1104,7 @@ export const Dashboard: React.FC = () => {
                             ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 step-completed"
                             : isActive
                             ? `bg-gradient-to-br ${s.activeGrad} text-white shadow-xl ${s.activeShadow} step-active`
-                            : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700"
+                            : "bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800"
                           }`}
                         >
                           {isCompleted
@@ -1120,20 +1130,12 @@ export const Dashboard: React.FC = () => {
                         </span>
                       </div>
                     </div>
-
-                    {/* Connector */}
-                    {idx < arr.length - 1 && (
-                      <div className="flex-1 h-[3px] mx-4 rounded-full bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                        <div className={`absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full ${
-                          currentStep > s.step ? "w-full connector-shimmer" : "w-0"
-                        }`} />
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
+
 
           {/* Main Working Area: Split 2-column layout (Steps 1, 2, 3) */}
           {currentStep !== 4 && (
