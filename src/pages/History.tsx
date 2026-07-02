@@ -414,12 +414,12 @@ export const History: React.FC = () => {
                     animate="visible"
                     whileHover={{ y: -6 }}
                     onClick={() => setSelectedReport(report)}
-                    className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-colors duration-200 flex flex-col gap-4"
+                    className="group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl p-5 shadow-md dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-all duration-300 flex flex-col gap-4"
                   >
                     {/* Card top: date + actions */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-xl bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 flex items-center justify-center shrink-0">
                           <Calendar className="w-4 h-4 text-primary-blue dark:text-blue-400" />
                         </div>
                         <div>
@@ -434,14 +434,14 @@ export const History: React.FC = () => {
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setSelectedReport(report)}
-                          className="p-1.5 text-slate-400 hover:text-primary-blue dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-primary-blue dark:hover:text-blue-400 hover:bg-white/30 dark:hover:bg-slate-900/30 rounded-lg transition-colors cursor-pointer"
                           title="View Details"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={e => handleDelete(report.id!, e)}
-                          className="p-1.5 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -451,13 +451,13 @@ export const History: React.FC = () => {
 
                     {/* Bill amount (hero value) */}
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Estimated Bill</p>
+                      <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Estimated Bill</p>
                       <p className="text-2xl font-display font-extrabold text-primary-blue dark:text-primary-green">
                         ₹{report.estimatedBill}
                         <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 ml-1">/mo</span>
                       </p>
                       {/* Animated bill bar — blue→green gradient */}
-                      <div className="mt-2 h-1.5 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+                      <div className="mt-2 h-1.5 bg-white/20 dark:bg-slate-900/40 rounded-full overflow-hidden">
                         <motion.div
                           custom={{ index, barWidth }}
                           variants={historyBarVariants}
@@ -473,10 +473,10 @@ export const History: React.FC = () => {
                       {[
                         { label: "Units",    value: `${report.totalUnits}`, unit: "kWh",   color: "text-slate-800 dark:text-slate-200" },
                         { label: "Savings",  value: `₹${report.savingsPotential}`, unit: "", color: "text-emerald-600 dark:text-emerald-400" },
-                        { label: "Top User", value: report.highestConsumer, unit: "",      color: "text-rose-600 dark:text-rose-400" },
+                        { label: "Top User", value: report.highestConsumer, unit: "",      color: "text-rose-605 dark:text-rose-400" },
                       ].map(({ label, value, unit, color }) => (
-                        <div key={label} className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-2.5">
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+                        <div key={label} className="bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 rounded-xl p-2.5 hover:bg-white/30 dark:hover:bg-slate-900/50 transition-colors duration-200">
+                          <p className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wide">{label}</p>
                           <p className={`text-xs font-extrabold truncate ${color}`}>{value}<span className="text-[9px] text-slate-400 ml-0.5">{unit}</span></p>
                         </div>
                       ))}
