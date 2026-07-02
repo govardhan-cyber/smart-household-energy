@@ -128,7 +128,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
   return (
     <div className="space-y-6">
       {/* Title & Description */}
-      <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
+      <div className="border-b border-white/10 dark:border-slate-800/50 pb-4">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white text-left font-display">Select appliances in your home</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 text-left mt-1 font-medium">
           Click each card to toggle appliances on or off. You'll specify quantities on the next step.
@@ -180,7 +180,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                 className="space-y-4"
               >
                 {/* Category Header */}
-                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-2 text-left">
+                <div className="flex items-center gap-2 border-b border-white/10 dark:border-slate-800/50 pb-2 text-left">
                   {getCategoryIcon(category.id)}
                   <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-550 dark:text-slate-450">
                     {category.name}
@@ -197,10 +197,10 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                         whileHover={hasAnimated ? {} : "hover"}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleAppliance(app.id)}
-                        className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-colors duration-300 relative overflow-hidden cursor-pointer ${
+                        className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
                           isSelected
-                            ? "border-primary-blue bg-gradient-to-br from-blue-50/40 to-blue-100/10 dark:border-primary-green dark:from-green-950/15 dark:to-green-950/5 shadow-[0_4px_20px_-4px_rgba(37,99,235,0.15)] dark:shadow-[0_4px_20px_-4px_rgba(16,185,129,0.15)]"
-                            : "border-slate-200 bg-white/60 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/30 shadow-sm hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-md"
+                            ? "border-primary-blue/80 bg-primary-blue/10 dark:border-primary-green/80 dark:bg-primary-green/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(37,99,235,0.08)] dark:shadow-[0_8px_32px_rgba(16,185,129,0.08)]"
+                            : "border-white/20 bg-white/30 backdrop-blur-xl dark:border-slate-800/40 dark:bg-slate-950/20 shadow-sm hover:border-slate-350/50 dark:hover:border-slate-700/50 hover:shadow-md"
                         }`}
                       >
                         {/* Active state ambient glow */}
@@ -238,7 +238,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                           className={`p-2.5 rounded-xl border transition-all relative z-10 ${
                             isSelected
                               ? "bg-primary-blue text-white dark:bg-primary-green dark:text-slate-950 border-transparent shadow-md"
-                              : "bg-slate-50 dark:bg-slate-800/80 text-slate-500 border-slate-200 dark:border-slate-800 group-hover:bg-slate-100 dark:group-hover:bg-slate-800"
+                              : "bg-white/20 dark:bg-slate-900/30 text-slate-500 border-white/10 dark:border-white/5 group-hover:bg-white/40 dark:group-hover:bg-slate-900/50"
                           }`}
                         >
                           {getIconComponent(app.icon)}
@@ -264,7 +264,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
       </motion.div>
 
       {/* Navigation Footer */}
-      <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex justify-end pt-4 border-t border-white/10 dark:border-slate-800/50">
         <motion.button
           onClick={onNext}
           disabled={!hasSelection}
