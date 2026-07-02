@@ -723,7 +723,7 @@ function AIRecommendationsPanel({
             variants={recommendationItemVariants}
             initial="hidden"
             animate="visible"
-            className={`card-client motion-card ${rec.glow} group bg-white/20 dark:bg-slate-900/30 backdrop-blur-md border border-white/10 dark:border-white/5 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-all duration-300 shadow-sm`}
+            className={`card-client motion-card ${rec.glow} group bg-white/20 dark:bg-slate-900/30 backdrop-blur-md border border-white/10 dark:border-white/5 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-[border-color,background-color,box-shadow] duration-300 shadow-sm`}
           >
             <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
               <div className={`${rec.color} transition-transform duration-300 group-hover:scale-110`}>{rec.icon}</div>

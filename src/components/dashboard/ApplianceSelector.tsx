@@ -197,7 +197,7 @@ export const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                         whileHover={hasAnimated ? {} : "hover"}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleAppliance(app.id)}
-                        className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer ${
+                        className={`group card-client p-4 flex flex-col items-start justify-between text-left h-[120px] rounded-2xl border transition-[border-color,background-color,box-shadow] duration-300 relative overflow-hidden cursor-pointer ${
                           isSelected
                             ? "border-primary-blue/80 bg-primary-blue/10 dark:border-primary-green/80 dark:bg-primary-green/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(37,99,235,0.08)] dark:shadow-[0_8px_32px_rgba(16,185,129,0.08)]"
                             : "border-white/20 bg-white/30 backdrop-blur-xl dark:border-slate-800/40 dark:bg-slate-950/20 shadow-sm hover:border-slate-350/50 dark:hover:border-slate-700/50 hover:shadow-md"

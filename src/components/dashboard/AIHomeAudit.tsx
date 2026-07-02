@@ -701,7 +701,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                         onClick={() => handleSelectPastAudit(audit)}
-                        className={`p-3 rounded-2xl border transition-all duration-200 text-left flex items-center justify-between gap-3 cursor-pointer ${
+                        className={`p-3 rounded-2xl border transition-[border-color,background-color] duration-200 text-left flex items-center justify-between gap-3 cursor-pointer ${
                           isActive
                             ? "border-primary-blue bg-blue-50/50 dark:border-primary-green/60 dark:bg-emerald-950/20 dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.15)]"
                             : "border-slate-150 bg-slate-50/40 hover:border-slate-250 hover:bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"

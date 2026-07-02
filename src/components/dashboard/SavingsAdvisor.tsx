@@ -238,11 +238,11 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               <motion.div
                 key={tip.id}
                 variants={itemVariants}
-                className={`group bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex flex-col justify-between gap-5 hover:border-slate-350 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden ${glowClass}`}
+                className={`group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl shadow-sm p-6 flex flex-col justify-between gap-5 hover:border-slate-350 hover:-translate-y-1 transition-[transform,border-color,box-shadow] duration-300 relative overflow-hidden ${glowClass}`}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-150 dark:border-slate-850 shrink-0 group-hover:scale-110 group-hover:text-primary-blue dark:group-hover:text-primary-green transition-all duration-300">
+                    <div className="p-2.5 rounded-xl bg-white/20 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300 border border-white/10 dark:border-white/5 shrink-0 group-hover:scale-110 group-hover:text-primary-blue dark:group-hover:text-primary-green transition-[transform,colors] duration-300">
                       {tip.icon}
                     </div>
                     <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1.5 border rounded-full ${tip.badgeColor}`}>
@@ -266,7 +266,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                       <span>Savings Share</span>
                       <span>{savingsPercent}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-white/20 dark:bg-slate-900/40 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${savingsPercent}%` }}
@@ -276,7 +276,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 border-t border-slate-100 dark:border-slate-850 pt-3.5">
+                  <div className="grid grid-cols-3 gap-2 border-t border-white/10 dark:border-slate-800/50 pt-3.5">
                     <div className="text-left space-y-1">
                       <span className="text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-wider block">Savings</span>
                       <span className="text-sm sm:text-base font-mono font-black text-emerald-600 dark:text-primary-green leading-none">
