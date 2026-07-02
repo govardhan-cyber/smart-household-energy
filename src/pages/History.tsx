@@ -6,7 +6,7 @@ import type { EnergyReport } from "../utils/reportsService";
 import {
   History as HistIcon, Search, Calendar,
   Trash2, Eye, X, ArrowUpDown, Download, Printer, Leaf,
-  Zap, TrendingDown, Bolt, ChevronRight, BarChart3,
+  Zap, TrendingDown, Bolt, ChevronRight, BarChart3, AlertTriangle,
   Refrigerator, Wind, Fan, Lightbulb, Tv, WashingMachine, Flame,
   Microwave, CookingPot, Coffee, Blender, Laptop, Monitor, Router,
   Gamepad2, Filter, Thermometer, Droplet, GlassWater, Sparkles, IndianRupee
@@ -190,6 +190,7 @@ export const History: React.FC = () => {
   const [searchQuery, setSearchQuery]       = useState("");
   const [sortBy, setSortBy]                 = useState<"date_desc"|"date_asc"|"bill_desc"|"bill_asc"|"units_desc">("date_desc");
   const [selectedReport, setSelectedReport] = useState<EnergyReport | null>(null);
+  const [deleteReportId, setDeleteReportId] = useState<string | null>(null);
 
   /* CSV export */
   const handleModalExportCSV = (report: EnergyReport) => {
@@ -236,14 +237,19 @@ export const History: React.FC = () => {
 
   useEffect(() => { fetchReports(); }, [user]);
 
-  const handleDelete = async (reportId: string, e: React.MouseEvent) => {
+  const handleDelete = (reportId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm("Delete this calculation record?")) return;
+    setDeleteReportId(reportId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteReportId) return;
     try {
-      await reportsService.deleteReport(reportId);
-      setReports(prev => prev.filter(r => r.id !== reportId));
-      if (selectedReport?.id === reportId) setSelectedReport(null);
+      await reportsService.deleteReport(deleteReportId);
+      setReports(prev => prev.filter(r => r.id !== deleteReportId));
+      if (selectedReport?.id === deleteReportId) setSelectedReport(null);
     } catch (error) { console.error("Delete failed:", error); }
+    finally { setDeleteReportId(null); }
   };
 
   /* filter & sort */
@@ -866,6 +872,58 @@ export const History: React.FC = () => {
                   className="px-5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-105 dark:hover:bg-slate-850 border border-slate-200/60 dark:border-slate-800 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Delete Confirmation Modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {deleteReportId && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteReportId(null)}
+              className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative w-full max-w-sm bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col p-6 text-center gap-5"
+            >
+              {/* Warning Icon Banner */}
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-500 shrink-0">
+                <AlertTriangle className="w-6 h-6 animate-bounce" style={{ animationDuration: "2.5s" }} />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  Delete Calculation?
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
+                  This will permanently delete this audit record from your cloud profile. This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3.5 pt-2">
+                <button
+                  onClick={() => setDeleteReportId(null)}
+                  className="px-4.5 py-2.5 text-xs font-bold rounded-xl text-slate-650 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4.5 py-2.5 text-xs font-bold rounded-xl text-white bg-red-550 hover:bg-red-650 dark:bg-red-650 dark:hover:bg-red-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg shadow-red-500/10 cursor-pointer"
+                >
+                  Yes, Delete
                 </button>
               </div>
             </motion.div>
