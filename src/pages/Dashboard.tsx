@@ -1068,14 +1068,19 @@ export const Dashboard: React.FC = () => {
 
               {/* Stepper Container */}
               <div className="relative flex items-center justify-between w-full">
-                {/* Background connector line centered vertically with circles (48px / 2 = 24px = top-6) */}
-                <div className="absolute top-6 left-[24px] right-[24px] h-[3px] bg-slate-100 dark:bg-slate-800 rounded-full" />
+                {/* Background connector line centered vertically with circles (56px / 2 = 28px = top-7) */}
+                <div className="absolute top-7 left-[28px] right-[28px] h-[3px] bg-slate-100 dark:bg-slate-800 rounded-full" />
                 
                 {/* Active progress connector line */}
                 <div 
-                  className="absolute top-6 left-[24px] h-[3px] bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer"
-                  style={{ width: `calc((${currentStep - 1} / 3) * (100% - 48px))` }}
-                />
+                  className="absolute top-7 left-[28px] h-[3px] bg-gradient-to-r from-emerald-500 via-primary-blue to-primary-blue dark:from-primary-green dark:via-emerald-400 dark:to-emerald-400 transition-all duration-700 ease-in-out rounded-full connector-shimmer"
+                  style={{ width: `calc((${currentStep - 1} / 3) * (100% - 56px))` }}
+                >
+                  {/* Glowing traveling comet head */}
+                  {currentStep > 1 && (
+                    <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#2563eb] animate-pulse" />
+                  )}
+                </div>
 
                 {[
                   { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-500",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-400"    },
@@ -1085,9 +1090,18 @@ export const Dashboard: React.FC = () => {
                 ].map((s) => {
                   const isCompleted = currentStep > s.step;
                   const isActive    = currentStep === s.step;
+                  const isClickable = s.step <= currentStep || activeAppliances.length > 0;
+
                   return (
                     /* Step node */
-                    <div key={s.step} className="flex flex-col items-center gap-2.5 shrink-0 z-10">
+                    <button
+                      key={s.step}
+                      disabled={!isClickable}
+                      onClick={() => setCurrentStep(s.step as 1 | 2 | 3 | 4)}
+                      className={`flex flex-col items-center gap-2.5 shrink-0 z-10 focus:outline-none transition-all duration-300 ${
+                        isClickable ? "cursor-pointer hover:scale-105 active:scale-95" : "cursor-not-allowed opacity-60"
+                      }`}
+                    >
                       {/* Circle */}
                       <div className="relative">
                         {/* Outer glow ring — active only */}
@@ -1099,17 +1113,31 @@ export const Dashboard: React.FC = () => {
                           <span className={`absolute -inset-[3px] rounded-full border-2 border-primary-blue/30 dark:border-primary-green/30 animate-ping`} />
                         )}
 
-                        <div className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500
+                        <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500
                           ${isCompleted
                             ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 step-completed"
                             : isActive
                             ? `bg-gradient-to-br ${s.activeGrad} text-white shadow-xl ${s.activeShadow} step-active`
-                            : "bg-slate-50 dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800"
+                            : "bg-white/50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm shadow-sm"
                           }`}
                         >
+                          {/* Inner glass overlay for extra depth */}
+                          <div className={`absolute inset-[2.5px] rounded-full backdrop-blur-sm border transition-colors duration-300
+                            ${isCompleted 
+                              ? "bg-white/10 border-white/20" 
+                              : isActive 
+                              ? "bg-white/15 dark:bg-black/20 border-white/25 dark:border-white/10" 
+                              : "bg-slate-50/50 dark:bg-slate-950/20 border-white/40 dark:border-white/5 group-hover:bg-white/80"
+                            }`} 
+                          />
+
                           {isCompleted
-                            ? <Check className="w-5 h-5 step-check" />
-                            : <s.Icon className={`w-5 h-5 ${isActive ? "step-icon-float drop-shadow-sm" : ""}`} />
+                            ? <Check className="relative z-10 w-5.5 h-5.5 step-check" />
+                            : <s.Icon className={`relative z-10 w-5.5 h-5.5 transition-colors duration-300 ${
+                                isActive ? "step-icon-float drop-shadow-sm" 
+                                : isClickable ? "hover:text-slate-700 dark:hover:text-slate-300"
+                                : ""
+                              }`} />
                           }
                         </div>
                       </div>
@@ -1129,12 +1157,13 @@ export const Dashboard: React.FC = () => {
                           {s.sub}
                         </span>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
             </div>
           </div>
+
 
 
           {/* Main Working Area: Split 2-column layout (Steps 1, 2, 3) */}
