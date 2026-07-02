@@ -7,7 +7,7 @@ import type { ApplianceItem, TariffResult } from "../utils/tariffCalculator";
 import { 
   Zap, ChevronRight,
   ShieldCheck, Sparkles, Check, AlertTriangle, Leaf, Printer, Download,
-  Sun, Wind, Lightbulb, Snowflake, SlidersHorizontal, BarChart3
+  Sun, Wind, Lightbulb, Snowflake
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1083,10 +1083,10 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 {[
-                  { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               activeGrad: "from-primary-blue to-blue-600",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-500"    },
-                  { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, activeGrad: "from-violet-500 to-indigo-600",   activeShadow: "shadow-indigo-500/35",  hintColor: "text-indigo-500"  },
-                  { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,          activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-500" },
-                  { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-555"    }
+                  { step: 1, label: "Appliances",     sub: "Select devices",   emoji: "⚡", activeGrad: "from-primary-blue to-blue-600",    activeShadow: "shadow-blue-500/40",    hintColor: "text-blue-500"    },
+                  { step: 2, label: "Usage",           sub: "Set hours & days", emoji: "📅", activeGrad: "from-violet-500 to-indigo-600",   activeShadow: "shadow-indigo-500/35",  hintColor: "text-indigo-500"  },
+                  { step: 3, label: "Analysis",        sub: "Review usage",     emoji: "📊", activeGrad: "from-primary-green to-teal-500",    activeShadow: "shadow-emerald-500/40", hintColor: "text-emerald-500" },
+                  { step: 4, label: "Recommendations", sub: "Save energy",      emoji: "🌿", activeGrad: "from-teal-500 to-secondary-teal",   activeShadow: "shadow-teal-500/35",    hintColor: "text-teal-555"    }
                 ].map((s) => {
                   const isCompleted = currentStep > s.step;
                   const isActive    = currentStep === s.step;
@@ -1141,14 +1141,14 @@ export const Dashboard: React.FC = () => {
                             }`} 
                           />
 
-                          {/* Dynamic content rendering: check (completed) / icon (active) / step number (inactive) */}
+                          {/* Dynamic content rendering: check (completed) / emoji (active/inactive) */}
                           <div className="relative z-10 flex items-center justify-center w-full h-full">
                             {isCompleted ? (
                               <Check className="w-5.5 h-5.5 step-check" />
-                            ) : isActive ? (
-                              <s.Icon className="w-5.5 h-5.5 step-icon-float drop-shadow-sm" />
                             ) : (
-                              <span className="text-sm font-black tracking-tight font-display">{s.step}</span>
+                              <span className={`text-base leading-none ${isActive ? "step-icon-float" : ""}`}>
+                                {s.emoji}
+                              </span>
                             )}
                           </div>
                         </div>
