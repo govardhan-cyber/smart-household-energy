@@ -38,14 +38,29 @@ export interface SlabDetail {
 
 // ─── Bill Calculation (uses dynamic tariffs) ──────────────────────────────────
 
+export interface TODRatio {
+  peakPercent: number;
+  normalPercent: number;
+  offPeakPercent: number;
+}
+
 export function calculateBill(
   units: number,
   stateKey: string = "ap",
-  customFlatRate: number = 7.50
+  customFlatRate: number = 7.50,
+  todRatio?: TODRatio
 ): TariffResult {
   // Handle custom rate inline
   if (stateKey === "custom") {
-    const gross = Math.round(units * customFlatRate * 100) / 100;
+    let gross = Math.round(units * customFlatRate * 100) / 100;
+    if (todRatio) {
+      const multipliers = { peak: 1.2, normal: 1.0, offPeak: 0.85 };
+      const weightedMultiplier = 
+        (todRatio.peakPercent / 100) * multipliers.peak +
+        (todRatio.normalPercent / 100) * multipliers.normal +
+        (todRatio.offPeakPercent / 100) * multipliers.offPeak;
+      gross = Math.round(gross * weightedMultiplier * 100) / 100;
+    }
     return {
       totalUnits: units,
       grossEnergyCharge: gross,
@@ -59,10 +74,17 @@ export function calculateBill(
   let netCharges = 0;
   let remaining = units;
 
+  const multipliers = tariff.todMultipliers ?? { peak: 1.2, normal: 1.0, offPeak: 0.85 };
+  const weightedMultiplier = todRatio
+    ? (todRatio.peakPercent / 100) * multipliers.peak +
+      (todRatio.normalPercent / 100) * multipliers.normal +
+      (todRatio.offPeakPercent / 100) * multipliers.offPeak
+    : 1.0;
+
   for (const slab of tariff.slabs) {
     if (remaining <= 0) break;
     const unitsInSlab = Math.min(remaining, slab.max === Infinity ? remaining : slab.max);
-    netCharges += unitsInSlab * slab.numericRate;
+    netCharges += unitsInSlab * (slab.numericRate * weightedMultiplier);
     remaining -= unitsInSlab;
   }
 
@@ -88,7 +110,7 @@ export function calculateBill(
     grossEnergyCharge: gross,
     subsidy,
     netEnergyCharge: net,
-    stateName: tariff.displayName,
+    stateName: tariff.displayName + (todRatio ? " (TOD Active)" : ""),
   };
 }
 
@@ -148,6 +170,7 @@ export const defaultAppliances: ApplianceItem[] = [
   { id: 'ac',              name: 'Air Conditioner',      category: 'essential',   watts: 1500, icon: 'Wind',           hint: '1.5 Ton 5-Star Inverter',       quantity: 0, hours: 6  },
   { id: 'fan',             name: 'Ceiling Fan',          category: 'essential',   watts: 50,   icon: 'Fan',            hint: 'High-speed BLDC Fan',           quantity: 0, hours: 12 },
   { id: 'lights',          name: 'LED Bulb',             category: 'essential',   watts: 12,   icon: 'Lightbulb',      hint: '9W-12W LED Bulbs',              quantity: 0, hours: 8  },
+  { id: 'lights_tube',     name: 'Tube Light',           category: 'essential',   watts: 40,   icon: 'Lightbulb',      hint: 'Conventional Tube Lights',      quantity: 0, hours: 6  },
   { id: 'tv',              name: 'Television',           category: 'essential',   watts: 100,  icon: 'Tv',             hint: '55" Smart LED TV',              quantity: 0, hours: 4  },
   { id: 'washing_machine', name: 'Washing Machine',      category: 'essential',   watts: 500,  icon: 'WashingMachine', hint: 'Fully Automatic Front Load',     quantity: 0, hours: 1  },
   { id: 'water_heater',    name: 'Water Heater (Geyser)',category: 'essential',   watts: 2000, icon: 'Flame',          hint: '15L Storage Geyser',            quantity: 0, hours: 1  },

@@ -101,6 +101,7 @@ export const BillAnalyzer: React.FC = () => {
   
   // Toast notifications
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [deleteBillId, setDeleteBillId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -278,19 +279,21 @@ export const BillAnalyzer: React.FC = () => {
     setOcrProgress(0);
 
     const worker = await createWorker("eng");
-    
-    // Listen to progress updates
-    (worker as any).logger = (m: any) => {
-      if (m.status === "recognizing text") {
-        setOcrProgress(Math.round(m.progress * 100));
-        setOcrSteps(`Running OCR extraction: ${Math.round(m.progress * 100)}%`);
-      }
-    };
+    try {
+      // Listen to progress updates
+      (worker as any).logger = (m: any) => {
+        if (m.status === "recognizing text") {
+          setOcrProgress(Math.round(m.progress * 100));
+          setOcrSteps(`Running OCR extraction: ${Math.round(m.progress * 100)}%`);
+        }
+      };
 
-    setOcrSteps("Running Tesseract OCR text scanning...");
-    const { data: { text } } = await worker.recognize(imageSrc);
-    await worker.terminate();
-    return text;
+      setOcrSteps("Running Tesseract OCR text scanning...");
+      const { data: { text } } = await worker.recognize(imageSrc);
+      return text;
+    } finally {
+      await worker.terminate();
+    }
   };
 
   // Gemini Parsing Layer
@@ -402,6 +405,131 @@ export const BillAnalyzer: React.FC = () => {
         `Units consumed: ${parsed.unitsConsumed} kWh.`,
         "AC cooling and space heaters usually dominate consumption.",
         "Consider turning off appliances at the wall to eliminate standby power draw."
+      ];
+    }
+
+    return parsed;
+  };
+
+  // Multimodal Gemini Direct Image Scanning Fallback
+  const parseImageWithGeminiMultimodal = async (imageSrc: string): Promise<ParsedBillData> => {
+    setStatus("ai_parsing");
+    setOcrSteps("Converting image to base64 and uploading to Gemini Multimodal AI...");
+
+    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+    if (!geminiKey) {
+      throw new Error("Missing VITE_GEMINI_API_KEY. Direct AI scan requires an API key.");
+    }
+
+    const match = imageSrc.match(/^data:(image\/[a-zA-Z\+]+);base64,(.+)$/);
+    if (!match) {
+      throw new Error("Invalid image source encoding for Multimodal scanning.");
+    }
+    const mimeType = match[1];
+    const base64Data = match[2];
+
+    const prompt = `
+      You are an expert utility bill scanner.
+      I am providing you with an image of a household utility electricity bill.
+      Analyze the image, read the text visually, and return the structured billing metadata as a valid JSON object.
+
+      Do not include any markdown blockticks, code formatting block wrappers (\`\`\`json), or extra text. Return ONLY the raw JSON object string.
+      
+      The JSON object structure MUST match this schema:
+      {
+        "consumerName": "Consumer's full name, or 'Unknown'",
+        "serviceNumber": "Service number, unique service ID, account connection number, or 'Unknown'",
+        "customerID": "Customer ID, unique customer identification code, or 'Unknown'",
+        "address": "Consumer's billing/property address or 'Unknown'",
+        "billDate": "Bill Date (e.g. DD-MM-YYYY) or 'Unknown'",
+        "billingPeriod": "Billing month/period (e.g. May 2026) or 'Unknown'",
+        "dueDate": "Payment Due Date (e.g. DD-MM-YYYY) or 'Unknown'",
+        "previousReading": 2535,
+        "currentReading": 2667,
+        "unitsConsumed": 132,
+        "energyCharge": 643.50,
+        "fixedCharge": 10.00,
+        "tax": 7.92,
+        "otherCharges": 90.00,
+        "totalAmount": 561.35,
+        "tariffCategory": "LT-I Domestic, Domestic Category, or 'Domestic'",
+        "energyInsights": [
+          "Provide 3 key insights based on consumption.",
+          "Check grid efficiency and billing tier.",
+          "Add specific cost-saving recommendation."
+        ]
+      }
+    `;
+
+    const modelsToTry = [
+      "gemini-1.5-flash",
+      "gemini-2.0-flash",
+      "gemini-2.5-flash"
+    ];
+
+    let lastError: any = null;
+    let parsed: ParsedBillData | null = null;
+
+    for (const model of modelsToTry) {
+      try {
+        setOcrSteps(`Direct AI Scan (${model}): Structured parsing...`);
+        const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const response = await fetch(chatUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              role: "user",
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Status ${response.status}`);
+        }
+
+        const resData = await response.json();
+        const resultJsonStr = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!resultJsonStr) {
+          throw new Error("Empty parsing response");
+        }
+
+        parsed = JSON.parse(resultJsonStr);
+        break;
+      } catch (err: any) {
+        console.warn(`Direct Multimodal AI parsing failed with ${model}:`, err);
+        lastError = err;
+      }
+    }
+
+    if (!parsed) {
+      throw new Error(`Multimodal AI service error: ${lastError?.message || "Failed to analyze image."}`);
+    }
+
+    if (!parsed.consumerName) parsed.consumerName = "Unknown User";
+    if (parsed.unitsConsumed === undefined || parsed.unitsConsumed === null) {
+      parsed.unitsConsumed = Math.max(0, (parsed.currentReading || 0) - (parsed.previousReading || 0)) || 150;
+    }
+    if (!parsed.totalAmount) {
+      parsed.totalAmount = (parsed.energyCharge || 0) + (parsed.fixedCharge || 0) + (parsed.tax || 0) + (parsed.otherCharges || 0);
+    }
+    if (!parsed.energyInsights || parsed.energyInsights.length < 3) {
+      parsed.energyInsights = [
+        `Direct AI scan completed. Units: ${parsed.unitsConsumed} kWh.`,
+        "Multi-modal scanning matches bill structure accurately.",
+        "Consider scheduling heavy appliances off-peak to save further."
       ];
     }
 
@@ -525,20 +653,45 @@ export const BillAnalyzer: React.FC = () => {
       }
       
       
-      // Step 2: OCR scanning
-      const textResult = await extractTextViaOcr(imageSrc);
-      
-      if (!textResult.trim()) {
-        throw new Error("No characters could be extracted from the uploaded document. Ensure the file is not blank or blurry.");
+      // Step 2 & 3: OCR scanning & AI parsing with Multimodal direct-image scan fallback
+      let textResult = "";
+      let structuredData: ParsedBillData | null = null;
+      let ocrFailed = false;
+
+      try {
+        textResult = await extractTextViaOcr(imageSrc);
+      } catch (ocrErr) {
+        console.warn("Tesseract OCR extraction failed, trying direct multimodal fallback:", ocrErr);
+        ocrFailed = true;
       }
 
-      // Step 3: AI parsing
-      let structuredData: ParsedBillData;
-      try {
-        structuredData = await parseOcrWithGemini(textResult);
-      } catch (geminiErr: any) {
-        console.warn("Gemini parsing failed, falling back to local OCR heuristics:", geminiErr);
-        structuredData = parseOcrWithHeuristics(textResult);
+      const isTextPoor = !textResult.trim() || textResult.trim().length < 150 || (textResult.match(/\d+/g) || []).length < 5;
+
+      if (ocrFailed || isTextPoor) {
+        console.log("Tesseract text is poor/blank. Activating Gemini Multimodal AI direct scan...");
+        setOcrSteps("Tesseract OCR text is poor/blurry. Activating Multimodal AI scanner...");
+        try {
+          structuredData = await parseImageWithGeminiMultimodal(imageSrc);
+          textResult = "[Direct Multimodal AI Image Scan - Tesseract Bypassed]";
+        } catch (multiErr: any) {
+          console.error("Multimodal fallback also failed:", multiErr);
+          if (textResult.trim()) {
+            try {
+              structuredData = await parseOcrWithGemini(textResult);
+            } catch (geminiErr: any) {
+              structuredData = parseOcrWithHeuristics(textResult);
+            }
+          } else {
+            throw new Error(`Direct AI scanning failed: ${multiErr.message}`);
+          }
+        }
+      } else {
+        try {
+          structuredData = await parseOcrWithGemini(textResult);
+        } catch (geminiErr: any) {
+          console.warn("Gemini parsing failed, falling back to local OCR heuristics:", geminiErr);
+          structuredData = parseOcrWithHeuristics(textResult);
+        }
       }
       
       // Save record
@@ -589,22 +742,27 @@ export const BillAnalyzer: React.FC = () => {
   };
 
   // Delete Record
-  const handleDeleteRecord = async (id: string) => {
-    if (!user) return;
-    if (!window.confirm("Are you sure you want to delete this bill record from your history?")) return;
+  const handleDeleteRecord = (id: string) => {
+    setDeleteBillId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!user || !deleteBillId) return;
+    const targetId = deleteBillId;
+    setDeleteBillId(null);
 
     try {
       if (IS_FIREBASE_CONFIGURED && db) {
-        await deleteDoc(doc(db, "billHistory", id));
+        await deleteDoc(doc(db, "billHistory", targetId));
       }
       
       // Always update localStorage cache
-      const localList = history.filter(h => h.id !== id);
+      const localList = history.filter(h => h.id !== targetId);
       localStorage.setItem(`she_bill_history_${user.uid}`, JSON.stringify(localList));
       
-      setHistory(prev => prev.filter(h => h.id !== id));
-      if (activeBill?.id === id) {
-        const remaining = history.filter(h => h.id !== id);
+      setHistory(prev => prev.filter(h => h.id !== targetId));
+      if (activeBill?.id === targetId) {
+        const remaining = history.filter(h => h.id !== targetId);
         setActiveBill(remaining.length > 0 ? remaining[0] : null);
       }
       setToast({ type: "success", message: "Bill deleted successfully." });
@@ -1426,27 +1584,39 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
 
             {/* Explain My Bill (Card 3) */}
             <motion.div 
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl p-4 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-xl hover:border-primary-green/30 dark:hover:border-primary-green/20 transition-all duration-300 relative overflow-hidden group space-y-3"
+              className="card-client card-client-blue dark:card-client-emerald bg-gradient-to-b from-white/60 to-white/30 dark:from-slate-900/40 dark:to-slate-900/10 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-5 shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] relative overflow-hidden group space-y-4"
             >
-              <div className="absolute -right-10 -top-10 w-20 h-20 blur-xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-primary-green dark:bg-emerald-500 group-hover:scale-150 transition-transform duration-500" />
+              {/* Decorative dynamic glows */}
+              <div className="absolute -right-12 -top-12 w-28 h-28 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-blue-500 dark:bg-emerald-500 group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute -left-12 -bottom-12 w-28 h-28 blur-2xl opacity-10 dark:opacity-5 rounded-full pointer-events-none bg-emerald-500 dark:bg-cyan-500 group-hover:scale-150 transition-transform duration-700" />
+              
+              {/* Specular Sheen */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
+
               <div className="flex items-center justify-between relative z-10">
-                <h3 className="flex items-center gap-1.5 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
-                  <Sparkles className="w-3.5 h-3.5 text-primary-green animate-pulse" />
+                <h3 className="flex items-center gap-1.5 text-[10px] font-black text-slate-855 dark:text-white uppercase tracking-widest">
+                  <Sparkles className="w-3.5 h-3.5 text-primary-blue dark:text-primary-green animate-pulse" />
                   Explain My Bill
                 </h3>
-                <span className="text-[9px] font-extrabold text-primary-blue dark:text-primary-green border border-white/10 dark:border-white/5 bg-white/20 dark:bg-slate-950/30 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+                <span className="text-[9px] font-black text-primary-blue dark:text-primary-green border border-blue-500/20 dark:border-emerald-500/20 bg-blue-500/10 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
                   AI Intelligence
                 </span>
               </div>
 
+              <div className="space-y-1 relative z-10 text-left">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                  Get a complete, natural language breakdown of fixed tariffs, variable slab changes, and taxes inside this bill scan.
+                </p>
+              </div>
+
               <motion.button
-                whileHover={{ y: -2, boxShadow: "0 10px 15px -3px rgba(37, 99, 235, 0.25), 0 4px 6px -4px rgba(37, 99, 235, 0.25)" }}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleExplainWithAI}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3.5 rounded-2xl text-xs font-bold text-white bg-gradient-to-r from-primary-blue via-blue-600 to-blue-700 dark:from-primary-green dark:via-emerald-500 dark:to-emerald-600 dark:text-slate-950 hover:opacity-95 shadow-md shadow-primary-blue/10 dark:shadow-none cursor-pointer transition-all relative z-10"
+                className="w-full flex items-center justify-center gap-1.5 py-3 px-4 rounded-2xl text-xs font-black text-white bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 dark:from-emerald-500 dark:via-emerald-600 dark:to-teal-600 dark:text-slate-950 shadow-md shadow-blue-500/20 dark:shadow-emerald-500/10 hover:shadow-lg hover:shadow-blue-500/25 dark:hover:shadow-emerald-500/15 cursor-pointer transition-all relative z-10 border border-blue-400/20 dark:border-emerald-400/20"
               >
-                <Sparkles className="w-3.5 h-3.5" />Explain with AI
+                <Sparkles className="w-3.5 h-3.5 animate-spin-slow" style={{ animationDuration: "8s" }} />
+                Explain with AI
               </motion.button>
             </motion.div>
           </motion.div>
@@ -1983,26 +2153,41 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                   <h4 className="font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider text-[10px]">BEE Saving Recommendations</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {modalCalcs.recommendations.map((rec, i) => (
-                      <div 
+                      <motion.div 
                         key={i} 
-                        className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2 text-left"
+                        whileHover={{ 
+                          y: -4, 
+                          scale: 1.015,
+                          boxShadow: "0 12px 24px -10px rgba(0,0,0,0.06)"
+                        }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/40 backdrop-blur-md space-y-2.5 text-left hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 relative overflow-hidden group/modalrec"
                       >
+                        {/* Specular Sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover/modalrec:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
+
                         <div className="flex justify-between items-start gap-2">
-                          <h5 className="font-bold text-slate-800 dark:text-white text-xs">{rec.title}</h5>
-                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-50 dark:bg-green-950/20 text-primary-green whitespace-nowrap">
+                          <h5 className="font-extrabold text-slate-850 dark:text-white text-xs">{rec.title}</h5>
+                          <span className="px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-455 whitespace-nowrap shadow-[0_2px_8px_rgba(16,185,129,0.08)]">
                             ₹{rec.savings}/mo
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-500 leading-normal">{rec.desc || "Reduce usage time or upgrade appliance to save energy."}</p>
-                        <div className="flex items-center gap-1.5 pt-1 text-[8px] font-bold uppercase tracking-wider">
-                          <span className={`px-1.5 py-0.5 rounded ${rec.difficulty === "Easy" ? "bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-primary-green" : rec.difficulty === "Medium" ? "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400" : "bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400"}`}>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">{rec.desc || "Reduce usage time or upgrade appliance to save energy."}</p>
+                        <div className="flex items-center gap-1.5 pt-1 text-[8px] font-black uppercase tracking-widest">
+                          <span className={`px-2 py-0.5 border rounded-md ${
+                            rec.difficulty === "Easy" 
+                              ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-[0_2px_6px_rgba(16,185,129,0.06)]" 
+                              : rec.difficulty === "Medium" 
+                              ? "bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-[0_2px_6px_rgba(59,130,246,0.06)]" 
+                              : "bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_2px_6px_rgba(239,68,68,0.06)]"
+                          }`}>
                             Diff: {rec.difficulty}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                          <span className="px-2 py-0.5 border rounded-md bg-slate-100/50 dark:bg-slate-800/40 border-slate-200/40 dark:border-slate-800/40 text-slate-500 dark:text-slate-400">
                             Impact: {rec.impact}
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -2016,6 +2201,56 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                 className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-655 dark:text-slate-400 hover:bg-slate-150 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ─────────────────────────────────────────── */}
+      {deleteBillId && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDeleteBillId(null)}
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 15 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="relative w-full max-w-sm bg-white/60 dark:bg-slate-955/40 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col p-6 text-center gap-5"
+          >
+            {/* Warning Icon Banner */}
+            <div className="mx-auto w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center text-red-500 shrink-0">
+              <AlertTriangle className="w-6 h-6 animate-bounce" style={{ animationDuration: "2.5s" }} />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Delete Bill Scan?
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
+                This will permanently delete this bill record from your history. This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3.5 pt-2">
+              <button
+                onClick={() => setDeleteBillId(null)}
+                className="px-4.5 py-2.5 text-xs font-bold rounded-xl text-slate-655 dark:text-slate-400 hover:bg-white/30 dark:hover:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4.5 py-2.5 text-xs font-bold rounded-xl text-white bg-red-550 hover:bg-red-650 dark:bg-red-650 dark:hover:bg-red-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg shadow-red-500/10 cursor-pointer"
+              >
+                Yes, Delete
               </button>
             </div>
           </motion.div>

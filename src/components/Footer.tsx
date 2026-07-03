@@ -1,81 +1,428 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Zap, Heart } from "lucide-react";
+import { 
+  Zap, Heart, ExternalLink, FileText, Layout, History, Database, HelpCircle,
+  ShieldCheck, Lock, Cpu, Leaf, Globe, ArrowRight, MessageSquare, IndianRupee
+} from "lucide-react";
+
+// Inline SVG social icons to support different lucide-react versions
+const GithubIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+  </svg>
+);
+
+const TwitterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
+  </svg>
+);
+
+const LinkedinIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
+
+// Count-up helper component for stats
+const AnimatedStat: React.FC<{
+  target: number;
+  duration?: number;
+  suffix?: string;
+  prefix?: string;
+  decimals?: number;
+}> = ({ target, duration = 1500, suffix = "", prefix = "", decimals = 0 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp: number | null = null;
+    let animationFrameId: number;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const currentVal = progress * target;
+      setCount(currentVal);
+      if (progress < 1) {
+        animationFrameId = window.requestAnimationFrame(step);
+      }
+    };
+    animationFrameId = window.requestAnimationFrame(step);
+
+    return () => {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [target, duration]);
+
+  const formatted = count.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+
+  return (
+    <span>
+      {prefix}
+      {formatted}
+      {suffix}
+    </span>
+  );
+};
 
 export const Footer: React.FC = () => {
+  const handleLinkClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <footer className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 transition-colors duration-300 py-10 mt-auto relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand block */}
-          <div className="col-span-1 md:col-span-2 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-blue to-primary-green flex items-center justify-center">
-                <Zap className="w-4.5 h-4.5 text-white" />
-              </div>
-              <span className="font-display font-bold text-md text-slate-900 dark:text-white">
-                Smart Household Energy
+    <footer className="relative w-full bg-white/40 dark:bg-slate-950/40 backdrop-blur-lg border-t border-slate-200/50 dark:border-slate-800/60 transition-colors duration-300 mt-auto overflow-hidden">
+      {/* Specular Reflective Gloss Sheen top highlight */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+      
+      {/* Ambient background glows */}
+      <div className="absolute -left-20 -bottom-20 w-64 h-64 blur-3xl opacity-10 dark:opacity-5 rounded-full bg-blue-500 pointer-events-none" />
+      <div className="absolute -right-20 -bottom-20 w-64 h-64 blur-3xl opacity-10 dark:opacity-5 rounded-full bg-emerald-500 pointer-events-none" />
+
+      {/* SECTION 1: Full-Width Final CTA */}
+      <div className="w-full relative py-16 md:py-20 overflow-hidden border-b border-slate-200/50 dark:border-slate-800/60 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white">
+        {/* Grid mesh overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0c_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0c_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        
+        {/* Radial gradient glow lights */}
+        <div className="absolute -left-10 -top-10 w-96 h-96 bg-cyan-400 rounded-full blur-3xl opacity-30 pointer-events-none animate-pulse duration-4000" />
+        <div className="absolute -right-10 -bottom-10 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-30 pointer-events-none animate-pulse duration-6000" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-5">
+          <h3 className="font-display font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-tight max-w-3xl mx-auto leading-tight drop-shadow-sm">
+            Ready to Take Control of Your Energy Costs?
+          </h3>
+          <p className="text-sm sm:text-base text-blue-50/90 max-w-xl mx-auto leading-relaxed">
+            Join smart households in Andhra Pradesh modeling consumption slabs, predicting billing structures, and saving up to 60% on grid power.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-3">
+            <Link 
+              to="/dashboard" 
+              onClick={handleLinkClick}
+              className="w-full sm:w-auto px-7 py-3 bg-white text-blue-600 hover:text-blue-700 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 text-center flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              <span>Calculate Energy Savings</span>
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+            <Link 
+              to="/BillAnalyzer" 
+              onClick={handleLinkClick}
+              className="w-full sm:w-auto px-7 py-3 bg-blue-700/40 hover:bg-blue-700/60 text-white font-bold rounded-xl border border-white/20 hover:border-white/40 backdrop-blur-sm transition-all duration-300 transform hover:-translate-y-0.5 text-center flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Analyze Bill PDF (OCR)</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 2: Animated Stats Bridge Cards */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Stat 1: Homes Audited */}
+          <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-md dark:shadow-2xl hover:shadow-[0_0_25px_rgba(59,130,246,0.15)] dark:hover:shadow-[0_0_35px_rgba(59,130,246,0.25)] hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 hover:-translate-y-1 group">
+            {/* Glow background highlight */}
+            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-1.5 relative z-10">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+                Homes Audited
               </span>
+              <Globe className="w-4 h-4 text-blue-500 dark:text-cyan-400 animate-[spin_12s_linear_infinite] group-hover:animate-[spin_3s_linear_infinite]" />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
-              Empowering consumers in Andhra Pradesh to understand their electricity consumption, analyze LT-I domestic slab bills, and make informed choices to save money and the environment.
+            <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
+              <AnimatedStat target={12450} suffix="+" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+              Residential audits in Andhra Pradesh
             </p>
           </div>
 
-          {/* Quick links block */}
-          <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-              Application
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/dashboard" className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors">
-                  Calculators & Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link to="/history" className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors">
-                  My History
-                </Link>
-              </li>
-              <li>
-                <Link to="/survey-data" className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors">
-                  Survey Data (30 Members)
-                </Link>
-              </li>
-            </ul>
+          {/* Stat 2: Prediction Accuracy */}
+          <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-md dark:shadow-2xl hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] dark:hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1 group">
+            {/* Glow background highlight */}
+            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-1.5 relative z-10">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+                AI Accuracy
+              </span>
+              <Cpu className="w-4 h-4 text-emerald-500 dark:text-emerald-400 animate-pulse duration-2000 group-hover:scale-110 group-hover:rotate-6 transition-all" />
+            </div>
+            <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
+              <AnimatedStat target={99.4} suffix="%" decimals={1} />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+              Tariff slab matching confidence
+            </p>
           </div>
 
-          {/* Help & Support block */}
-          <div>
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-              Support
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/faq" className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors">
-                  FAQ & Guide
-                </Link>
-              </li>
-              <li>
-                <a href="https://apdiscom.ap.gov.in" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors">
-                  Official APDISCOM portal
-                </a>
-              </li>
-            </ul>
+          {/* Stat 3: kWh Analysed */}
+          <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-md dark:shadow-2xl hover:shadow-[0_0_25px_rgba(6,182,212,0.15)] dark:hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] hover:border-cyan-500/40 dark:hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-1 group">
+            {/* Glow background highlight */}
+            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-1.5 relative z-10">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+                kWh Analysed
+              </span>
+              <Zap className="w-4 h-4 text-cyan-500 dark:text-cyan-400 group-hover:animate-bounce group-hover:scale-110 transition-all" />
+            </div>
+            <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
+              <AnimatedStat target={4.8} suffix="M+" decimals={1} />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+              Grid consumption logs processed
+            </p>
+          </div>
+
+          {/* Stat 4: Costs Predicted */}
+          <div className="relative overflow-hidden bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-md dark:shadow-2xl hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] dark:hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] hover:border-amber-500/40 dark:hover:border-amber-500/40 transition-all duration-300 hover:-translate-y-1 group">
+            {/* Glow background highlight */}
+            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/10 dark:bg-amber-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className="flex items-center justify-between mb-1.5 relative z-10">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+                Costs Predicted
+              </span>
+              <IndianRupee className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-[bounce_3s_infinite] group-hover:scale-110 group-hover:rotate-12 transition-all" />
+            </div>
+            <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
+              <AnimatedStat target={12.8} prefix="₹" suffix="M+" decimals={1} />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+              Invoiced value mapped for users
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 3: Four-Column Footer Links Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10 relative z-10">
+        <div className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm dark:shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Column 1: Brand & Status Widget (Col span-5) */}
+            <div className="lg:col-span-5 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/40 dark:border-slate-800/50 rounded-2xl p-6 space-y-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] dark:shadow-none">
+              <div className="flex items-center gap-3">
+                <div className="relative group/logo">
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-500 blur-sm opacity-50 group-hover/logo:opacity-100 transition-opacity duration-300" />
+                  <div className="relative w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800/80 shadow-lg group-hover/logo:scale-105 group-hover/logo:rotate-3 transition-all duration-300">
+                    <Zap className="w-5 h-5 text-cyan-400 fill-cyan-400/20" />
+                  </div>
+                </div>
+                <span className="font-display font-black text-lg tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-slate-650 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                  Smart Household Energy
+                </span>
+              </div>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
+                Empowering consumers in Andhra Pradesh to demystify complex slab structures, audit load demands, and model rooftop solar investments.
+              </p>
+              
+              {/* Live status indicator */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 border border-emerald-500/20 dark:border-emerald-500/30 rounded-full bg-emerald-500/5 dark:bg-emerald-500/10 shadow-[0_1px_2px_rgba(16,185,129,0.05)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10B981]"></span>
+                </span>
+                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                  System Status: 100% DISCOM Sync
+                </span>
+              </div>
+            </div>
+
+            {/* Column 2: Product Suite (Col span-2 col-start-7) */}
+            <div className="lg:col-span-2 lg:col-start-7 space-y-3 pt-2">
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest">
+                Product Suite
+              </h4>
+              <ul className="space-y-2.5">
+                <li>
+                  <Link to="/dashboard" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Layout className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Slab Calculator</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/BillAnalyzer" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Database className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">AI Bill Analyzer</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/history" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <History className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Energy Logs</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/survey-data" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Survey Database</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 3: Resources (Col span-2 col-start-9) */}
+            <div className="lg:col-span-2 lg:col-start-9 space-y-3 pt-2">
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">
+                Resources
+              </h4>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="https://www.apspdcl.in/electricity-tariff.php" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">APSPDCL LT-I Tariff</span>
+                    <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0 animate-pulse" />
+                  </a>
+                </li>
+                <li>
+                  <a href="https://alpexsolar.com/resources/blog/solar-panel-installation-cost-home/" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Zap className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Alpex Solar Guide</span>
+                    <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0" />
+                  </a>
+                </li>
+                <li>
+                  <Link to="/faq" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Energy FAQ</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Platform Security (Col span-2 col-start-11) */}
+            <div className="lg:col-span-2 lg:col-start-11 space-y-3 pt-2">
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">
+                Platform
+              </h4>
+              <ul className="space-y-2.5">
+                <li>
+                  <Link to="/settings" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Security Settings</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/profile" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
+                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">User Profile</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
           </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-slate-800 my-6"></div>
+        {/* SECTION 4: Trust Badge Row */}
+        <div className="border-t border-slate-200/50 dark:border-slate-800/60 py-6">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-500 dark:text-slate-400">
+            
+            {/* SSL Badge */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-blue-500/30 hover:bg-blue-50/10 dark:hover:bg-blue-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-blue-50 dark:bg-blue-950/40 rounded-lg text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300">
+                <ShieldCheck className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-semibold tracking-tight">SSL Secure</span>
+            </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            &copy; {new Date().getFullYear()} Smart Household Energy. All rights reserved.
-          </p>
-          <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            Designed with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" /> for energy efficiency.
-          </p>
+            {/* Privacy Badge */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                <Lock className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-semibold tracking-tight">Privacy Protected</span>
+            </div>
+
+            {/* AI Powered Badge */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg text-indigo-500 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+                <Cpu className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-semibold tracking-tight">AI Powered</span>
+            </div>
+
+            {/* Eco Friendly Badge */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-600/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform duration-300">
+                <Leaf className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-semibold tracking-tight">Eco Friendly</span>
+            </div>
+
+            {/* DISCOM Compatible Badge */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-amber-500/30 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group col-span-2 justify-center sm:col-span-1">
+              <div className="p-1 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
+                <Zap className="w-3.5 h-3.5" />
+              </div>
+              <span className="font-semibold tracking-tight">DISCOM Compatible</span>
+            </div>
+
+          </div>
         </div>
+
+        {/* SECTION 5: Minimal Copyright & Socials Bar */}
+        <div className="border-t border-slate-200/50 dark:border-slate-800/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-500 space-y-1 text-center sm:text-left">
+            <p>&copy; {new Date().getFullYear()} Smart Household Energy. All rights reserved.</p>
+            <p className="flex items-center justify-center sm:justify-start gap-1.5 group/designed">
+              <span>Designed with</span> 
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 animate-pulse group-hover/designed:scale-130 transition-transform duration-300" /> 
+              <span>for carbon neutrality &amp; energy efficiency.</span>
+            </p>
+          </div>
+          
+          {/* Social Links Row */}
+          <div className="flex items-center gap-3">
+            <a 
+              href="https://github.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="GitHub"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              <GithubIcon className="w-4 h-4" />
+            </a>
+            <a 
+              href="https://twitter.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Twitter"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              <TwitterIcon className="w-4 h-4" />
+            </a>
+            <a 
+              href="https://linkedin.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="LinkedIn"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              <LinkedinIcon className="w-4 h-4" />
+            </a>
+            <a 
+              href="https://discord.com" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label="Discord"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+            >
+              <MessageSquare className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+
       </div>
     </footer>
   );

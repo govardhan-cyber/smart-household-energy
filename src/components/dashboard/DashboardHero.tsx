@@ -357,7 +357,7 @@ export const calculateScoreForReport = (report: any) => {
     score -= 10;
   }
 
-  const lights = report.appliances.find((a: any) => a.name?.toLowerCase() === "lights" || a.name?.toLowerCase() === "tube light" || a.id === "lights");
+  const lights = report.appliances.find((a: any) => a.name?.toLowerCase() === "lights" || a.name?.toLowerCase() === "tube light" || a.id === "lights" || a.id === "lights_tube");
   if (lights && lights.watts > 12) {
     score -= 5;
   }
@@ -486,6 +486,7 @@ export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({
 
   const acApp = appliances.find(a => a.id === "ac" && a.quantity > 0);
   const lightsApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
+  const tubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
   const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
   const billCharge = totalUnits * 7.5;
   const savingsRatio = savingsPotential / (billCharge || 1);
@@ -493,6 +494,7 @@ export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({
   const rawEfficiency = Math.max(5, Math.min(20, Math.round(
     20 - (acApp && acApp.hours > 6 ? 6 : 0)
        - (lightsApp && lightsApp.watts > 12 ? 3 : 0)
+       - (tubeApp && tubeApp.watts > 18 ? 3 : 0)
        - (fridgeApp && fridgeApp.quantity > 1 ? 3 : 0)
        - Math.min(8, savingsRatio * 25)
   )));

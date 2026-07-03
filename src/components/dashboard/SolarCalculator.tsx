@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler, MessageSquare, ArrowRight } from "lucide-react";
+import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler, MessageSquare, ArrowRight, Sparkles } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
@@ -320,6 +320,17 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const [panelDegradation, setPanelDegradation] = useState<number>(0.8); 
   const [maintenanceRate, setMaintenanceRate] = useState<number>(1.0); 
 
+  // New Hybrid Solar, Battery Storage, Net Metering Policy and TOD Load Shifting states
+  const [isHybrid, setIsHybrid] = useState<boolean>(false);
+  const [batteryKwh, setBatteryKwh] = useState<number>(5);
+  const [batteryType, setBatteryType] = useState<"lithium" | "lead-acid">("lithium");
+  const netMeteringPolicy = "net-metering";
+  const buybackRate = 3.5;
+  const todShiftPercent = 0;
+  const [showTariffExpl, setShowTariffExpl] = useState<boolean>(false);
+  const [showDegradationExpl, setShowDegradationExpl] = useState<boolean>(false);
+  const [showMaintenanceExpl, setShowMaintenanceExpl] = useState<boolean>(false);
+
 
 
   // Custom visual states for isometric roof planner
@@ -432,13 +443,71 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   const panelWeight = solarTech === "topcon" ? 32 : 27;
   const panelSizeLabel = solarTech === "topcon" ? "~2.1 m × 1.1 m" : "~2.0 m × 1.0 m";
 
-  // 3. Net metering simulation using real slab tariffs
-  const oldBillCalc = calculateBill(kwhNeeded, tariffKey);
+  // 3. Net metering and Hybrid Battery simulation using real slab tariffs
+  let batteryCost = 0;
+  let batteryCostPerKwh = 15000;
+  let batteryReplacementInterval = 10;
+  if (isHybrid && batteryKwh > 0) {
+    if (batteryType === "lead-acid") {
+      batteryCostPerKwh = 7000;
+      batteryReplacementInterval = 4;
+    }
+    batteryCost = batteryKwh * batteryCostPerKwh;
+  }
+  const totalUpfrontInvestment = installationCost + batteryCost;
+
+  // Time-of-Day ratios for load shifting
+  const shiftedPeakPercent = 20 * (1 - todShiftPercent / 100);
+  const shiftedOffPeakPercent = 20 + (20 * (todShiftPercent / 100));
+  const todRatio = {
+    peakPercent: shiftedPeakPercent,
+    normalPercent: 60,
+    offPeakPercent: shiftedOffPeakPercent
+  };
+
+  const oldBillCalc = calculateBill(
+    kwhNeeded, 
+    tariffKey, 
+    7.5, 
+    todShiftPercent > 0 ? todRatio : undefined
+  );
   const oldBill = oldBillCalc.netEnergyCharge;
 
-  const newUnits = Math.max(0, kwhNeeded - monthlyGeneration);
-  const newBillCalc = calculateBill(newUnits, tariffKey);
-  const newBill = newBillCalc.netEnergyCharge;
+  let newBill = 0;
+  let newUnits = 0;
+  if (netMeteringPolicy === "net-metering") {
+    newUnits = Math.max(0, kwhNeeded - monthlyGeneration);
+    const newBillCalc = calculateBill(
+      newUnits, 
+      tariffKey, 
+      7.5, 
+      todShiftPercent > 0 ? todRatio : undefined
+    );
+    newBill = newBillCalc.netEnergyCharge;
+  } else {
+    // Net Billing (Buyback)
+    if (monthlyGeneration > kwhNeeded) {
+      newUnits = 0;
+      const excess = monthlyGeneration - kwhNeeded;
+      const buybackCredit = excess * buybackRate;
+      const fixedChargesAndTax = calculateBill(
+        0, 
+        tariffKey, 
+        7.5, 
+        todShiftPercent > 0 ? todRatio : undefined
+      ).netEnergyCharge;
+      newBill = Math.max(0, fixedChargesAndTax - buybackCredit);
+    } else {
+      newUnits = kwhNeeded - monthlyGeneration;
+      const newBillCalc = calculateBill(
+        newUnits, 
+        tariffKey, 
+        7.5, 
+        todShiftPercent > 0 ? todRatio : undefined
+      );
+      newBill = newBillCalc.netEnergyCharge;
+    }
+  }
 
   const monthlySavings = Math.max(0, Math.round(oldBill - newBill));
 
@@ -454,15 +523,50 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     const baseUnits = kwhNeeded;
     const monthUnits = Math.round(baseUnits * (seasonalMultipliers[idx] / currentMultiplier));
     
-    const calcResult = calculateBill(monthUnits, tariffKey);
+    const calcResult = calculateBill(
+      monthUnits, 
+      tariffKey, 
+      7.5, 
+      todShiftPercent > 0 ? todRatio : undefined
+    );
     const oldB = calcResult.netEnergyCharge;
     
     const baseSolarGen = recommendedKw * 120;
-    const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx]);
-    const netUnits = Math.max(0, monthUnits - monthSolarGen);
+    const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
     
-    const newCalcResult = calculateBill(netUnits, tariffKey);
-    const newB = newCalcResult.netEnergyCharge;
+    let newB = 0;
+    if (netMeteringPolicy === "net-metering") {
+      const monthNetUnits = Math.max(0, monthUnits - monthSolarGen);
+      const newCalcResult = calculateBill(
+        monthNetUnits, 
+        tariffKey, 
+        7.5, 
+        todShiftPercent > 0 ? todRatio : undefined
+      );
+      newB = newCalcResult.netEnergyCharge;
+    } else {
+      // Net Billing
+      if (monthSolarGen > monthUnits) {
+        const excess = monthSolarGen - monthUnits;
+        const buybackCredit = excess * buybackRate;
+        const fixedChargesAndTax = calculateBill(
+          0, 
+          tariffKey, 
+          7.5, 
+          todShiftPercent > 0 ? todRatio : undefined
+        ).netEnergyCharge;
+        newB = Math.max(0, fixedChargesAndTax - buybackCredit);
+      } else {
+        const monthNetUnits = monthUnits - monthSolarGen;
+        const newCalcResult = calculateBill(
+          monthNetUnits, 
+          tariffKey, 
+          7.5, 
+          todShiftPercent > 0 ? todRatio : undefined
+        );
+        newB = newCalcResult.netEnergyCharge;
+      }
+    }
     
     const savings = Math.max(0, oldB - newB);
     
@@ -476,7 +580,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
   const firstYearSavings = monthlySavingsData.reduce((sum, d) => sum + d.Savings, 0);
 
-  // 15-Year Payback Simulation & 25-Year Long Term Modeling
+  // Payback Simulation & 25-Year Long Term Modeling
   const paybackData: any[] = [];
   let cumulativeSavings = 0;
   let paybackPeriodVal = 0;
@@ -485,15 +589,15 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
   // Year 0 entry
   paybackData.push({
     year: "Yr 0",
-    Balance: -installationCost,
+    Balance: -totalUpfrontInvestment,
     savings: 0,
-    cost: -installationCost
+    cost: -totalUpfrontInvestment
   });
 
   let tenYearNetSavings = 0;
   let twentyFiveYearNetSavings = 0;
   let totalNoSolarCost25Years = 0;
-  let totalSolarCost25Years = installationCost; 
+  let totalSolarCost25Years = totalUpfrontInvestment; 
 
   for (let y = 1; y <= 25; y++) {
     let yearlyBillNoSolar = 0;
@@ -504,28 +608,72 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       const baseUnits = kwhNeeded;
       const monthUnits = Math.round(baseUnits * (seasonalMultipliers[idx] / currentMultiplier));
       
-      const oldBillBase = calculateBill(monthUnits, tariffKey).netEnergyCharge;
+      const oldBillBase = calculateBill(
+        monthUnits, 
+        tariffKey, 
+        7.5, 
+        todShiftPercent > 0 ? todRatio : undefined
+      ).netEnergyCharge;
       const oldBillInflated = oldBillBase * Math.pow(1 + tariffIncrease / 100, y - 1);
       yearlyBillNoSolar += oldBillInflated;
 
       const baseSolarGen = recommendedKw * 120;
-      const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx]);
+      const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
       const degradedGen = monthSolarGen * Math.pow(1 - panelDegradation / 100, y - 1);
-      const netUnits = Math.max(0, monthUnits - degradedGen);
+      
+      let newBillBase = 0;
+      if (netMeteringPolicy === "net-metering") {
+        const netUnits = Math.max(0, monthUnits - degradedGen);
+        newBillBase = calculateBill(
+          netUnits, 
+          tariffKey, 
+          7.5, 
+          todShiftPercent > 0 ? todRatio : undefined
+        ).netEnergyCharge;
+      } else {
+        // Net Billing
+        if (degradedGen > monthUnits) {
+          const excess = degradedGen - monthUnits;
+          const buybackCredit = excess * buybackRate;
+          const fixedChargesAndTax = calculateBill(
+            0, 
+            tariffKey, 
+            7.5, 
+            todShiftPercent > 0 ? todRatio : undefined
+          ).netEnergyCharge;
+          newBillBase = Math.max(0, fixedChargesAndTax - buybackCredit);
+        } else {
+          const netUnits = monthUnits - degradedGen;
+          newBillBase = calculateBill(
+            netUnits, 
+            tariffKey, 
+            7.5, 
+            todShiftPercent > 0 ? todRatio : undefined
+          ).netEnergyCharge;
+        }
+      }
 
-      const newBillBase = calculateBill(netUnits, tariffKey).netEnergyCharge;
       const newBillInflated = newBillBase * Math.pow(1 + tariffIncrease / 100, y - 1);
       yearlyBillWithSolar += newBillInflated;
     });
 
     const maintenanceCost = (maintenanceRate / 100) * installationCost * Math.pow(1.02, y - 1);
-    const netSavingsThisYear = Math.max(0, yearlyBillNoSolar - yearlyBillWithSolar - maintenanceCost);
+    
+    let replacementCostThisYear = 0;
+    if (isHybrid && batteryKwh > 0 && y > 1 && (y - 1) % batteryReplacementInterval === 0) {
+      replacementCostThisYear = batteryCost * Math.pow(1.02, y - 1);
+    }
+
+    const netSavingsThisYear = Math.max(
+      -replacementCostThisYear,
+      yearlyBillNoSolar - yearlyBillWithSolar - maintenanceCost - replacementCostThisYear
+    );
     cumulativeSavings += netSavingsThisYear;
 
-    const currentBalance = -installationCost + cumulativeSavings;
+    const currentBalance = -totalUpfrontInvestment + cumulativeSavings;
 
     totalNoSolarCost25Years += yearlyBillNoSolar;
-    totalSolarCost25Years += yearlyBillWithSolar + maintenanceCost;
+    totalSolarCost25Years += yearlyBillWithSolar + maintenanceCost + replacementCostThisYear;
 
     if (y <= 15) {
       paybackData.push({
@@ -543,7 +691,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
     }
 
     if (currentBalance >= 0 && !foundPayback) {
-      const prevBalance = -installationCost + (cumulativeSavings - netSavingsThisYear);
+      const prevBalance = -totalUpfrontInvestment + (cumulativeSavings - netSavingsThisYear);
       const diff = currentBalance - prevBalance;
       const fraction = diff > 0 ? Math.abs(prevBalance) / diff : 0;
       paybackPeriodVal = (y - 1) + fraction;
@@ -561,7 +709,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       const cacheKey = `she_solar_cache_${user.uid}`;
       const solarCache = {
         recommendedKw,
-        installationCost,
+        installationCost: totalUpfrontInvestment,
         monthlyGeneration,
         monthlySavings,
         paybackPeriodVal,
@@ -571,11 +719,17 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
         selectedCity,
         solarTech,
         roofArea,
-        monthlyBillInput: monthlyBill
+        monthlyBillInput: monthlyBill,
+        isHybrid,
+        batteryKwh,
+        batteryType,
+        netMeteringPolicy,
+        buybackRate,
+        todShiftPercent
       };
       localStorage.setItem(cacheKey, JSON.stringify(solarCache));
     }
-  }, [user?.uid, recommendedKw, installationCost, monthlyGeneration, monthlySavings, paybackPeriodVal, panelsNeeded, tenYearNetSavings, twentyFiveYearNetSavings, selectedCity, solarTech, roofArea, monthlyBill]);
+  }, [user?.uid, recommendedKw, totalUpfrontInvestment, monthlyGeneration, monthlySavings, paybackPeriodVal, panelsNeeded, tenYearNetSavings, twentyFiveYearNetSavings, selectedCity, solarTech, roofArea, monthlyBill, isHybrid, batteryKwh, batteryType, netMeteringPolicy, buybackRate, todShiftPercent]);
 
   // Percentages
   const billCoveragePercent = oldBill > 0 ? Math.min(100, Math.round((monthlySavings / oldBill) * 100)) : 0;
@@ -962,10 +1116,12 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
       yr5 += firstYearSavings * Math.pow(1 + tariffIncrease / 100, i - 1);
     }
     const yr10 = paybackData[10]?.savings || (firstYearSavings * 10);
-    const yr25 = twentyFiveYearNetSavings + installationCost;
+    const yr25 = twentyFiveYearNetSavings + totalUpfrontInvestment;
 
     return (
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5 text-left relative overflow-hidden group hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)] hover:border-blue-500/20 transition-all duration-300">
+      <div className="backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] space-y-5 text-left relative overflow-hidden group hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300">
+        {/* Specular Reflective Gloss Sheen */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
         <div className="absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-20 dark:opacity-10 rounded-full bg-blue-500 pointer-events-none group-hover:scale-150 transition-all duration-500" />
         
         <div className="relative z-10">
@@ -981,7 +1137,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           {[
             { label: "Year 1", amount: yr1 },
             { label: "Year 5", amount: yr5 },
-            { label: `Year ${paybackPeriodVal.toFixed(1)} (Break-even)`, amount: installationCost, isPayback: true },
+            { label: `Year ${paybackPeriodVal.toFixed(1)} (Break-even)`, amount: totalUpfrontInvestment, isPayback: true },
             { label: "Year 10", amount: yr10 },
             { label: "Year 25", amount: yr25 }
           ].sort((a, b) => a.amount - b.amount).map((item, idx) => {
@@ -1032,7 +1188,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                       </span>
                     </div>
                     
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden relative">
+                    <div className="h-2 w-full bg-slate-100/60 dark:bg-slate-800/40 border border-slate-100/10 rounded-full overflow-hidden relative">
                       <div 
                         className={`h-full rounded-full transition-all duration-1000 ${
                           item.label === "Year 25"
@@ -1089,7 +1245,9 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           variants={itemVariants}
           className="lg:col-span-6 space-y-6"
         >
-          <div id="solar-savings-planner-card" className="bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-slate-200/50 dark:border-slate-850/60 shadow-xl space-y-6 relative overflow-hidden group">
+          <div id="solar-savings-planner-card" className="backdrop-blur-md bg-white/70 dark:bg-slate-955/45 p-6 sm:p-8 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-xl space-y-6 relative overflow-hidden group">
+            {/* Specular Reflective Gloss Sheen */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
             {/* Ambient glows */}
             <div className="absolute -right-8 -top-8 w-40 h-40 blur-3xl opacity-10 dark:opacity-5 rounded-full bg-amber-400 pointer-events-none group-hover:scale-125 transition-all duration-700" />
             <div className="absolute -left-8 -bottom-8 w-32 h-32 blur-3xl opacity-5 dark:opacity-3 rounded-full bg-sky-400 pointer-events-none" />
@@ -1313,12 +1471,6 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   </button>
                 ))}
               </div>
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-550">
-                <span>₹1,000</span>
-                <span>₹5,000</span>
-                <span>₹10,000</span>
-                <span>₹15,000</span>
-              </div>
             </div>
 
             {/* Input 2: Roof Space Area (sq ft) */}
@@ -1369,11 +1521,95 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   </button>
                 ))}
               </div>
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-555">
-                <span>50 sq ft</span>
-                <span>500 sq ft</span>
-                <span>1,000 sq ft</span>
-                <span>1,500 sq ft</span>
+            </div>
+
+            {/* Hybrid Backup Battery Storage */}
+            <div className="border border-slate-200/40 dark:border-slate-800/40 rounded-2xl overflow-hidden bg-white/20 dark:bg-slate-950/20 relative z-10 shadow-sm">
+              <div className="w-full flex items-center gap-2 p-4 text-xs font-black text-slate-700 dark:text-slate-300 bg-slate-50/40 dark:bg-slate-950/30 border-b border-slate-200/30 dark:border-slate-800/40">
+                <Layers className="w-4 h-4 text-slate-405" />
+                Hybrid Backup Battery Storage
+              </div>
+
+              <div className="p-4 space-y-4 text-xs bg-transparent">
+                {/* Hybrid Storage Toggle */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-slate-655 dark:text-slate-400">Hybrid Backup Battery Storage</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsHybrid(!isHybrid)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out outline-none ${
+                        isHybrid ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-800"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          isHybrid ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {isHybrid && (
+                    <div className="space-y-3 pt-2 bg-slate-50/50 dark:bg-slate-950/20 p-3 rounded-xl border border-slate-100 dark:border-slate-850">
+                      {/* Battery Capacity */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
+                          <span>Battery Storage Capacity</span>
+                          <span className="text-emerald-500 font-bold">{batteryKwh} kWh</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="2.5"
+                          max="20"
+                          step="2.5"
+                          value={batteryKwh}
+                          onChange={(e) => setBatteryKwh(parseFloat(e.target.value))}
+                          className="premium-slider w-full cursor-pointer h-2 rounded-full appearance-none outline-none"
+                          style={{
+                            background: activeTheme === "dark"
+                              ? `linear-gradient(to right, #10b981 0%, #10b981 ${((batteryKwh - 2.5) / 17.5) * 100}%, #1e293b ${((batteryKwh - 2.5) / 17.5) * 100}%, #1e293b 100%)`
+                              : `linear-gradient(to right, #10b981 0%, #10b981 ${((batteryKwh - 2.5) / 17.5) * 100}%, #e2e8f0 ${((batteryKwh - 2.5) / 17.5) * 100}%, #e2e8f0 100%)`
+                          }}
+                        />
+                      </div>
+
+                      {/* Battery Chemistry */}
+                      <div className="space-y-1">
+                        <span className="font-semibold text-slate-500 dark:text-slate-455 block text-[10px]">Battery Chemistry</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setBatteryType("lithium")}
+                            className={`py-1 px-2 rounded-lg border text-[10px] font-bold cursor-pointer transition-all duration-200 ${
+                              batteryType === "lithium"
+                                ? "bg-emerald-500 text-white border-emerald-500 shadow-sm animate-none"
+                                : "bg-slate-50 dark:bg-slate-900 text-slate-550 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            Lithium (10yr life)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBatteryType("lead-acid")}
+                            className={`py-1 px-2 rounded-lg border text-[10px] font-bold cursor-pointer transition-all duration-200 ${
+                              batteryType === "lead-acid"
+                                ? "bg-emerald-500 text-white border-emerald-500 shadow-sm animate-none"
+                                : "bg-slate-50 dark:bg-slate-900 text-slate-555 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            Lead-Acid (4yr life)
+                          </button>
+                        </div>
+                        <span className="text-[9px] text-slate-400 block pt-1 leading-normal">
+                          {batteryType === "lithium" 
+                            ? "Est. cost: ₹15,000/kWh upfront. Long life with high depth-of-discharge." 
+                            : "Est. cost: ₹7,000/kWh upfront. Economical but needs replacement every 4 years."}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1486,20 +1722,35 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
           </div>
 
           {/* Financial Modeling Assumptions (Always Open) */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 relative z-10">
+            <div className="backdrop-blur-md bg-white/70 dark:bg-slate-955/45 border border-slate-200/50 dark:border-slate-800/60 rounded-3xl overflow-hidden relative z-10 shadow-sm">
               {/* Header */}
-              <div className="w-full flex items-center gap-2 p-4 text-xs font-black text-slate-700 dark:text-slate-300 bg-slate-50/70 dark:bg-slate-950/30 border-b border-slate-200 dark:border-slate-800">
-                <Settings className="w-4 h-4 text-slate-400" />
+              <div className="w-full flex items-center gap-2 p-4 text-xs font-black text-slate-700 dark:text-slate-350 bg-slate-50/40 dark:bg-slate-950/30 border-b border-slate-150 dark:border-slate-800/55">
+                <Settings className="w-4 h-4 text-slate-405" />
                 Financial Modeling Assumptions
               </div>
 
               {/* Content — always visible */}
-              <div className="p-4 space-y-4 text-xs bg-white dark:bg-slate-900/50">
+              <div className="p-4 space-y-4 text-xs bg-transparent">
                 <div className="space-y-2">
-                  <div className="flex justify-between font-semibold text-slate-600 dark:text-slate-400">
-                    <span>Annual Tariff Rate Increase</span>
+                  <div className="flex justify-between items-center font-semibold text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      Annual Tariff Rate Increase
+                      <HelpCircle 
+                        className={`w-3.5 h-3.5 cursor-pointer transition-colors duration-150 ${showTariffExpl ? 'text-blue-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`} 
+                        onClick={() => setShowTariffExpl(!showTariffExpl)} 
+                      />
+                    </span>
                     <span className="text-primary-blue dark:text-primary-green font-bold">{tariffIncrease}%</span>
                   </div>
+                  {showTariffExpl && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/40 dark:border-blue-900/20 p-2.5 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 text-left leading-normal font-medium"
+                    >
+                      Utility electricity rates rise every year. We project this percentage hike annually to calculate how much grid power will cost in the future.
+                    </motion.div>
+                  )}
                   <input
                     type="range"
                     min="0"
@@ -1518,10 +1769,25 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
-                    <span>Annual Module Degradation</span>
+                  <div className="flex justify-between items-center font-semibold text-slate-655 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      Annual Module Degradation
+                      <HelpCircle 
+                        className={`w-3.5 h-3.5 cursor-pointer transition-colors duration-150 ${showDegradationExpl ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`} 
+                        onClick={() => setShowDegradationExpl(!showDegradationExpl)} 
+                      />
+                    </span>
                     <span className="text-amber-505 font-bold text-amber-500">{panelDegradation}%</span>
                   </div>
+                  {showDegradationExpl && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-amber-50/40 dark:bg-amber-950/10 border border-amber-100/40 dark:border-amber-900/20 p-2.5 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 text-left leading-normal font-medium"
+                    >
+                      Solar panels slowly lose a tiny bit of power generation capability every year. Typically premium panels lose less than 1% capacity per year.
+                    </motion.div>
+                  )}
                   <input
                     type="range"
                     min="0.1"
@@ -1540,10 +1806,25 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between font-semibold text-slate-655 dark:text-slate-400">
-                    <span>Annual Maintenance Cost</span>
+                  <div className="flex justify-between items-center font-semibold text-slate-655 dark:text-slate-400">
+                    <span className="flex items-center gap-1">
+                      Annual Maintenance Cost
+                      <HelpCircle 
+                        className={`w-3.5 h-3.5 cursor-pointer transition-colors duration-150 ${showMaintenanceExpl ? 'text-emerald-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`} 
+                        onClick={() => setShowMaintenanceExpl(!showMaintenanceExpl)} 
+                      />
+                    </span>
                     <span className="text-slate-700 dark:text-slate-350 font-bold">{maintenanceRate}% <span className="font-normal text-slate-400">of cost</span></span>
                   </div>
+                  {showMaintenanceExpl && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-100/40 dark:border-emerald-900/20 p-2.5 rounded-xl text-[10px] text-slate-500 dark:text-slate-400 text-left leading-normal font-medium"
+                    >
+                      Covers standard recurring maintenance like cleaning dust off the panels, checking electrical inverter connections, and replacement wiring.
+                    </motion.div>
+                  )}
                   <input
                     type="range"
                     min="0.0"
@@ -1560,11 +1841,14 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                   />
                   <span className="text-[10px] text-slate-400 block font-medium">Inverter servicing, panel cleaning, and wiring maintenance.</span>
                 </div>
+
               </div>
             </div>
 
             {/* AI Solar Advisor Widget */}
-            <div className="bg-gradient-to-br from-indigo-50/40 via-purple-50/10 to-indigo-50/20 dark:from-indigo-950/20 dark:via-purple-950/5 dark:to-indigo-950/10 p-5 rounded-3xl border border-indigo-100/60 dark:border-indigo-950/60 shadow-sm relative overflow-hidden group">
+            <div className="backdrop-blur-md bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-indigo-500/10 border border-indigo-200/50 dark:border-indigo-800/40 p-5 rounded-3xl shadow-sm relative overflow-hidden group">
+              {/* Specular Reflective Gloss Sheen */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
               {/* Glowing Background Wash */}
               <div className="absolute -right-12 -top-12 w-32 h-32 blur-2xl opacity-15 dark:opacity-10 rounded-full bg-indigo-500 pointer-events-none group-hover:scale-150 transition-all duration-700" />
               <div className="absolute -left-12 -bottom-12 w-32 h-32 blur-2xl opacity-10 dark:opacity-5 rounded-full bg-purple-500 pointer-events-none group-hover:scale-150 transition-all duration-700" />
@@ -1603,7 +1887,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
                     type="button"
                     onClick={() => {
                       window.dispatchEvent(new CustomEvent("she_trigger_chat", { 
-                        detail: { message: `${q} Based on my Solar Planner recommendation: a ${recommendedKw.toFixed(1)} kW system, costs ₹${installationCost.toLocaleString('en-IN')}, saves ₹${firstYearSavings.toLocaleString('en-IN')}/year, payback in ${paybackPeriodVal.toFixed(1)} years.` } 
+                        detail: { message: `${q} Based on my Solar Planner recommendation: a ${recommendedKw.toFixed(1)} kW system, costs ₹${totalUpfrontInvestment.toLocaleString('en-IN')}, saves ₹${firstYearSavings.toLocaleString('en-IN')}/year, payback in ${paybackPeriodVal.toFixed(1)} years.` } 
                       }));
                     }}
                     className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/60 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/20 dark:hover:from-indigo-950/20 dark:hover:to-purple-950/15 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)] dark:hover:shadow-none text-slate-700 dark:text-slate-350 text-left transition-colors duration-200 cursor-pointer flex justify-between items-center gap-2 group/btn font-semibold"
@@ -1835,28 +2119,23 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             {/* ── 4. Metric Cards Grid (gradient top-border + stagger) ── */}
             <div className="grid grid-cols-2 gap-4 text-left">
               {[
-                { label: "💰 Investment",    value: `₹${Math.round(installationCost).toLocaleString('en-IN')}`, sub: "After PM Surya Ghar Subsidy", topColor: "from-blue-400 to-indigo-500",   glowColor: "bg-blue-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]",  borderHover: "hover:border-blue-400/40",   delay: 0 },
-                { label: "📈 Annual Return", value: `₹${Math.round(firstYearSavings).toLocaleString('en-IN')}`, sub: "Year 1 savings estimate",      topColor: "from-emerald-400 to-teal-500", glowColor: "bg-emerald-500", hoverShadow: "hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)]",  borderHover: "hover:border-emerald-400/40", delay: 75 },
-                { label: "⚡ Monthly Savings",value: `₹${Math.round(firstYearSavings / 12).toLocaleString('en-IN')}`, sub: "Estimated grid bill cut", topColor: "from-cyan-400 to-sky-500",  glowColor: "bg-cyan-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(6,182,212,0.12)]",   borderHover: "hover:border-cyan-400/40",   delay: 150 },
-                { label: "🏆 25yr ROI",      value: `${installationCost > 0 ? ((twentyFiveYearNetSavings + installationCost) / installationCost).toFixed(1) : '0.0'}x`, sub: "25-year cumulative yield", topColor: "from-amber-400 to-orange-500", glowColor: "bg-amber-500",  hoverShadow: "hover:shadow-[0_8px_30px_rgba(245,158,11,0.12)]", borderHover: "hover:border-amber-400/40",  delay: 225 },
+                { label: "💰 Investment",    value: `₹${Math.round(totalUpfrontInvestment).toLocaleString('en-IN')}`, sub: "After PM Surya Ghar Subsidy", topColor: "from-blue-400 to-indigo-500",   glowColor: "bg-blue-500",  glow: "card-client-blue",   delay: 0 },
+                { label: "📈 Annual Return", value: `₹${Math.round(firstYearSavings).toLocaleString('en-IN')}`, sub: "Year 1 savings estimate",      topColor: "from-emerald-400 to-teal-500", glowColor: "bg-emerald-500", glow: "card-client-emerald", delay: 75 },
+                { label: "⚡ Monthly Savings",value: `₹${Math.round(firstYearSavings / 12).toLocaleString('en-IN')}`, sub: "Estimated grid bill cut", topColor: "from-cyan-400 to-sky-500",  glowColor: "bg-cyan-500",  glow: "card-client-cyan",    delay: 150 },
+                { label: "🏆 25yr ROI",      value: `${totalUpfrontInvestment > 0 ? ((twentyFiveYearNetSavings + totalUpfrontInvestment) / totalUpfrontInvestment).toFixed(1) : '0.0'}x`, sub: "25-year cumulative yield", topColor: "from-amber-400 to-orange-500", glowColor: "bg-amber-500",  glow: "card-client-amber",   delay: 225 },
               ].map((card, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: card.delay / 1000, type: "spring", stiffness: 280, damping: 26 }}
-                  whileHover={{ 
-                    y: -8, 
-                    scale: 1.035, 
-                    boxShadow: "0 22px 35px -8px rgba(0,0,0,0.12)" 
-                  }}
-                  className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[120px] shadow-sm relative overflow-hidden cursor-pointer text-left transition-all duration-250 ${card.hoverShadow} ${card.borderHover}`}
+                  className={`card-client ${card.glow} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col justify-between h-[120px] shadow-sm relative overflow-hidden cursor-pointer text-left transition-all duration-300`}
                 >
                   {/* Gradient top border */}
                   <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${card.topColor}`} />
                   <div className={`absolute -right-4 -top-4 w-16 h-16 blur-lg opacity-10 dark:opacity-8 rounded-full ${card.glowColor} pointer-events-none`} />
                   <div className="p-4 pt-5 flex flex-col justify-between h-full relative z-10">
-                    <span className="text-[9.5px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{card.label}</span>
+                    <span className="text-[9.5px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest">{card.label}</span>
                     <p className="text-xl font-display font-black text-slate-900 dark:text-white leading-tight">{card.value}</p>
                     <span className="text-[9px] text-slate-450 dark:text-slate-500 block">{card.sub}</span>
                   </div>
@@ -1924,79 +2203,106 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
             </motion.div>
 
             {/* ── 7. 25-Year Cost Comparison (Bar Chart Style) ── */}
-            <div className="bg-slate-50 dark:bg-slate-950/40 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-5 text-left shadow-sm relative z-10">
+            <div className="bg-slate-50/70 dark:bg-slate-950/20 p-5 rounded-3xl border border-slate-200 dark:border-slate-800/80 space-y-6 text-left shadow-sm relative z-10">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">25-Year Lifetime Cost Comparison</h4>
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full">at {tariffIncrease}% inflation</span>
+                <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest leading-none font-display">25-Year Lifetime Cost Comparison</h4>
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-0.5 rounded-full shadow-sm">at {tariffIncrease}% inflation</span>
               </div>
 
               {/* Bar chart */}
-              <div className="flex items-end gap-4 h-28">
+              <div className="flex items-end gap-6 h-40 pt-4 px-2 select-none">
                 {/* No Solar bar */}
-                <div className="flex-1 flex flex-col items-center gap-1.5">
-                  <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 text-center">
+                <motion.div 
+                  whileHover={{ y: -4 }}
+                  className="flex-1 flex flex-col items-center gap-2.5 group cursor-pointer"
+                >
+                  <span className="text-xs font-black text-rose-500 dark:text-rose-450 group-hover:scale-110 transition-transform duration-200 leading-none">
                     ₹{Math.round(totalNoSolarCost25Years / 100000).toLocaleString('en-IN')}L
                   </span>
-                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
-                    <div
-                      className="absolute bottom-0 w-full bg-gradient-to-t from-red-500/80 to-rose-400/60 rounded-t-xl transition-all duration-1000"
-                      style={{ height: isMounted ? '100%' : '0%' }}
-                    />
-                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
-                      <span className="text-[8px] font-black text-white">Grid Only</span>
-                    </div>
+                  <div className="w-full relative h-28 rounded-2xl overflow-hidden bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/45 shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: isMounted ? '100%' : '0%' }}
+                      transition={{ type: "spring", stiffness: 60, delay: 0.1 }}
+                      className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-rose-500 to-pink-400 rounded-t-2xl shadow-[0_4px_16px_rgba(244,63,94,0.3)] flex items-end justify-center overflow-hidden"
+                      style={{ height: '100%' }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out" />
+                    </motion.div>
                   </div>
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wide">No Solar</span>
-                </div>
+                  <span className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest text-center leading-none">
+                    Grid Only
+                  </span>
+                </motion.div>
 
                 {/* Solar bar */}
-                <div className="flex-1 flex flex-col items-center gap-1.5">
-                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 text-center">
+                <motion.div 
+                  whileHover={{ y: -4 }}
+                  className="flex-1 flex flex-col items-center gap-2.5 group cursor-pointer"
+                >
+                  <span className="text-xs font-black text-emerald-500 dark:text-emerald-450 group-hover:scale-110 transition-transform duration-200 leading-none">
                     ₹{Math.round(totalSolarCost25Years / 100000).toLocaleString('en-IN')}L
                   </span>
-                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
-                    <div
-                      className="absolute bottom-0 w-full bg-gradient-to-t from-emerald-600 to-teal-400 rounded-t-xl transition-all duration-1000"
-                      style={{ height: isMounted ? `${Math.round((totalSolarCost25Years / totalNoSolarCost25Years) * 100)}%` : '0%' }}
-                    />
-                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
-                      <span className="text-[8px] font-black text-white">Solar</span>
-                    </div>
+                  <div className="w-full relative h-28 rounded-2xl overflow-hidden bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/45 shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: isMounted ? `${Math.max(12, Math.round((totalSolarCost25Years / totalNoSolarCost25Years) * 100))}%` : '0%' }}
+                      transition={{ type: "spring", stiffness: 60, delay: 0.2 }}
+                      className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-t-2xl shadow-[0_4px_16px_rgba(16,185,129,0.3)] flex items-end justify-center overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out" />
+                    </motion.div>
                   </div>
-                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">With Solar</span>
-                </div>
+                  <span className="text-[10px] font-black text-emerald-500 dark:text-emerald-450 uppercase tracking-widest text-center leading-none">
+                    With Solar
+                  </span>
+                </motion.div>
 
                 {/* Savings column */}
-                <div className="flex-1 flex flex-col items-center gap-1.5">
-                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 text-center">
+                <motion.div 
+                  whileHover={{ y: -4 }}
+                  className="flex-1 flex flex-col items-center gap-2.5 group cursor-pointer"
+                >
+                  <span className="text-xs font-black text-indigo-500 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-200 leading-none">
                     ₹{Math.round(twentyFiveYearNetSavings / 100000).toLocaleString('en-IN')}L
                   </span>
-                  <div className="w-full relative rounded-t-xl overflow-hidden bg-slate-200 dark:bg-slate-800" style={{ height: '80px' }}>
-                    <div
-                      className="absolute bottom-0 w-full bg-gradient-to-t from-blue-600 to-sky-400 rounded-t-xl transition-all duration-1000"
-                      style={{ height: isMounted ? `${Math.round((twentyFiveYearNetSavings / totalNoSolarCost25Years) * 100)}%` : '0%' }}
-                    />
-                    <div className="absolute inset-x-0 bottom-1 flex items-center justify-center">
-                      <span className="text-[8px] font-black text-white">Profit</span>
-                    </div>
+                  <div className="w-full relative h-28 rounded-2xl overflow-hidden bg-slate-100/70 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/45 shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)]">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: isMounted ? `${Math.max(12, Math.round((twentyFiveYearNetSavings / totalNoSolarCost25Years) * 100))}%` : '0%' }}
+                      transition={{ type: "spring", stiffness: 60, delay: 0.3 }}
+                      className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-indigo-500 to-blue-450 rounded-t-2xl shadow-[0_4px_16px_rgba(99,102,241,0.3)] flex items-end justify-center overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out" />
+                    </motion.div>
                   </div>
-                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Net Saved</span>
-                </div>
+                  <span className="text-[10px] font-black text-indigo-550 dark:text-indigo-400 uppercase tracking-widest text-center leading-none">
+                    Net Saved
+                  </span>
+                </motion.div>
               </div>
 
               {/* Summary row */}
               <motion.div 
                 whileHover={{ 
-                  y: -4, 
+                  y: -3, 
                   scale: 1.012, 
-                  boxShadow: "0 12px 20px -8px rgba(16,185,129,0.18)" 
+                  boxShadow: "0 12px 20px -8px rgba(16,185,129,0.25)" 
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="bg-gradient-to-r from-emerald-500/8 to-teal-500/5 dark:from-emerald-950/20 dark:to-teal-950/10 border border-emerald-500/20 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-emerald-500/40 transition-all duration-200"
+                className="bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-emerald-500/10 dark:from-emerald-950/30 dark:via-teal-950/15 dark:to-emerald-950/30 border border-emerald-500/25 p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:border-emerald-500/50 transition-all duration-300 shadow-sm"
               >
-                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Total Net Lifetime Savings</span>
-                <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-0.5">
-                  <span className="text-xs">₹</span><AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-emerald-500/15 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 animate-pulse" />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-200 block uppercase tracking-wider leading-none">Total Net Lifetime Savings</span>
+                    <span className="text-[10px] text-slate-400 block pt-1 font-medium leading-none">25-year projection including module degradation</span>
+                  </div>
+                </div>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 text-lg flex items-center gap-0.5">
+                  <span className="text-xs font-extrabold">₹</span><AnimatedNumber value={twentyFiveYearNetSavings} formatter={(v) => Math.round(v).toLocaleString('en-IN')} />
                 </span>
               </motion.div>
             </div>
@@ -2012,13 +2318,13 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
         whileHover={{ 
           y: -5, 
           scale: 1.006, 
-          boxShadow: "0 20px 35px -10px rgba(0,0,0,0.08)" 
+          boxShadow: "0 20px 40px -15px rgba(0,0,0,0.1)" 
         }}
         transition={{ type: "spring", stiffness: 350, damping: 25 }}
-        className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden"
+        className="backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-5 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] relative overflow-hidden"
       >
         {/* Top decorative glow */}
-        <div className="absolute -right-16 -top-16 w-36 h-36 blur-3xl opacity-10 rounded-full bg-amber-500 pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-36 h-36 blur-3xl opacity-15 rounded-full bg-amber-500 pointer-events-none" />
 
         {/* Card Header — compact inline */}
         <div className="flex items-center justify-between mb-5">
@@ -2031,7 +2337,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               <Sun className="w-5 h-5 animate-pulse" />
             </motion.div>
             <div>
-              <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">
+              <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none font-display">
                 Rooftop Solar Quick Sizing Reference
               </h3>
               <p className="text-[11px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 mt-1">
@@ -2039,15 +2345,15 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               </p>
             </div>
           </div>
-          <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/45 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] sm:text-xs font-black border border-amber-100 dark:border-amber-900/50 uppercase tracking-wider shrink-0">
+          <div className="px-3 py-1.5 bg-amber-50/80 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] sm:text-xs font-black border border-amber-100/50 dark:border-amber-900/50 uppercase tracking-wider shrink-0 shadow-sm">
             2026 Guidelines
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div className="rounded-2xl border border-slate-150/40 dark:border-slate-800/40 overflow-hidden bg-white/30 dark:bg-slate-950/20 shadow-inner">
           {/* Header Row */}
-          <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800 text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-slate-50/30 dark:bg-slate-950/30 border-b border-slate-150/20 dark:border-slate-800/20 text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             <div className="col-span-3">System Size</div>
             <div className="col-span-2">Panels (540W)</div>
             <div className="col-span-2">Space Needed</div>
@@ -2073,13 +2379,13 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
               transition={{ type: "spring", stiffness: 400, damping: 24 }}
               whileTap={{ scale: 0.995 }}
               onClick={() => handleSelectReferenceSize(row.targetBill, row.targetSpace)}
-              className={`grid grid-cols-12 gap-2 px-4 py-3.5 items-center cursor-pointer group/row transition-colors duration-200 text-left ${idx < arr.length - 1 ? "border-b border-slate-100 dark:border-slate-800/60" : ""}`}
+              className={`grid grid-cols-12 gap-2 px-4 py-3.5 items-center cursor-pointer group/row transition-colors duration-200 text-left ${idx < arr.length - 1 ? "border-b border-slate-150/15 dark:border-slate-800/15" : ""}`}
             >
               {/* 1. Size + badge */}
               <div className="col-span-3 flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full shrink-0 ${row.dot} group-hover/row:scale-130 transition-transform duration-250`} />
                 <span className="font-bold text-sm text-slate-850 dark:text-slate-100 group-hover/row:text-amber-500 dark:group-hover/row:text-amber-400 tabular-nums transition-colors duration-250">{row.size}</span>
-                <span className="hidden sm:inline text-[9px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md tracking-wider uppercase group-hover/row:bg-slate-200 dark:group-hover/row:bg-slate-700 transition-colors duration-250">{row.badge}</span>
+                <span className="hidden sm:inline text-[9px] font-black text-slate-400 dark:text-slate-500 bg-slate-150/40 dark:bg-slate-800/40 px-2 py-0.5 rounded-md tracking-wider uppercase group-hover/row:bg-slate-200 dark:group-hover/row:bg-slate-700 transition-colors duration-250">{row.badge}</span>
               </div>
 
               {/* 2. Panels */}
@@ -2101,7 +2407,7 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
               {/* 5. Savings */}
               <div className="col-span-3 flex justify-end">
-                <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/40 px-3 py-1.5 rounded-xl group-hover/row:bg-emerald-500 group-hover/row:text-white dark:group-hover/row:text-slate-950 group-hover/row:border-emerald-500 group-hover/row:shadow-md transition-all duration-250">
+                <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/10 px-3 py-1.5 rounded-xl group-hover/row:bg-emerald-500 group-hover/row:text-white dark:group-hover/row:text-slate-950 group-hover/row:border-emerald-500 group-hover/row:shadow-md transition-all duration-250">
                   {row.savings}
                   <ArrowUpRight className="w-3.5 h-3.5 shrink-0 group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 transition-transform duration-250" />
                 </span>

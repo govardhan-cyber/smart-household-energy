@@ -43,6 +43,11 @@ export interface TariffState {
     /** Minimum bill amount to qualify for subsidy (gross charge) */
     minGross?: number;
   };
+  todMultipliers?: {
+    peak: number;
+    normal: number;
+    offPeak: number;
+  };
   lastUpdated: number; // Unix timestamp ms
 }
 
@@ -67,6 +72,7 @@ const DEFAULT_TARIFFS: Record<string, TariffState> = {
       { limit: "Above 400 units",rate: "₹9.75", max: Infinity, prev: 400, numericRate: 9.75 },
     ],
     subsidy: { type: "fixed", value: 184.50, minGross: 0 },
+    todMultipliers: { peak: 1.25, normal: 1.0, offPeak: 0.85 },
     lastUpdated: Date.now(),
   },
   ap_apepdcl: {
@@ -138,6 +144,7 @@ const DEFAULT_TARIFFS: Record<string, TariffState> = {
       { limit: "Above 200 units", rate: "₹8.20", max: Infinity, prev: 200, numericRate: 8.20 },
     ],
     subsidy: { type: "percentage", value: 13, minGross: 0 },
+    todMultipliers: { peak: 1.20, normal: 1.0, offPeak: 0.90 },
     lastUpdated: Date.now(),
   },
   karnataka_hescom: {

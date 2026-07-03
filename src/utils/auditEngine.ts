@@ -367,17 +367,32 @@ export const runHomeAudit = (
 
   // Lighting Replacement
   const lights = hogs.find((h) => h.id === "lights");
-  if (lights && lights.watts > 15) {
-    // Suggesting upgrading from standard tube lights (40W) to energy-saving LED tube lights (18W-20W)
-    const lightsReduction = ((lights.watts - 12) * lights.quantity * lights.hours * 30) / 1000;
+  if (lights && lights.watts > 12) {
+    const lightsReduction = ((lights.watts - 9) * lights.quantity * lights.hours * 30) / 1000;
     const lightsSavings = getYearlySavingsForReduction(lightsReduction);
     if (lightsSavings > 100) {
       recommendations.push({
         id: "led_conversion",
-        title: "Upgrade to Energy-Efficient LEDs",
-        description: `Converting remaining halogen or higher-wattage bulbs to 9W-12W LEDs saves ₹${lightsSavings.toLocaleString("en-IN")}/year.`,
+        title: "Upgrade to 9W LED Bulbs",
+        description: `Converting conventional bulbs to 9W LEDs saves ₹${lightsSavings.toLocaleString("en-IN")}/year.`,
         yearlySavings: lightsSavings,
-        action: "Replace standard incandescent or CFL bulbs with BEE-rated LEDs.",
+        action: "Replace standard incandescent or CFL bulbs with BEE-rated 9W LEDs.",
+        difficulty: "Easy"
+      });
+    }
+  }
+
+  const tube = hogs.find((h) => h.id === "lights_tube");
+  if (tube && tube.watts > 18) {
+    const tubeReduction = ((tube.watts - 18) * tube.quantity * tube.hours * 30) / 1000;
+    const tubeSavings = getYearlySavingsForReduction(tubeReduction);
+    if (tubeSavings > 100) {
+      recommendations.push({
+        id: "tube_led_conversion",
+        title: "Upgrade to T5 LED Tube Lights",
+        description: `Upgrading conventional tube lights to 18W T5 LED tube lights saves ₹${tubeSavings.toLocaleString("en-IN")}/year.`,
+        yearlySavings: tubeSavings,
+        action: "Replace standard 40W tube lights with slim T5 LED tubes.",
         difficulty: "Easy"
       });
     }

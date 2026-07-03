@@ -196,7 +196,7 @@ export const SurveyData: React.FC = () => {
     if (norm === "ac") return <Snowflake className="w-4.5 h-4.5 text-blue-500" />;
     if (norm === "fridge" || norm === "refrigerator") return <RefrigeratorIcon className="w-4.5 h-4.5 text-cyan-500" />;
     if (norm === "fan") return <WindIcon className="w-4.5 h-4.5 text-sky-400" />;
-    if (norm === "lights") return <Lightbulb className="w-4.5 h-4.5 text-yellow-500" />;
+    if (norm === "lights" || norm === "lights_tube" || norm.includes("tube")) return <Lightbulb className="w-4.5 h-4.5 text-yellow-500" />;
     if (norm === "tv") return <Tv className="w-4.5 h-4.5 text-purple-500" />;
     if (norm === "laptop") return <Laptop className="w-4.5 h-4.5 text-indigo-500" />;
     if (norm.includes("washing")) return <ShieldCheck className="w-4.5 h-4.5 text-pink-500" />;

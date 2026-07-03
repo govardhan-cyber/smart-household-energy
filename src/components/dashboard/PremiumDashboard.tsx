@@ -377,7 +377,6 @@ function BiggestConsumerCard({ name, pct, savings }: { name: string; pct: number
   const strokeW = 5; const innerStrokeW = 7;
   const outerCirc = 2 * Math.PI * outerR;
   const innerCirc = 2 * Math.PI * innerR;
-  const outerOffset = outerCirc * 0.25;
   const innerOffset = innerCirc - (Math.min(100, Math.max(0, roundedPct)) / 100) * innerCirc;
 
   return (

@@ -108,7 +108,8 @@ export const EnergyHealth: React.FC<EnergyHealthProps> = ({
     }
 
     const lights = appliances.find(a => a.id === "lights" && a.quantity > 0);
-    if (lights && lights.watts > 12) {
+    const tube = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
+    if ((lights && lights.watts > 12) || (tube && tube.watts > 18)) {
       score -= 5;
       details.push("conventional high-wattage lighting");
     }
@@ -212,14 +213,30 @@ export const EnergyHealth: React.FC<EnergyHealthProps> = ({
     const lightsApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
     if (lightsApp && lightsApp.watts > 12) {
       const lightsUnits = lightsApp.quantity * (lightsApp.watts / 1000) * lightsApp.hours * 30;
-      const lightsSavedUnits = lightsUnits * 0.75; // Switching 40W to 9W LEDs
+      const lightsSavedUnits = lightsUnits * 0.75; // Switching to 9W LEDs
       const lightsSavingsPerMonth = lightsSavedUnits * avgRate;
       const lightsAnnualSavings = lightsSavingsPerMonth * 12;
       insights.push({
         id: "lights",
         title: "Switch Bulbs to LEDs",
-        description: `Your current lighting wattage profile (${lightsApp.watts}W) is high. Upgrading to 9W LEDs could save you ₹${Math.round(lightsAnnualSavings).toLocaleString()}/year.`,
+        description: `Your current LED bulb wattage profile (${lightsApp.watts}W) is high. Upgrading to 9W LEDs could save you ₹${Math.round(lightsAnnualSavings).toLocaleString()}/year.`,
         badge: "75% Light Save",
+        badgeColor: "bg-green-50 dark:bg-green-950/20 text-primary-green border border-green-200 dark:border-green-900/40",
+        icon: <Lightbulb className="w-5 h-5 text-primary-green" />
+      });
+    }
+
+    const tubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
+    if (tubeApp && tubeApp.watts > 18) {
+      const tubeUnits = tubeApp.quantity * (tubeApp.watts / 1000) * tubeApp.hours * 30;
+      const tubeSavedUnits = tubeUnits * ((tubeApp.watts - 18) / tubeApp.watts); // Upgrading to 18W T5 LED
+      const tubeSavingsPerMonth = tubeSavedUnits * avgRate;
+      const tubeAnnualSavings = tubeSavingsPerMonth * 12;
+      insights.push({
+        id: "lights_tube",
+        title: "Upgrade to T5 LED Tubes",
+        description: `Your current tube light wattage profile (${tubeApp.watts}W) is high. Upgrading to 18W T5 LEDs could save you ₹${Math.round(tubeAnnualSavings).toLocaleString()}/year.`,
+        badge: "Tube LED Upgrade",
         badgeColor: "bg-green-50 dark:bg-green-950/20 text-primary-green border border-green-200 dark:border-green-900/40",
         icon: <Lightbulb className="w-5 h-5 text-primary-green" />
       });

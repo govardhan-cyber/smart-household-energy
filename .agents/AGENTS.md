@@ -2,6 +2,15 @@
 
 ## Saved Versions
 
+- **Version 12**: Points to git tag `version-12`.
+  - **Features**:
+    - **Dual Lighting Source Split:** Separated LED Bulbs and conventional Tube Lights into two first-class, independent selectable appliances. Added custom wattage presets (9W/12W/15W for LEDs; 18W T5/40W Conventional for Tube Lights) and separate runtime configurations.
+    - **Concurrent Savings Simulation & Audits:** Upgraded the real-time consumption dashboard simulator and advisory engines to calculate and display potential savings for both lighting types concurrently. Added separate action item recommendations for bulb upgrades and T5 LED tube replacements.
+    - **Asymmetrical Glassmorphic Layout:** Redesigned the footer links grid by wrapping it in a parent glassmorphism card container. Added a layered, inner glass brand-sync status widget card on the left side, balanced against offset floating link columns on the right.
+    - **Micro-Hover Navigation Transitions:** Integrated interactive slide-up and translate animations on footer links and active glows on hover.
+  - **Recovery Instruction**:
+    - If the user says "recover version 12", run `git checkout version-12`.
+
 - **Version 11**: Points to git tag `version-11`.
   - **Features**:
     - **Clear Glassmorphic Card:** Upgraded the `BiggestConsumerCard` to a highly translucent, clear glass pane by removing all backdrop blur properties. Integrated a dual concentric ring progress dial, specular reflective gloss sheen, top edge highlights, and high-contrast typography.

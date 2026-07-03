@@ -122,6 +122,7 @@ export const Dashboard: React.FC = () => {
       else if (app.id === 'fridge') { qty = 1; hrs = 24; }
       else if (app.id === 'fan') { qty = 2; hrs = 12; }
       else if (app.id === 'lights') { qty = 4; hrs = 8; }
+      else if (app.id === 'lights_tube') { qty = 2; hrs = 6; }
       return { 
         ...app, 
         quantity: qty, 
@@ -429,13 +430,18 @@ export const Dashboard: React.FC = () => {
     ? liveLightApp.quantity * (90 / 1000) * liveLightApp.hours * 30 * 0.75 
     : 0;
 
+  const liveTubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
+  const liveTubeSavedKwh = liveTubeApp 
+    ? liveTubeApp.quantity * (22 / 1000) * liveTubeApp.hours * 30 
+    : 0;
+
   const liveFridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
   const liveFridgeSavedKwh = liveFridgeApp 
     ? liveFridgeApp.quantity * (200 / 1000) * liveFridgeApp.hours * 30 * 0.15 
     : 0;
 
   const liveStandbySavedKwh = liveTotalUnits * 0.05;
-  const liveTotalSavedKwh = liveAcSavedKwh + liveLightSavedKwh + liveFridgeSavedKwh + liveStandbySavedKwh;
+  const liveTotalSavedKwh = liveAcSavedKwh + liveLightSavedKwh + liveTubeSavedKwh + liveFridgeSavedKwh + liveStandbySavedKwh;
   const liveUsageAfter = Math.max(0, liveTotalUnits - liveTotalSavedKwh);
   const liveBillAfter = calculateBill(liveUsageAfter, user?.tariffState || "ap", user?.customFlatRate || 7.5);
   const liveSavingsPotential = Math.max(0, liveBill.netEnergyCharge - liveBillAfter.netEnergyCharge);
@@ -487,6 +493,11 @@ export const Dashboard: React.FC = () => {
       ? lightApp.quantity * (90 / 1000) * lightApp.hours * 30 * 0.75 
       : 0;
 
+    const tubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
+    const tubeSavedKwh = tubeApp 
+      ? tubeApp.quantity * (22 / 1000) * tubeApp.hours * 30 
+      : 0;
+
     const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
     const fridgeSavedKwh = fridgeApp 
       ? fridgeApp.quantity * (200 / 1000) * fridgeApp.hours * 30 * 0.15 
@@ -499,7 +510,7 @@ export const Dashboard: React.FC = () => {
       ? fanApp.quantity * (35 / 1000) * fanApp.hours * 30 
       : 0;
 
-    const totalSavedKwh = acSavedKwh + lightSavedKwh + fridgeSavedKwh + standbySavedKwh + fanSavedKwh;
+    const totalSavedKwh = acSavedKwh + lightSavedKwh + tubeSavedKwh + fridgeSavedKwh + standbySavedKwh + fanSavedKwh;
     const usageAfter = Math.max(0, liveTotalUnits - totalSavedKwh);
 
     const billBefore = liveBill;
@@ -542,6 +553,21 @@ export const Dashboard: React.FC = () => {
         id: "led_upgrade",
         title: "Switch to LED bulbs",
         description: "Replace conventional bulbs with LED to save ~75% energy per bulb",
+        savings: Math.round(moneySaved * 10) / 10,
+        badge: "High",
+        badgeColor: "bg-green-50 text-primary-green dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
+        icon: <Lightbulb className="w-5 h-5 text-primary-green" />,
+        difficulty: "Easy",
+        impact: "High"
+      });
+    }
+
+    if (tubeApp && tubeSavedKwh > 0) {
+      const moneySaved = (tubeSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
+      tips.push({
+        id: "tube_led_upgrade",
+        title: "Switch to T5 LED Tube Lights",
+        description: "Replace 40W conventional tube lights with 18W T5 LEDs",
         savings: Math.round(moneySaved * 10) / 10,
         badge: "High",
         badgeColor: "bg-green-50 text-primary-green dark:bg-green-950/20 border-green-200 dark:border-green-900/50",

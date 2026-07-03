@@ -46,6 +46,7 @@ const getApplianceColorClasses = (appId: string) => {
     case "fan":
       return "bg-gradient-to-br from-slate-400/10 to-slate-550/10 text-slate-600 dark:text-slate-400 border-slate-300/30 dark:border-slate-800/20";
     case "lights":
+    case "lights_tube":
       return "bg-gradient-to-br from-yellow-500/10 to-amber-500/10 text-yellow-600 dark:text-yellow-450 border-yellow-100/30 dark:border-yellow-900/20";
     case "tv":
       return "bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 dark:text-purple-400 border-purple-100/30 dark:border-purple-900/20";
@@ -154,8 +155,14 @@ export const ConsumptionCalculator: React.FC<ConsumptionCalculatorProps> = ({
         ];
       case "lights":
         return [
-          { label: "LED Bulb", value: 9 },
-          { label: "Tube Light", value: 40 }
+          { label: "9W LED", value: 9 },
+          { label: "12W LED", value: 12 },
+          { label: "15W LED", value: 15 }
+        ];
+      case "lights_tube":
+        return [
+          { label: "T5 LED", value: 18 },
+          { label: "Conventional", value: 40 }
         ];
       case "washing_machine":
         return [

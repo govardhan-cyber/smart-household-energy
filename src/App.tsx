@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
@@ -28,6 +28,15 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Scroll restoration helper component
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 import "./App.css";
 
 const App: React.FC = () => {
@@ -45,6 +54,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
           <ThreeBackground className="fixed inset-0 pointer-events-none no-print" />

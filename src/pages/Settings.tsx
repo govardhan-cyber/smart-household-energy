@@ -316,6 +316,7 @@ export const Settings: React.FC = () => {
       { id: "ac", name: "Air Conditioner", default: 1500 },
       { id: "fan", name: "Ceiling Fan", default: 50 },
       { id: "lights", name: "LED Bulb", default: 12 },
+      { id: "lights_tube", name: "Tube Light", default: 40 },
       { id: "tv", name: "Television", default: 100 },
       { id: "washing_machine", name: "Washing Machine", default: 500 },
       { id: "water_heater", name: "Water Heater", default: 2000 }

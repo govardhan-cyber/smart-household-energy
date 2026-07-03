@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Play, Trash2, Sun, ArrowRight, ShieldCheck, 
   AlertTriangle, TrendingDown, Cpu, ChevronRight,
-  Leaf, Award
+  Leaf, Award, Lightbulb, Zap, CheckCircle
 } from "lucide-react";
 import { runHomeAudit } from "../../utils/auditEngine";
 import type { AuditResult } from "../../utils/auditEngine";
@@ -198,13 +198,16 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
   };
 
   // Render SVG circular score progress gauge
-  const renderScoreGauge = (score: number, status: string, colorClass: string) => {
+  const renderScoreGauge = (score: number, status: string, _colorClass: string) => {
     const radius = 55;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (score / 100) * circumference;
 
     return (
-      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/10 border border-slate-200/60 dark:border-slate-800/60 rounded-3xl relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center p-5 bg-gradient-to-b from-white/40 to-white/10 dark:from-slate-900/40 dark:to-slate-900/10 border-t border-white/20 dark:border-white/10 rounded-3xl relative overflow-hidden group select-none shadow-sm">
+        {/* Specular Reflective Gloss Sheen */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out" />
+        
         <div className="relative w-36 h-36 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90">
             {/* Background circle */}
@@ -212,8 +215,8 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               cx="72"
               cy="72"
               r={radius}
-              className={isDark ? "stroke-slate-850" : "stroke-slate-200"}
-              strokeWidth="10"
+              className={isDark ? "stroke-slate-800/50" : "stroke-slate-200/50"}
+              strokeWidth="8"
               fill="transparent"
             />
             {/* Foreground progress circle */}
@@ -222,7 +225,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               cy="72"
               r={radius}
               stroke="currentColor"
-              strokeWidth="10"
+              strokeWidth="8"
               fill="transparent"
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
@@ -239,18 +242,54 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                   : "text-red-500"
               }
             />
+            {/* Spinning decorative inner dash circle */}
+            <circle
+              cx="72"
+              cy="72"
+              r={radius - 10}
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="transparent"
+              strokeDasharray="4 4"
+              className={
+                score >= 85
+                  ? "text-emerald-500/30"
+                  : score >= 70
+                  ? "text-blue-500/30"
+                  : score >= 50
+                  ? "text-amber-500/30"
+                  : "text-red-500/30"
+              }
+              style={{ animation: 'spin-slow-infinite 12s linear infinite' }}
+            />
           </svg>
           <div className="absolute flex flex-col items-center justify-center">
-            <span className="text-3xl font-display font-black text-slate-850 dark:text-white">
+            <span className={`text-4xl font-display font-black tracking-tight ${
+              score >= 85
+                ? "text-emerald-500 drop-shadow-[0_0_12px_rgba(16,185,129,0.25)]"
+                : score >= 70
+                ? "text-blue-500 drop-shadow-[0_0_12px_rgba(59,130,246,0.25)]"
+                : score >= 50
+                ? "text-amber-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.25)]"
+                : "text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.25)]"
+            }`}>
               {animatedScore}
             </span>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
+            <span className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest leading-none mt-1">
               Score
             </span>
           </div>
         </div>
-        <div className="text-center mt-3">
-          <span className={`text-sm font-extrabold tracking-wide uppercase ${colorClass}`}>
+        <div className="text-center mt-4">
+          <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase border ${
+            score >= 85
+              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/25 shadow-[0_2px_10px_rgba(16,185,129,0.1)]"
+              : score >= 70
+              ? "bg-blue-500/10 text-blue-500 border-blue-500/25 shadow-[0_2px_10px_rgba(59,130,246,0.1)]"
+              : score >= 50
+              ? "bg-amber-500/10 text-amber-500 border-amber-500/25 shadow-[0_2px_10px_rgba(245,158,11,0.1)]"
+              : "bg-red-500/10 text-red-500 border-red-500/25 shadow-[0_2px_10px_rgba(239,68,68,0.1)]"
+          }`}>
             {status}
           </span>
         </div>
@@ -402,9 +441,9 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-sm space-y-6"
+              className="p-12 text-center backdrop-blur-md bg-white/70 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/60 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] space-y-6"
             >
-              <div className="p-4 rounded-full bg-slate-50 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600 w-16 h-16 flex items-center justify-center mx-auto border border-slate-100 dark:border-slate-800/50 shadow-inner">
+              <div className="p-4 rounded-full bg-slate-50/50 dark:bg-slate-950/30 text-slate-400 dark:text-slate-600 w-16 h-16 flex items-center justify-center mx-auto border border-slate-100/40 dark:border-slate-800/40 shadow-inner">
                 <Sparkles className="w-8 h-8 text-amber-500 animate-pulse" />
               </div>
               <div className="space-y-2 max-w-sm mx-auto">
@@ -446,12 +485,12 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 
                 {/* Score gauge card */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-center">
+                <div className="backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] flex flex-col justify-center">
                   {renderScoreGauge(auditResult.score, auditResult.status, auditResult.statusColor)}
                 </div>
 
                 {/* AI Insights & High-level details card */}
-                <div className="md:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-4">
+                <div className="md:col-span-2 backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] flex flex-col justify-between space-y-4">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin-slow" />
@@ -460,7 +499,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     
                     {/* Primary Highlight Insight */}
                     {auditResult.insights.length > 0 ? (
-                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 dark:from-slate-950/10 dark:to-green-950/10 border border-slate-150 dark:border-slate-800/60 rounded-2xl text-left shadow-inner">
+                      <div className="mt-3 p-4 bg-gradient-to-br from-slate-50/50 to-blue-50/10 dark:from-slate-950/15 dark:to-green-950/10 border border-slate-150/40 dark:border-slate-800/40 rounded-2xl text-left shadow-inner">
                         <div className="flex items-start gap-2.5">
                           <div className="p-1 rounded-lg bg-amber-500/10 text-amber-500 mt-0.5">
                             <AlertTriangle className="w-4 h-4" />
@@ -502,9 +541,9 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                 
                 {/* Energy Hogs List (Progress bars) */}
-                <div className="md:col-span-7 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+                <div className="md:col-span-7 backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] space-y-4">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block font-display">
                       Energy Impact Breakdown
                     </h3>
                     <p className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5">
@@ -526,7 +565,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                             {Math.round(hog.monthlyKwh)} kWh ({hog.percent}%)
                           </span>
                         </div>
-                        <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="w-full h-2 bg-slate-100/40 dark:bg-slate-800/40 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${hog.percent}%` }}
@@ -551,7 +590,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 </div>
 
                 {/* Solar advice summary card */}
-                <div className="md:col-span-5 bg-gradient-to-br from-slate-50 to-green-50/20 dark:from-slate-950/40 dark:to-green-950/10 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+                <div className="md:col-span-5 backdrop-blur-md bg-gradient-to-br from-white/75 to-green-50/20 dark:from-slate-950/45 dark:to-green-950/15 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
                   <div className="space-y-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-green-700 dark:text-primary-green flex items-center gap-1">
                       <Sun className="w-3.5 h-3.5 text-amber-500 animate-spin-slow" />
@@ -594,51 +633,70 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                     {auditResult.recommendations.map((rec) => (
                       <motion.div 
                         key={rec.id} 
-                        whileHover={{ y: -4 }}
-                        transition={{ duration: 0.2 }}
-                        className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-350 dark:hover:border-slate-700 shadow-sm flex flex-col justify-between space-y-4 transition-colors"
+                        whileHover={{ 
+                          y: -6, 
+                          scale: 1.015,
+                          boxShadow: "0 20px 35px -15px rgba(0,0,0,0.08)"
+                        }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="backdrop-blur-md bg-white/70 dark:bg-slate-950/45 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] flex flex-col justify-between space-y-4 hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 relative overflow-hidden group/rec"
                       >
-                        <div className="space-y-1.5 text-left">
-                          <div className="flex justify-between items-center gap-2">
-                            <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wide truncate">
-                              {rec.title}
-                            </h4>
-                            <span className={`text-[9px] font-extrabold px-1.5 py-0.5 border rounded-lg uppercase tracking-wider ${
+                        {/* Specular Sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover/rec:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
+
+                        <div className="space-y-3.5 text-left">
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex items-center gap-2 max-w-[70%]">
+                              <div className="p-2 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100/40 dark:border-slate-800/40 text-slate-400 dark:text-slate-555 rounded-xl group-hover/rec:text-amber-500 dark:group-hover/rec:text-amber-400 group-hover/rec:scale-110 transition-all duration-300">
+                                {React.createElement(
+                                  rec.id.includes("solar") ? Sun :
+                                  (rec.id.includes("ac") || rec.id.includes("refrigerator") || rec.id.includes("heater") || rec.id.includes("pump")) ? Zap :
+                                  (rec.id.includes("vampire") || rec.id.includes("standby")) ? Cpu :
+                                  Lightbulb,
+                                  { className: "w-4 h-4" }
+                                )}
+                              </div>
+                              <h4 className="text-xs font-black text-slate-850 dark:text-white uppercase tracking-wider leading-tight truncate">
+                                {rec.title}
+                              </h4>
+                            </div>
+                            <span className={`text-[9px] font-black px-2 py-0.5 border rounded-lg uppercase tracking-widest ${
                               rec.difficulty === "Easy"
-                                ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900"
+                                ? "bg-green-500/10 text-green-500 border-green-500/20 shadow-[0_2px_8px_rgba(16,185,129,0.08)]"
                                 : rec.difficulty === "Medium"
-                                ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900"
-                                : "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900"
+                                ? "bg-blue-500/10 text-blue-500 border-blue-500/25 shadow-[0_2px_8px_rgba(59,130,246,0.08)]"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_2px_8px_rgba(245,158,11,0.08)]"
                             }`}>
                               {rec.difficulty}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                             {rec.description}
                           </p>
                         </div>
 
-                        <div className="border-t border-slate-50 dark:border-slate-850 pt-3 flex items-center justify-between text-[11px]">
-                          <span className="font-bold text-slate-400 dark:text-slate-550 uppercase">Action Plan:</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-350 truncate max-w-[150px] md:max-w-[180px]">
+                        <div className="border-t border-slate-100/40 dark:border-slate-800/30 pt-3 flex items-center justify-between text-[11px] gap-2">
+                          <span className="font-black text-slate-400 dark:text-slate-555 uppercase tracking-wider shrink-0">Action Plan:</span>
+                          <span className="font-extrabold text-slate-700 dark:text-slate-350 truncate flex items-center gap-1.5">
+                            <CheckCircle className="w-3.5 h-3.5 text-primary-blue dark:text-primary-green shrink-0" />
                             {rec.action}
                           </span>
                         </div>
                         
-                        <div className="bg-slate-50 dark:bg-slate-950/40 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-455 uppercase tracking-wide flex items-center gap-1 text-slate-400 dark:text-slate-500">
-                            <TrendingDown className="w-3.5 h-3.5 text-primary-green" />
+                        <div className="bg-emerald-500/5 dark:bg-emerald-500/5 px-4 py-3 rounded-2xl border border-emerald-500/15 dark:border-emerald-500/10 flex items-center justify-between shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] group-hover/rec:border-emerald-500/30 transition-colors duration-300">
+                          <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest flex items-center gap-1.5 leading-none">
+                            <TrendingDown className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
                             Estimated Savings
                           </span>
-                          <span className="text-xs font-black text-primary-green font-display">
-                            ₹{rec.yearlySavings.toLocaleString("en-IN")}/yr
+                          <span className="text-sm font-black text-emerald-600 dark:text-emerald-455 font-display flex items-baseline leading-none gap-0.5">
+                            <span className="text-xs font-extrabold">₹</span>{rec.yearlySavings.toLocaleString("en-IN")}<span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">/yr</span>
                           </span>
                         </div>
                       </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-550 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                  <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-550 backdrop-blur-md bg-white/70 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/60 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
                     No savings opportunities found. You are running an exceptionally green household!
                   </div>
                 )}
@@ -648,7 +706,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
         </div>
 
         {/* Right Column: Past Audits Log History */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/70 shadow-sm space-y-6">
+        <div className="lg:col-span-4 backdrop-blur-md bg-white/70 dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(0,0,0,0.03)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.2)] space-y-6">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
               Audit Logs History
