@@ -47,18 +47,26 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
+    let ticking = false;
+
     // Track mouse coordinates normalized between -0.5 and 0.5
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) - 0.5;
-      const y = (e.clientY / window.innerHeight) - 0.5;
-      mouseX.set(x * -35); // Max travel in opposite direction
-      mouseY.set(y * -35);
-
       mouseRaw.current.x = e.clientX;
       mouseRaw.current.y = e.clientY;
 
-      spotlightX.set(e.clientX);
-      spotlightY.set(e.clientY);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const x = (mouseRaw.current.x / window.innerWidth) - 0.5;
+          const y = (mouseRaw.current.y / window.innerHeight) - 0.5;
+          mouseX.set(x * -35); // Max travel in opposite direction
+          mouseY.set(y * -35);
+
+          spotlightX.set(mouseRaw.current.x);
+          spotlightY.set(mouseRaw.current.y);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     // Trigger elastic background zoom-pulse on click
@@ -108,7 +116,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
     window.addEventListener("resize", handleResize);
 
     const sparks: Spark[] = [];
-    const MAX_SPARKS = 22;
+    const MAX_SPARKS = 14;
 
     // Generate static sparks initially
     for (let i = 0; i < MAX_SPARKS; i++) {
@@ -246,7 +254,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       {/* Floating Spark & Constellation Canvas Overlay */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
 
-      {/* Dynamic Cursor Spotlight Layer (Hardware Accelerated translate3d) */}
+      {/* Dynamic Cursor Spotlight Layer (Hardware Accelerated translate3d & will-change-transform) */}
       <motion.div
         style={{
           x: springSpotlightX,
@@ -254,10 +262,10 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
           translateX: "-50%",
           translateY: "-50%"
         }}
-        className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none blur-[100px] transition-opacity duration-500 ${
+        className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none blur-[100px] transition-opacity duration-500 will-change-transform ${
           isDark 
-            ? "mix-blend-screen bg-[radial-gradient(circle,rgba(34,211,238,0.16)_0%,transparent_70%)]" 
-            : "mix-blend-multiply bg-[radial-gradient(circle,rgba(99,102,241,0.15)_0%,transparent_75%)]"
+            ? "bg-[radial-gradient(circle,rgba(34,211,238,0.12)_0%,transparent_70%)]" 
+            : "bg-[radial-gradient(circle,rgba(99,102,241,0.08)_0%,transparent_75%)]"
         }`}
       />
 
