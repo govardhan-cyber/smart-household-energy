@@ -69,7 +69,7 @@ export const ChatBot: React.FC = () => {
   useEffect(() => {
     const firstName = user?.fullName ? user.fullName.trim().split(/\s+/)[0] : "";
     const nameStr = firstName ? ` ${firstName}` : "";
-    const greetingText = `Hi${nameStr}! 👋\n\nI am your **Energy AI Assistant**. I have secure, direct access to your **appliance logs, uploaded utility bills, and solar simulations**.\n\nHow can I help you optimize your savings today?`;
+    const greetingText = `Hi${nameStr}! 👋\n\nHow can I help you optimize your savings today?`;
     
     setMessages(prev => {
       // Set default greeting if messages is empty or has only the initial guest greeting
