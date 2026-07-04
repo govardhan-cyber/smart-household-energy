@@ -294,33 +294,39 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
 
     for (const model of modelsToTry) {
       try {
-        // Use Firebase Function proxy — key stays server-side
+        // Attempt secure proxy first (requires Blaze plan + deployed function)
         if (functions) {
-          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
-          const result = await proxy({
-            model,
-            contents: geminiContents,
-            systemInstruction: { parts: [{ text: systemInstruction }] }
-          });
-          const data = result.data;
-          responseText = (data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text || "";
-        } else {
-          // Fallback: direct call (dev mode without Firebase)
-          const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-          if (!geminiKey) throw new Error("No Gemini key available.");
-          const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-          const response = await fetch(chatUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          try {
+            const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+            const result = await proxy({
+              model,
               contents: geminiContents,
               systemInstruction: { parts: [{ text: systemInstruction }] }
-            })
-          });
-          if (!response.ok) throw new Error(`Status ${response.status}`);
-          const data = await response.json();
-          responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            });
+            const data = result.data;
+            responseText = (data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text || "";
+            if (responseText) break;
+            continue; // empty response, try next model via proxy
+          } catch {
+            // Proxy unavailable (Spark plan / not deployed) — fall through to direct call
+          }
         }
+
+        // Direct call fallback (dev mode or Spark plan)
+        const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+        if (!geminiKey) throw new Error("No Gemini key available.");
+        const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const response = await fetch(chatUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: geminiContents,
+            systemInstruction: { parts: [{ text: systemInstruction }] }
+          })
+        });
+        if (!response.ok) throw new Error(`Status ${response.status}`);
+        const data = await response.json();
+        responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
         if (responseText) break;
       } catch (err: unknown) {
         lastError = err instanceof Error ? err : new Error(String(err));

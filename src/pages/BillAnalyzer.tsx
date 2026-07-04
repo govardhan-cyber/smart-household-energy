@@ -371,19 +371,25 @@ export const BillAnalyzer: React.FC = () => {
 
         let resultJsonStr: string | undefined;
 
+        // Try secure proxy first; fall back to direct if not deployed (Spark plan)
         if (functions) {
-          // Secure path: key stays on the server
-          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
-          const result = await proxy({
-            model,
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          });
-          resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
-        } else {
-          // Dev fallback: direct call when Firebase not configured
+          try {
+            const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+            const result = await proxy({
+              model,
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            });
+            resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
+          } catch {
+            // Proxy unavailable — fall through to direct call
+          }
+        }
+
+        if (!resultJsonStr) {
+          // Direct call (Spark plan or proxy failed)
           const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-          if (!geminiKey) throw new Error("No Gemini key available in dev mode.");
+          if (!geminiKey) throw new Error("No Gemini key available.");
           const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
           const response = await fetch(chatUrl, {
             method: "POST",
@@ -497,19 +503,25 @@ export const BillAnalyzer: React.FC = () => {
           ]
         }];
 
+        // Try secure proxy first; fall back to direct if not deployed (Spark plan)
         if (functions) {
-          // Secure path: key stays on the server
-          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
-          const result = await proxy({
-            model,
-            contents,
-            generationConfig: { responseMimeType: "application/json" }
-          });
-          resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
-        } else {
-          // Dev fallback
+          try {
+            const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+            const result = await proxy({
+              model,
+              contents,
+              generationConfig: { responseMimeType: "application/json" }
+            });
+            resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
+          } catch {
+            // Proxy unavailable — fall through to direct call
+          }
+        }
+
+        if (!resultJsonStr) {
+          // Direct call (Spark plan or proxy failed)
           const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-          if (!geminiKey) throw new Error("No Gemini key available in dev mode.");
+          if (!geminiKey) throw new Error("No Gemini key available.");
           const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
           const response = await fetch(chatUrl, {
             method: "POST",
