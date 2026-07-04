@@ -2,6 +2,17 @@
 
 ## Saved Versions
 
+- **Version 16**: Points to git tag `version-16`.
+  - **Features**:
+    - **React Error Boundary:** Created `src/components/ErrorBoundary.tsx` — a class-based boundary with a styled "Something went wrong / Try Again" fallback card. Wrapped all 6 protected routes (Dashboard, Bill Analyzer, History, Survey Data, Profile, Settings) individually plus a top-level `<ErrorBoundary page="App">` catch-all in `App.tsx`. A crash in one tab now shows a recovery card instead of blanking the entire app.
+    - **Gemini API Key Security:** Added `geminiProxy` Firebase Callable Function in `functions/src/index.ts` that reads `GEMINI_API_KEY` from server-side Firebase config (`functions.config().gemini.key`) — the key is never shipped in the browser bundle. Both `ChatBot.tsx` and `BillAnalyzer.tsx` (all 3 call sites) now route through `httpsCallable(functions, "geminiProxy")`. A local dev fallback (`else` branch) preserves `VITE_GEMINI_API_KEY` for offline/dev use when Firebase isn't configured.
+    - **Type Safety Hardening (Remaining 36 `any`):** Eliminated all remaining `any` usages across 8 files: `ChatBot.tsx` (lastError, catch blocks), `Charts.tsx` (Recharts formatter params), `PremiumDashboard.tsx` (Badge interface with trend/value), `SavingsAdvisor.tsx` (icon: ReactNode), `SidebarWidgets.tsx` (analysisResult typed interface), `SurveyData.tsx` (CustomTooltip inline type), `Dashboard.tsx` (RecommendationItem + AnalysisResult interfaces extracted), `Settings.tsx` (TariffSlab typed, all prev/value casts removed, numericRate added to new slabs).
+    - **Chart Accessibility:** Both Recharts chart containers in `Charts.tsx` wrapped with `role="img"`, `aria-label`, and `aria-describedby` pointing to existing `sr-only` data tables.
+  - **Verified:** 15/15 tests passing, zero TypeScript errors, clean build. Gemini key confirmed absent from `dist/` bundle (`Select-String` returns zero matches).
+  - **Note:** `geminiProxy` Firebase Function requires **Blaze plan** to deploy. On Spark plan, the app automatically falls back to direct Gemini calls using `VITE_GEMINI_API_KEY`. To activate secure mode: upgrade to Blaze, run `firebase functions:config:set gemini.key="YOUR_KEY"`, then `firebase deploy --only functions`.
+  - **Recovery Instruction**:
+    - If the user says "recover version 16", run `git checkout version-16`.
+
 - **Version 15**: Points to git tag `version-15`.
   - **Features**:
     - **Solar ROI Unit Tests:** Extracted the 25-year compounding ROI math out of `SolarCalculator.tsx` into a pure utility `src/utils/solarCalculator.ts` and wrote 5 scenario-based Vitest tests covering tariff key mapping, city cost interpolation, unit-from-bill estimation, full 25-year timeline correctness (payback year, cumulative balance), and lead-acid vs lithium battery cost differentiation.
