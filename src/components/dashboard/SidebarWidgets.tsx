@@ -135,7 +135,10 @@ export const LiveGridStatusWidget: React.FC = () => {
 };
 
 interface CarbonSavingsWidgetProps {
-  analysisResult?: any;
+  analysisResult?: {
+    savedCo2?: number;
+    savedTrees?: number;
+  };
 }
 
 export const CarbonSavingsWidget: React.FC<CarbonSavingsWidgetProps> = ({ analysisResult }) => {

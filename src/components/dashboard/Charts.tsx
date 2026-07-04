@@ -638,7 +638,12 @@ export const Charts: React.FC<ChartsProps> = ({
                 </h4>
               </div>
               
-              <div className="relative h-64 w-full flex items-center justify-center my-2">
+              <div
+                className="relative h-64 w-full flex items-center justify-center my-2"
+                role="img"
+                aria-label="Appliance energy share donut chart"
+                aria-describedby="chart-appliance-share-table"
+              >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -656,7 +661,7 @@ export const Charts: React.FC<ChartsProps> = ({
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value: any) => [`${value} kWh`, 'Monthly Usage']}
+                      formatter={(value) => [`${Number(value) || 0} kWh`, 'Monthly Usage']}
                       contentStyle={{
                         backgroundColor: activeTheme === "dark" ? "#1E293B" : "#0F172A",
                         border: activeTheme === "dark" ? "1px solid #334155" : "none",
@@ -670,7 +675,7 @@ export const Charts: React.FC<ChartsProps> = ({
                 </ResponsiveContainer>
 
                 {/* Screen-reader fallback data table */}
-                <table className="sr-only">
+                <table id="chart-appliance-share-table" className="sr-only">
                   <caption>Appliance Monthly Energy Share Distribution</caption>
                   <thead>
                     <tr>
@@ -909,14 +914,19 @@ export const Charts: React.FC<ChartsProps> = ({
             </h4>
           </div>
 
-          <div className="h-64 w-full my-2">
+          <div
+            className="h-64 w-full my-2"
+            role="img"
+            aria-label="Solar ROI payback timeline line chart"
+            aria-describedby="chart-payback-timeline-table"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={resolvedPaybackData.data} margin={{ top: 15, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={activeTheme === "dark" ? "#334155" : "#E2E8F0"} />
                 <XAxis dataKey="year" stroke={activeTheme === "dark" ? "#94A3B8" : "#64748B"} fontSize={10} tickLine={false} />
                 <YAxis stroke={activeTheme === "dark" ? "#94A3B8" : "#64748B"} fontSize={10} tickLine={false} />
                 <Tooltip 
-                  formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Balance']}
+                  formatter={(value) => [`₹${(Number(value) || 0).toLocaleString()}`, 'Balance']}
                   contentStyle={{
                     backgroundColor: activeTheme === "dark" ? "#1E293B" : "#0F172A",
                     border: activeTheme === "dark" ? "1px solid #334155" : "none",
@@ -931,7 +941,7 @@ export const Charts: React.FC<ChartsProps> = ({
             </ResponsiveContainer>
 
             {/* Screen-reader fallback data table */}
-            <table className="sr-only">
+            <table id="chart-payback-timeline-table" className="sr-only">
               <caption>Solar ROI Payback timeline (Year-by-Year Cumulative Balance)</caption>
               <thead>
                 <tr>

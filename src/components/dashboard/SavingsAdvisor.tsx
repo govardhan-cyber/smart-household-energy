@@ -12,7 +12,7 @@ interface Recommendation {
   savings: number;
   badge: "High" | "Medium" | "Low" | "Minor";
   badgeColor: string;
-  icon: any;
+  icon: React.ReactNode;
   difficulty?: "Easy" | "Medium" | "Hard";
   impact?: "High" | "Medium" | "Low";
 }

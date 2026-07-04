@@ -6,6 +6,7 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ChatBot } from "./components/ChatBot";
 import { initTariffCalculator } from "./utils/tariffCalculator";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 // Page lazy imports for bundle size optimization
 const Home = React.lazy(() => import("./pages/Home").then(m => ({ default: m.Home })));
@@ -59,53 +60,65 @@ const AppContent: React.FC = () => {
             <Route path="/faq" element={<FAQ />} />
 
             {/* Private Protected Routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <ErrorBoundary page="Dashboard">
+                    <Dashboard />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/BillAnalyzer" 
+            <Route
+              path="/BillAnalyzer"
               element={
                 <ProtectedRoute>
-                  <BillAnalyzer />
+                  <ErrorBoundary page="Bill Analyzer">
+                    <BillAnalyzer />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/history" 
+            <Route
+              path="/history"
               element={
                 <ProtectedRoute>
-                  <History />
+                  <ErrorBoundary page="History">
+                    <History />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/survey-data" 
+            <Route
+              path="/survey-data"
               element={
                 <ProtectedRoute>
-                  <SurveyData />
+                  <ErrorBoundary page="Survey Data">
+                    <SurveyData />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <ErrorBoundary page="Profile">
+                    <Profile />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/settings" 
+            <Route
+              path="/settings"
               element={
                 <ProtectedRoute>
-                  <Settings />
+                  <ErrorBoundary page="Settings">
+                    <Settings />
+                  </ErrorBoundary>
                 </ProtectedRoute>
-              } 
+              }
             />
 
             {/* Fallback routing */}
@@ -137,7 +150,9 @@ const App: React.FC = () => {
     <Router>
       <ScrollToTop />
       <AuthProvider>
-        <AppContent />
+        <ErrorBoundary page="App">
+          <AppContent />
+        </ErrorBoundary>
       </AuthProvider>
     </Router>
   );

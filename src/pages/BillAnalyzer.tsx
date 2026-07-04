@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { db, IS_FIREBASE_CONFIGURED } from "../firebase/config";
+import { db, IS_FIREBASE_CONFIGURED, functions } from "../firebase/config";
+import { httpsCallable } from "firebase/functions";
 import { collection, doc, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
 import { createWorker } from "tesseract.js";
 import * as pdfjsDist from "pdfjs-dist";
@@ -367,30 +368,39 @@ export const BillAnalyzer: React.FC = () => {
     for (const model of modelsToTry) {
       try {
         setOcrSteps(`Prompting Gemini AI (${model}) to structure billing data...`);
-        const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-        const response = await fetch(chatUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+
+        let resultJsonStr: string | undefined;
+
+        if (functions) {
+          // Secure path: key stays on the server
+          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+          const result = await proxy({
+            model,
             contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Status ${response.status}`);
+            generationConfig: { responseMimeType: "application/json" }
+          });
+          resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
+        } else {
+          // Dev fallback: direct call when Firebase not configured
+          const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+          if (!geminiKey) throw new Error("No Gemini key available in dev mode.");
+          const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const response = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          });
+          if (!response.ok) throw new Error(`Status ${response.status}`);
+          const resData = await response.json();
+          resultJsonStr = resData.candidates?.[0]?.content?.parts?.[0]?.text;
         }
 
-        const resData = await response.json();
-        const resultJsonStr = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!resultJsonStr) {
-          throw new Error("Empty parsing response");
-        }
-
+        if (!resultJsonStr) throw new Error("Empty parsing response");
         parsed = JSON.parse(resultJsonStr);
-        break; // Success! Break loop.
+        break;
       } catch (err: unknown) {
         console.warn(`Failed parsing with ${model}:`, err);
         lastError = err instanceof Error ? err : new Error(String(err));
@@ -424,11 +434,6 @@ export const BillAnalyzer: React.FC = () => {
   const parseImageWithGeminiMultimodal = async (imageSrc: string): Promise<ParsedBillData> => {
     setStatus("ai_parsing");
     setOcrSteps("Converting image to base64 and uploading to Gemini Multimodal AI...");
-
-    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-    if (!geminiKey) {
-      throw new Error("Missing VITE_GEMINI_API_KEY. Direct AI scan requires an API key.");
-    }
 
     const match = imageSrc.match(/^data:(image\/[a-zA-Z\+]+);base64,(.+)$/);
     if (!match) {
@@ -482,39 +487,41 @@ export const BillAnalyzer: React.FC = () => {
     for (const model of modelsToTry) {
       try {
         setOcrSteps(`Direct AI Scan (${model}): Structured parsing...`);
-        const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-        const response = await fetch(chatUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              role: "user",
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: mimeType,
-                    data: base64Data
-                  }
-                }
-              ]
-            }],
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          })
-        });
 
-        if (!response.ok) {
-          throw new Error(`Status ${response.status}`);
+        let resultJsonStr: string | undefined;
+        const contents = [{
+          role: "user",
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: mimeType, data: base64Data } }
+          ]
+        }];
+
+        if (functions) {
+          // Secure path: key stays on the server
+          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+          const result = await proxy({
+            model,
+            contents,
+            generationConfig: { responseMimeType: "application/json" }
+          });
+          resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
+        } else {
+          // Dev fallback
+          const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+          if (!geminiKey) throw new Error("No Gemini key available in dev mode.");
+          const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const response = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } })
+          });
+          if (!response.ok) throw new Error(`Status ${response.status}`);
+          const resData = await response.json();
+          resultJsonStr = resData.candidates?.[0]?.content?.parts?.[0]?.text;
         }
 
-        const resData = await response.json();
-        const resultJsonStr = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!resultJsonStr) {
-          throw new Error("Empty parsing response");
-        }
-
+        if (!resultJsonStr) throw new Error("Empty parsing response");
         parsed = JSON.parse(resultJsonStr);
         break;
       } catch (err: unknown) {

@@ -6,6 +6,8 @@ import { loadTariffs, type TariffState } from "../utils/tariffService";
 import chatbotLogo from "../assets/chatbot-logo.png";
 import type { EnergyReport } from "../utils/reportsService";
 import type { BillRecord } from "../pages/BillAnalyzer";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase/config";
 interface ChatBotLogoProps {
   className?: string;
   isHovered?: boolean;
@@ -124,7 +126,7 @@ Provide a proactive "⚡ AI Summary". Explain why their usage/bill is high or ho
       try {
         const responseText = await queryGeminiDirect(proactivePrompt);
         setMessages(prev => [...prev, { role: "model", text: responseText }]);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Proactive assistant fail:", err);
         // Fallback to static smart template if Gemini fails
         const baselineDiff = (record.parsedData.unitsConsumed || 0) - 250;
@@ -286,36 +288,42 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       }
     ];
 
-    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
-    if (!geminiKey) {
-      throw new Error("Missing VITE_GEMINI_API_KEY. Run in local fallback mode.");
-    }
-
     const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"];
-    let lastError: any = null;
+    let lastError: Error | null = null;
     let responseText = "";
 
     for (const model of modelsToTry) {
       try {
-        const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-        const response = await fetch(chatUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        // Use Firebase Function proxy — key stays server-side
+        if (functions) {
+          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+          const result = await proxy({
+            model,
             contents: geminiContents,
             systemInstruction: { parts: [{ text: systemInstruction }] }
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed with status ${response.status}`);
+          });
+          const data = result.data;
+          responseText = (data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text || "";
+        } else {
+          // Fallback: direct call (dev mode without Firebase)
+          const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+          if (!geminiKey) throw new Error("No Gemini key available.");
+          const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const response = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: geminiContents,
+              systemInstruction: { parts: [{ text: systemInstruction }] }
+            })
+          });
+          if (!response.ok) throw new Error(`Status ${response.status}`);
+          const data = await response.json();
+          responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
         }
-
-        const data = await response.json();
-        responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
         if (responseText) break;
-      } catch (err) {
-        lastError = err;
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err : new Error(String(err));
       }
     }
 
@@ -337,7 +345,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     try {
       const botResponseText = await queryGeminiDirect(textToSend);
       setMessages(prev => [...prev, { role: "model", text: botResponseText }]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       
       // Fallback answers when offline / missing API key

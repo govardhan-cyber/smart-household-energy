@@ -26,6 +26,13 @@ export interface PremiumDashboardProps {
   solarOffsetPercent?: number;
 }
 
+interface Badge {
+  label: string;
+  type: "positive" | "negative" | "neutral";
+  trend: "up" | "down" | "neutral";
+  value: string;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function kwhPerMonth(a: ApplianceItem): number {
   return (a.watts * a.hours * 30 * (a.quantity ?? 1)) / 1000;
@@ -233,7 +240,7 @@ function HeroCard({
 
         {/* Badges */}
         <motion.div className="flex flex-wrap gap-2" variants={heroItemVariants}>
-          {badges.map((b: any, i: number) => {
+          {badges.map((b: Badge, i: number) => {
             let badgeStyle = "bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 backdrop-blur-sm";
             if (b.type === "positive") {
               badgeStyle = "bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800/60 backdrop-blur-sm";

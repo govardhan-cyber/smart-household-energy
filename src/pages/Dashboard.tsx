@@ -11,6 +11,34 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface RecommendationItem {
+  id: string;
+  title: string;
+  description: string;
+  savings: number;
+  badge: "High" | "Medium" | "Low" | "Minor";
+  badgeColor: string;
+  icon: React.ReactNode;
+  difficulty?: "Easy" | "Medium" | "Hard";
+  impact?: "High" | "Medium" | "Low";
+}
+
+interface AnalysisResult {
+  totalUnits: number;
+  billing: TariffResult;
+  highestConsumer: string;
+  savingsPotential: number;
+  usageAfter: number;
+  billAfter: number;
+  recommendations: RecommendationItem[];
+  beforeCo2: number;
+  beforeTrees: number;
+  afterCo2: number;
+  afterTrees: number;
+  savedCo2: number;
+  savedTrees: number;
+}
+
 
 
 import { ApplianceSelector } from "../components/dashboard/ApplianceSelector";
@@ -283,29 +311,7 @@ export const Dashboard: React.FC = () => {
   };
 
   // Calculations states
-  const [analysisResult, setAnalysisResult] = useState<{
-    totalUnits: number;
-    billing: TariffResult;
-    highestConsumer: string;
-    savingsPotential: number;
-    usageAfter: number;
-    billAfter: number;
-    recommendations: {
-      id: string;
-      title: string;
-      description: string;
-      savings: number;
-      badge: "High" | "Medium" | "Low" | "Minor";
-      badgeColor: string;
-      icon: any;
-    }[];
-    beforeCo2: number;
-    beforeTrees: number;
-    afterCo2: number;
-    afterTrees: number;
-    savedCo2: number;
-    savedTrees: number;
-  } | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -519,17 +525,7 @@ export const Dashboard: React.FC = () => {
     const totalSavedKwhSafe = totalSavedKwh || 1;
 
     // Generate smart saving recommendations
-    const tips: {
-      id: string;
-      title: string;
-      description: string;
-      savings: number;
-      badge: "High" | "Medium" | "Low" | "Minor";
-      badgeColor: string;
-      icon: any;
-      difficulty: "Easy" | "Medium" | "Hard";
-      impact: "High" | "Medium" | "Low";
-    }[] = [];
+    const tips: RecommendationItem[] = [];
 
     if (acApp && acSavedKwh > 0) {
       const moneySaved = (acSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
@@ -772,7 +768,7 @@ export const Dashboard: React.FC = () => {
   };
 
 
-  const handleExportCSV = (report: any) => {
+  const handleExportCSV = (report: AnalysisResult) => {
     if (!report) return;
     const headers = ["Appliance", "Quantity", "Usage (hrs/day)", "Wattage (W)", "Estimated Monthly kWh"];
     const rows = activeAppliances.map(app => {

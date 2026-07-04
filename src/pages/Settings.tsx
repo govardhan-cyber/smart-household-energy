@@ -5,7 +5,7 @@ import {
   Settings as SetIcon, Sun, Moon, Bell, Save, CheckCircle2, ShieldCheck, Plus, Trash2,
   Utensils, Cpu, Wind, Droplet, Sparkles, Info
 } from "lucide-react";
-import { loadTariffs, saveTariff, type TariffState } from "../utils/tariffService";
+import { loadTariffs, saveTariff, type TariffState, type TariffSlab } from "../utils/tariffService";
 import { reloadTariffCalculator } from "../utils/tariffCalculator";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
@@ -180,15 +180,15 @@ export const Settings: React.FC = () => {
   };
 
   // Admin tariff handlers
-  const handleAdminFieldChange = (field: string, value: any) => {
-    setAdminTariff((prev: any) => {
+  const handleAdminFieldChange = (field: string, value: string | number) => {
+    setAdminTariff((prev) => {
       if (!prev) return prev;
       return { ...prev, [field]: value };
     });
   };
 
-  const handleAdminSubsidyChange = (field: string, value: any) => {
-    setAdminTariff((prev: any) => {
+  const handleAdminSubsidyChange = (field: string, value: string | number) => {
+    setAdminTariff((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -200,8 +200,8 @@ export const Settings: React.FC = () => {
     });
   };
 
-  const handleSlabChange = (index: number, field: string, value: any) => {
-    setAdminTariff((prev: any) => {
+  const handleSlabChange = (index: number, field: string, value: string | number) => {
+    setAdminTariff((prev) => {
       if (!prev) return prev;
       const newSlabs = [...prev.slabs];
       newSlabs[index] = { ...newSlabs[index], [field]: value };
@@ -210,14 +210,15 @@ export const Settings: React.FC = () => {
   };
 
   const handleAddSlab = () => {
-    setAdminTariff((prev: any) => {
+    setAdminTariff((prev) => {
       if (!prev) return prev;
       const prevMax = prev.slabs.length > 0 ? prev.slabs[prev.slabs.length - 1].max : 0;
       const newSlab = {
         limit: "Above X units",
         rate: "₹5.00",
         max: Infinity,
-        prev: prevMax === Infinity ? 0 : prevMax
+        prev: prevMax === Infinity ? 0 : prevMax,
+        numericRate: 5.0
       };
       return {
         ...prev,
@@ -227,9 +228,9 @@ export const Settings: React.FC = () => {
   };
 
   const handleRemoveSlab = (index: number) => {
-    setAdminTariff((prev: any) => {
+    setAdminTariff((prev) => {
       if (!prev || prev.slabs.length <= 1) return prev;
-      const newSlabs = prev.slabs.filter((_: any, idx: number) => idx !== index);
+      const newSlabs = prev.slabs.filter((_: TariffSlab, idx: number) => idx !== index);
       return { ...prev, slabs: newSlabs };
     });
   };
@@ -966,7 +967,7 @@ export const Settings: React.FC = () => {
 
                   <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
                     <AnimatePresence initial={false}>
-                      {adminTariff.slabs.map((slab: any, index: number) => (
+                      {adminTariff.slabs.map((slab: TariffSlab, index: number) => (
                         <motion.div 
                           key={`slab_${index}`}
                           layout

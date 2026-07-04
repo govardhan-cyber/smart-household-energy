@@ -3,6 +3,65 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
+// ─── Gemini API Proxy ─────────────────────────────────────────────────────────
+// Keeps GEMINI_API_KEY on the server — never shipped in the browser bundle.
+// Deploy the key once:  firebase functions:config:set gemini.key="YOUR_KEY"
+export const geminiProxy = functions.https.onCall(
+  async (request: functions.https.CallableRequest) => {
+    if (!request.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "You must be signed in to use the AI assistant."
+      );
+    }
+
+    const geminiKey: string = functions.config().gemini?.key ?? "";
+    if (!geminiKey) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Gemini API key is not configured on the server."
+      );
+    }
+
+    const { model, contents, generationConfig, systemInstruction } = request.data as {
+      model: string;
+      contents: unknown;
+      generationConfig?: unknown;
+      systemInstruction?: unknown;
+    };
+
+    if (!model || !contents) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Request must include model and contents."
+      );
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+
+    const body: Record<string, unknown> = { contents };
+    if (generationConfig) body.generationConfig = generationConfig;
+    if (systemInstruction) body.systemInstruction = systemInstruction;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000)
+    });
+
+    if (!response.ok) {
+      throw new functions.https.HttpsError(
+        "internal",
+        `Gemini API returned status ${response.status}`
+      );
+    }
+
+    const data = await response.json() as Record<string, unknown>;
+    return data;
+  }
+);
+
 interface ApplianceData {
   name: string;
   quantity: number;
