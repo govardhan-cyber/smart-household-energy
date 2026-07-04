@@ -2,6 +2,14 @@
 
 ## Saved Versions
 
+- **Version 14**: Points to git tag `version-14`.
+  - **Features**:
+    - **Premium Light & Dark Mode Backgrounds:** Generated new, ultra-high-definition abstract tech backgrounds for both themes. Light mode features flowing silver/white metallic wave surfaces with glowing neon cyan/mint-green paths. Dark mode features charcoal/obsidian metallic curves with neon trails.
+    - **Vibrant Glows & Spotlights:** Added dedicated dark-mode glowing ambient blobs (emerald, cyan, and indigo) behind UI cards for lighting depth. Configured high-contrast spotlights (normal/multiply for light mode, screen blend mode with 0.16 opacity for dark mode).
+    - **Visible Tech Grids & Contrast:** Adjusted image visibility (`opacity-85 brightness-[0.98] contrast-[1.08]` in light mode, `opacity-75 brightness-[0.88] contrast-[1.15]` in dark mode) and grid line opacity (`0.035` indigo grid in light mode, `0.03` cyan grid in dark mode) to render clean, high-contrast, premium layouts. Fixed invalid Tailwind vignettes.
+  - **Recovery Instruction**:
+    - If the user says "recover version 14", run `git checkout version-14`.
+
 - **Version 13**: Points to git tag `version-13`.
   - **Features**:
     - **Premium Footer Layout:** Integrated a full-width Final CTA gradient banner, animated stat count-up bridge cards (Homes Audited, AI Accuracy, kWh Analysed, Costs Predicted), a 5-column brand links grid, platform trust badges (SSL, Privacy, AI, Eco, DISCOM), and inline SVG social links.

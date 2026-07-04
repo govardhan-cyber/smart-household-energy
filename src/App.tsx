@@ -42,7 +42,7 @@ import "./App.css";
 
 const AppContent: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white via-slate-50/80 to-blue-50/40 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
       <React.Suspense fallback={null}>
         <ThreeBackgroundLazy className="fixed inset-0 pointer-events-none no-print" />
       </React.Suspense>

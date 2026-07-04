@@ -190,7 +190,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
 
         // Draw glowing particle
         ctx.beginPath();
-        const fillAlpha = dark ? s.alpha * 0.65 : s.alpha * 0.45;
+        const fillAlpha = dark ? s.alpha * 0.65 : s.alpha * 0.6;
         ctx.fillStyle = s.hue === 160 
           ? `rgba(52, 211, 153, ${fillAlpha})` // Emerald
           : `rgba(34, 211, 238, ${fillAlpha})`;  // Cyan/Teal
@@ -237,8 +237,8 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
           alt="Luxury Technology Background"
           className={`w-full h-full object-cover transition-all duration-700 ${
             isDark 
-              ? "opacity-65 brightness-[0.82] contrast-[1.12]" 
-              : "opacity-55 brightness-[1.03] contrast-[0.98]"
+              ? "opacity-75 brightness-[0.88] contrast-[1.15]" 
+              : "opacity-85 brightness-[0.98] contrast-[1.08]"
           }`}
         />
       </motion.div>
@@ -254,22 +254,32 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
           translateX: "-50%",
           translateY: "-50%"
         }}
-        className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none mix-blend-screen blur-[100px] transition-opacity duration-500 ${
+        className={`absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none blur-[100px] transition-opacity duration-500 ${
           isDark 
-            ? "bg-[radial-gradient(circle,rgba(34,211,238,0.11)_0%,transparent_70%)]" 
-            : "bg-[radial-gradient(circle,rgba(99,102,241,0.09)_0%,transparent_70%)]"
+            ? "mix-blend-screen bg-[radial-gradient(circle,rgba(34,211,238,0.16)_0%,transparent_70%)]" 
+            : "mix-blend-multiply bg-[radial-gradient(circle,rgba(99,102,241,0.15)_0%,transparent_75%)]"
         }`}
       />
 
       {/* Ambient background mesh gradient blobs for light mode */}
-      {!isDark && (
+      {/* Ambient background mesh gradient blobs */}
+      {isDark ? (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Top-Right Glowing Emerald Blob */}
+          <div className="absolute -top-[15%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-emerald-500/10 blur-[130px] pointer-events-none" />
+          {/* Center-Left Glowing Cyan Blob */}
+          <div className="absolute top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-cyan-500/10 blur-[150px] pointer-events-none" />
+          {/* Bottom-Right Glowing Indigo Blob */}
+          <div className="absolute -bottom-[15%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-blue-500/[0.08] blur-[120px] pointer-events-none" />
+        </div>
+      ) : (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Top-Right Soft Indigo Glow */}
-          <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-indigo-200/20 blur-[120px] pointer-events-none" />
+          <div className="absolute -top-[10%] -right-[5%] w-[45vw] h-[45vw] rounded-full bg-indigo-300/[0.22] blur-[120px] pointer-events-none" />
           {/* Center-Left Soft Cyan Glow */}
-          <div className="absolute top-[25%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-cyan-200/20 blur-[140px] pointer-events-none" />
+          <div className="absolute top-[25%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-cyan-300/[0.22] blur-[140px] pointer-events-none" />
           {/* Bottom-Right Soft Emerald Glow */}
-          <div className="absolute -bottom-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-emerald-100/25 blur-[110px] pointer-events-none" />
+          <div className="absolute -bottom-[10%] right-[10%] w-[40vw] h-[40vw] rounded-full bg-emerald-200/[0.28] blur-[110px] pointer-events-none" />
         </div>
       )}
 
@@ -277,14 +287,14 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
       <div 
         className={`absolute inset-0 pointer-events-none transition-colors duration-700 ${
           isDark 
-            ? "bg-[radial-gradient(circle_at_center,transparent_30%,rgba(11,15,25,0.6)_100%)] bg-gradient-to-tr from-emerald-500/[0.08] via-transparent to-cyan-500/[0.08]" 
-            : "bg-[radial-gradient(circle_at_center,transparent_40%,rgba(255,255,255,0.55)_100%)] bg-gradient-to-tr from-blue-500/8 via-transparent to-indigo-500/8"
+            ? "bg-[radial-gradient(circle_at_center,transparent_30%,rgba(11,15,25,0.6)_100%)] bg-gradient-to-tr from-emerald-500/[0.12] via-transparent to-cyan-500/[0.12]" 
+            : "bg-[radial-gradient(circle_at_center,transparent_40%,rgba(255,255,255,0.55)_100%)] bg-gradient-to-tr from-blue-500/[0.12] via-transparent to-indigo-500/[0.12]"
         }`} 
       />
 
       {/* Tech Grid Mask */}
       <div 
-        className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(34,211,238,0.009)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.009)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)] opacity-80"
+        className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(99,102,241,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.035)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(34,211,238,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.03)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)] opacity-80"
       />
     </div>
   );
