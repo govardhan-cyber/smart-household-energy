@@ -5,7 +5,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ChatBot } from "./components/ChatBot";
-import { ThreeBackground } from "./components/ThreeBackground";
 import { initTariffCalculator } from "./utils/tariffCalculator";
 
 // Page lazy imports for bundle size optimization
@@ -20,6 +19,8 @@ const SurveyData = React.lazy(() => import("./pages/SurveyData").then(m => ({ de
 const Profile = React.lazy(() => import("./pages/Profile").then(m => ({ default: m.Profile })));
 const Settings = React.lazy(() => import("./pages/Settings").then(m => ({ default: m.Settings })));
 const FAQ = React.lazy(() => import("./pages/FAQ").then(m => ({ default: m.FAQ })));
+
+const ThreeBackgroundLazy = React.lazy(() => import("./components/ThreeBackground").then(m => ({ default: m.ThreeBackground })));
 
 const LoadingFallback = () => (
   <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] gap-3">
@@ -39,6 +40,86 @@ const ScrollToTop: React.FC = () => {
 
 import "./App.css";
 
+const AppContent: React.FC = () => {
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
+      <React.Suspense fallback={null}>
+        <ThreeBackgroundLazy className="fixed inset-0 pointer-events-none no-print" />
+      </React.Suspense>
+      <Navbar />
+      
+      <main className="flex-1 flex flex-col relative">
+        <React.Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/faq" element={<FAQ />} />
+
+            {/* Private Protected Routes */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/BillAnalyzer" 
+              element={
+                <ProtectedRoute>
+                  <BillAnalyzer />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/history" 
+              element={
+                <ProtectedRoute>
+                  <History />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/survey-data" 
+              element={
+                <ProtectedRoute>
+                  <SurveyData />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Fallback routing */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </React.Suspense>
+      </main>
+
+      <Footer />
+      <ChatBot />
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   // Theme initialization on mount
   useEffect(() => {
@@ -56,79 +137,7 @@ const App: React.FC = () => {
     <Router>
       <ScrollToTop />
       <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 relative">
-          <ThreeBackground className="fixed inset-0 pointer-events-none no-print" />
-          <Navbar />
-          
-          <main className="flex-1 flex flex-col relative">
-            <React.Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/faq" element={<FAQ />} />
-
-                {/* Private Protected Routes */}
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/BillAnalyzer" 
-                  element={
-                    <ProtectedRoute>
-                      <BillAnalyzer />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/history" 
-                  element={
-                    <ProtectedRoute>
-                      <History />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/survey-data" 
-                  element={
-                    <ProtectedRoute>
-                      <SurveyData />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/settings" 
-                  element={
-                    <ProtectedRoute>
-                      <Settings />
-                    </ProtectedRoute>
-                  } 
-                />
-
-                {/* Fallback routing */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </React.Suspense>
-          </main>
-
-          <Footer />
-          <ChatBot />
-        </div>
+        <AppContent />
       </AuthProvider>
     </Router>
   );

@@ -2,6 +2,12 @@
 
 ## Saved Versions
 
+- **Version 13**: Points to git tag `version-13`.
+  - **Features**:
+    - **Premium Footer Layout:** Integrated a full-width Final CTA gradient banner, animated stat count-up bridge cards (Homes Audited, AI Accuracy, kWh Analysed, Costs Predicted), a 5-column brand links grid, platform trust badges (SSL, Privacy, AI, Eco, DISCOM), and inline SVG social links.
+  - **Recovery Instruction**:
+    - If the user says "recover version 13", run `git checkout version-13`.
+
 - **Version 12**: Points to git tag `version-12`.
   - **Features**:
     - **Dual Lighting Source Split:** Separated LED Bulbs and conventional Tube Lights into two first-class, independent selectable appliances. Added custom wattage presets (9W/12W/15W for LEDs; 18W T5/40W Conventional for Tube Lights) and separate runtime configurations.

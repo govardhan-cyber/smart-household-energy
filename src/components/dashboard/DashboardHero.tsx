@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeDCard } from "../ThreeDCard";
+import type { EnergyReport } from "../../utils/reportsService";
 
 
 // ─── 0. REUSABLE ANIMATED NUMBER COMPONENT ──────────────────────────────────
@@ -319,7 +320,7 @@ export const KpiCard: React.FC<{
 };
 
 // ─── 6. ENERGY HEALTH SCORE CARD ──────────────────────────────────────────────
-export const calculateScoreForReport = (report: any) => {
+export const calculateScoreForReport = (report: EnergyReport) => {
   if (!report || !report.appliances || report.appliances.length === 0) return 100;
   let score = 100;
   
@@ -352,17 +353,17 @@ export const calculateScoreForReport = (report: any) => {
   }
 
   // D. Appliance specific runtime penalties
-  const ac = report.appliances.find((a: any) => a.name?.toLowerCase() === "air conditioner" || a.name?.toLowerCase() === "ac" || a.id === "ac");
+  const ac = report.appliances.find((a) => a.name?.toLowerCase() === "air conditioner" || a.name?.toLowerCase() === "ac");
   if (ac && ac.hours > 6) {
     score -= 10;
   }
 
-  const lights = report.appliances.find((a: any) => a.name?.toLowerCase() === "lights" || a.name?.toLowerCase() === "tube light" || a.id === "lights" || a.id === "lights_tube");
+  const lights = report.appliances.find((a) => a.name?.toLowerCase() === "lights" || a.name?.toLowerCase() === "tube light");
   if (lights && lights.watts > 12) {
     score -= 5;
   }
 
-  const fridge = report.appliances.find((a: any) => a.name?.toLowerCase() === "refrigerator" || a.name?.toLowerCase() === "fridge" || a.id === "fridge");
+  const fridge = report.appliances.find((a) => a.name?.toLowerCase() === "refrigerator" || a.name?.toLowerCase() === "fridge");
   if (fridge && fridge.quantity > 1) {
     score -= 5;
   }
@@ -372,7 +373,7 @@ export const calculateScoreForReport = (report: any) => {
 
 export interface EnergyHealthScoreProps {
   score: number;
-  reports?: any[];
+  reports?: EnergyReport[];
   totalUnits?: number;
   savingsPotential?: number;
   solarOffsetPercent?: number;
@@ -961,7 +962,7 @@ export interface QuickActionPanelProps {
   onRunAudit: () => void;
   onGoToSolar: () => void;
   onGoToSettings: () => void;
-  reports?: any[];
+  reports?: EnergyReport[];
 }
 
 export const QuickActionPanel: React.FC<QuickActionPanelProps> = ({ 

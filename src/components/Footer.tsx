@@ -73,12 +73,31 @@ const AnimatedStat: React.FC<{
 };
 
 export const Footer: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
   const handleLinkClick = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes("@") || email.length < 5) {
+      setStatus("error");
+      setMessage("Please enter a valid email address.");
+      return;
+    }
+    setStatus("loading");
+    setTimeout(() => {
+      setStatus("success");
+      setMessage("Thank you! You've been subscribed.");
+      setEmail("");
+    }, 1200);
+  };
+
   return (
-    <footer className="relative w-full bg-white/40 dark:bg-slate-950/40 backdrop-blur-lg border-t border-slate-200/50 dark:border-slate-800/60 transition-colors duration-300 mt-auto overflow-hidden">
+    <footer className="relative w-full bg-white/40 dark:bg-slate-950/40 backdrop-blur-lg border-t border-slate-200/50 dark:border-slate-800/65 transition-colors duration-300 mt-auto overflow-hidden">
       {/* Specular Reflective Gloss Sheen top highlight */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
       
@@ -132,7 +151,7 @@ export const Footer: React.FC = () => {
             <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-1.5 relative z-10">
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-550 uppercase">
                 Homes Audited
               </span>
               <Globe className="w-4 h-4 text-blue-500 dark:text-cyan-400 animate-[spin_12s_linear_infinite] group-hover:animate-[spin_3s_linear_infinite]" />
@@ -140,7 +159,7 @@ export const Footer: React.FC = () => {
             <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
               <AnimatedStat target={12450} suffix="+" />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+            <p className="text-xs text-slate-550 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
               Residential audits in Andhra Pradesh
             </p>
           </div>
@@ -151,7 +170,7 @@ export const Footer: React.FC = () => {
             <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-1.5 relative z-10">
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-555 uppercase">
                 AI Accuracy
               </span>
               <Cpu className="w-4 h-4 text-emerald-500 dark:text-emerald-400 animate-pulse duration-2000 group-hover:scale-110 group-hover:rotate-6 transition-all" />
@@ -159,7 +178,7 @@ export const Footer: React.FC = () => {
             <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
               <AnimatedStat target={99.4} suffix="%" decimals={1} />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+            <p className="text-xs text-slate-555 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
               Tariff slab matching confidence
             </p>
           </div>
@@ -170,7 +189,7 @@ export const Footer: React.FC = () => {
             <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-1.5 relative z-10">
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-555 uppercase">
                 kWh Analysed
               </span>
               <Zap className="w-4 h-4 text-cyan-500 dark:text-cyan-400 group-hover:animate-bounce group-hover:scale-110 transition-all" />
@@ -178,7 +197,7 @@ export const Footer: React.FC = () => {
             <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
               <AnimatedStat target={4.8} suffix="M+" decimals={1} />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+            <p className="text-xs text-slate-555 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
               Grid consumption logs processed
             </p>
           </div>
@@ -189,7 +208,7 @@ export const Footer: React.FC = () => {
             <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-amber-500/10 dark:bg-amber-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             
             <div className="flex items-center justify-between mb-1.5 relative z-10">
-              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-555 uppercase">
                 Costs Predicted
               </span>
               <IndianRupee className="w-4 h-4 text-amber-500 dark:text-amber-400 animate-[bounce_3s_infinite] group-hover:scale-110 group-hover:rotate-12 transition-all" />
@@ -197,20 +216,20 @@ export const Footer: React.FC = () => {
             <div className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white relative z-10">
               <AnimatedStat target={12.8} prefix="₹" suffix="M+" decimals={1} />
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
+            <p className="text-xs text-slate-555 dark:text-slate-400 mt-0.5 leading-relaxed font-medium relative z-10">
               Invoiced value mapped for users
             </p>
           </div>
         </div>
       </div>
 
-      {/* SECTION 3: Four-Column Footer Links Grid */}
+      {/* SECTION 3: Five-Column Footer Links Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10 relative z-10">
         <div className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/60 rounded-3xl p-6 sm:p-8 md:p-10 shadow-sm dark:shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-6">
             
-            {/* Column 1: Brand & Status Widget (Col span-5) */}
-            <div className="lg:col-span-5 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/40 dark:border-slate-800/50 rounded-2xl p-6 space-y-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] dark:shadow-none">
+            {/* Column 1: Brand & Status Widget (Col span-4) */}
+            <div className="lg:col-span-4 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/40 dark:border-slate-800/50 rounded-2xl p-6 space-y-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)] dark:shadow-none">
               <div className="flex items-center gap-3">
                 <div className="relative group/logo">
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-500 blur-sm opacity-50 group-hover/logo:opacity-100 transition-opacity duration-300" />
@@ -238,87 +257,144 @@ export const Footer: React.FC = () => {
               </div>
             </div>
 
-            {/* Column 2: Product Suite (Col span-2 col-start-7) */}
-            <div className="lg:col-span-2 lg:col-start-7 space-y-3 pt-2">
-              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest">
+            {/* Column 2: Product Suite (Col span-2) */}
+            <div className="lg:col-span-2 relative lg:pl-6 pt-2">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-slate-200/85 dark:via-slate-800/60 to-transparent hidden lg:block" />
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest mb-3">
                 Product Suite
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 <li>
-                  <Link to="/dashboard" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Layout className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Slab Calculator</span>
+                  <Link to="/dashboard" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Layout className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Slab Calculator</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/BillAnalyzer" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Database className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">AI Bill Analyzer</span>
+                  <Link to="/BillAnalyzer" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Database className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">AI Bill Analyzer</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/history" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <History className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Energy Logs</span>
+                  <Link to="/history" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <History className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Energy Logs</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/survey-data" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Survey Database</span>
+                  <Link to="/survey-data" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Survey Database</span>
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Column 3: Resources (Col span-2 col-start-9) */}
-            <div className="lg:col-span-2 lg:col-start-9 space-y-3 pt-2">
-              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">
+            {/* Column 3: Resources (Col span-2) */}
+            <div className="lg:col-span-2 relative lg:pl-6 pt-2">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-slate-200/85 dark:via-slate-800/60 to-transparent hidden lg:block" />
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest mb-3">
                 Resources
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 <li>
-                  <a href="https://www.apspdcl.in/electricity-tariff.php" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">APSPDCL LT-I Tariff</span>
-                    <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0 animate-pulse" />
+                  <a href="https://www.apspdcl.in/electricity-tariff.php" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">
+                      APSPDCL LT-I Tariff
+                      <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0 inline-block ml-1 align-middle animate-pulse" />
+                    </span>
                   </a>
                 </li>
                 <li>
-                  <a href="https://alpexsolar.com/resources/blog/solar-panel-installation-cost-home/" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Zap className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Alpex Solar Guide</span>
-                    <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0" />
+                  <a href="https://alpexsolar.com/resources/blog/solar-panel-installation-cost-home/" target="_blank" rel="noopener noreferrer" className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Zap className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">
+                      Alpex Solar Guide
+                      <ExternalLink className="w-3 h-3 text-slate-400/50 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors shrink-0 inline-block ml-1 align-middle" />
+                    </span>
                   </a>
                 </li>
                 <li>
-                  <Link to="/faq" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Energy FAQ</span>
+                  <Link to="/faq" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Energy FAQ</span>
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Column 4: Platform Security (Col span-2 col-start-11) */}
-            <div className="lg:col-span-2 lg:col-start-11 space-y-3 pt-2">
-              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest">
+            {/* Column 4: Platform Security (Col span-2) */}
+            <div className="lg:col-span-2 relative lg:pl-6 pt-2">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-slate-200/85 dark:via-slate-800/60 to-transparent hidden lg:block" />
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest mb-3">
                 Platform
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 <li>
-                  <Link to="/settings" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">Security Settings</span>
+                  <Link to="/settings" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Security Settings</span>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/profile" onClick={handleLinkClick} className="group flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors">
-                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300" />
-                    <span className="group-hover:translate-x-0.5 transition-transform duration-300">User Profile</span>
+                  <Link to="/profile" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <Globe className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">User Profile</span>
                   </Link>
                 </li>
               </ul>
+            </div>
+
+            {/* Column 5: Newsletter Column (Col span-2) */}
+            <div className="lg:col-span-2 relative lg:pl-6 pt-2">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-slate-200/85 dark:via-slate-800/60 to-transparent hidden lg:block" />
+              <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest mb-3">
+                Newsletter
+              </h4>
+              <div className="space-y-3 mt-3">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                  Weekly saving tips &amp; Andhra Pradesh tariff slab updates.
+                </p>
+                {status === "success" ? (
+                  <div className="flex items-center gap-2 text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl p-2.5 animate-fadeIn">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span className="font-bold leading-tight">{message}</span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribe} className="space-y-2">
+                    <div className="relative flex items-center">
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={status === "loading"}
+                        className="w-full bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/65 rounded-xl py-1.5 pl-3 pr-8 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 dark:focus:border-cyan-400/50 transition-all disabled:opacity-50"
+                      />
+                      <button
+                        type="submit"
+                        disabled={status === "loading"}
+                        aria-label="Subscribe"
+                        className="absolute right-1.5 p-1 text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors disabled:opacity-50"
+                      >
+                        {status === "loading" ? (
+                          <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
+                        ) : (
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    {status === "error" && (
+                      <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                        {message}
+                      </p>
+                    )}
+                  </form>
+                )}
+              </div>
             </div>
 
           </div>
@@ -337,32 +413,32 @@ export const Footer: React.FC = () => {
             </div>
 
             {/* Privacy Badge */}
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
-              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-950 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-550 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300">
                 <Lock className="w-3.5 h-3.5" />
               </div>
               <span className="font-semibold tracking-tight">Privacy Protected</span>
             </div>
 
             {/* AI Powered Badge */}
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
-              <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg text-indigo-500 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/20 hover:text-slate-950 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg text-indigo-550 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300">
                 <Cpu className="w-3.5 h-3.5" />
               </div>
               <span className="font-semibold tracking-tight">AI Powered</span>
             </div>
 
             {/* Eco Friendly Badge */}
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-600/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
-              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-emerald-650/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/20 hover:text-slate-950 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group">
+              <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg text-emerald-650 dark:text-emerald-500 group-hover:scale-110 transition-transform duration-300">
                 <Leaf className="w-3.5 h-3.5" />
               </div>
               <span className="font-semibold tracking-tight">Eco Friendly</span>
             </div>
 
             {/* DISCOM Compatible Badge */}
-            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-amber-500/30 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 hover:text-slate-900 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group col-span-2 justify-center sm:col-span-1">
-              <div className="p-1 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/60 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:border-amber-500/30 hover:bg-amber-50/10 dark:hover:bg-amber-950/20 hover:text-slate-950 dark:hover:text-slate-200 hover:-translate-y-0.5 shadow-sm hover:shadow-md transition-all duration-300 cursor-default group col-span-2 justify-center sm:col-span-1">
+              <div className="p-1 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-amber-550 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300">
                 <Zap className="w-3.5 h-3.5" />
               </div>
               <span className="font-semibold tracking-tight">DISCOM Compatible</span>
@@ -373,7 +449,7 @@ export const Footer: React.FC = () => {
 
         {/* SECTION 5: Minimal Copyright & Socials Bar */}
         <div className="border-t border-slate-200/50 dark:border-slate-800/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-500 space-y-1 text-center sm:text-left">
+          <div className="text-[11px] font-semibold text-slate-505 dark:text-slate-505 space-y-1 text-center sm:text-left">
             <p>&copy; {new Date().getFullYear()} Smart Household Energy. All rights reserved.</p>
             <p className="flex items-center justify-center sm:justify-start gap-1.5 group/designed">
               <span>Designed with</span> 
@@ -389,7 +465,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer" 
               aria-label="GitHub"
-              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-505 hover:text-slate-905 dark:text-slate-400 dark:hover:text-white"
             >
               <GithubIcon className="w-4 h-4" />
             </a>
@@ -398,7 +474,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer" 
               aria-label="Twitter"
-              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-505 hover:text-slate-905 dark:text-slate-400 dark:hover:text-white"
             >
               <TwitterIcon className="w-4 h-4" />
             </a>
@@ -407,7 +483,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer" 
               aria-label="LinkedIn"
-              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-505 hover:text-slate-905 dark:text-slate-400 dark:hover:text-white"
             >
               <LinkedinIcon className="w-4 h-4" />
             </a>
@@ -416,7 +492,7 @@ export const Footer: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer" 
               aria-label="Discord"
-              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-slate-750 flex items-center justify-center transition-all duration-300 hover:scale-110 text-slate-505 hover:text-slate-905 dark:text-slate-400 dark:hover:text-white"
             >
               <MessageSquare className="w-4 h-4" />
             </a>

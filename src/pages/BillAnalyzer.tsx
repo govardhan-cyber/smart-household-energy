@@ -17,7 +17,7 @@ import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboa
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
-interface ParsedBillData {
+export interface ParsedBillData {
   consumerName: string;
   serviceNumber: string;
   customerID: string;
@@ -37,7 +37,7 @@ interface ParsedBillData {
   energyInsights: string[];
 }
 
-interface BillRecord {
+export interface BillRecord {
   id: string;
   userId: string;
   uploadDate: string;
@@ -1971,7 +1971,13 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       {/* ─── BILL DETAILS MODAL DIALOG ────────────────────────────────────────── */}
     <AnimatePresence>
       {selectedBillForModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 print-modal-parent">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 print-modal-parent"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bill-details-title"
+          aria-describedby="bill-details-desc"
+        >
           {/* Backdrop */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -2010,8 +2016,8 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Electricity Bill Details</h3>
-                <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Uploaded on {formatDate(selectedBillForModal.uploadDate)}</p>
+                <h3 id="bill-details-title" className="text-lg font-bold text-slate-900 dark:text-white">Electricity Bill Details</h3>
+                <p id="bill-details-desc" className="text-[11px] font-semibold text-slate-400 mt-0.5">Uploaded on {formatDate(selectedBillForModal.uploadDate)}</p>
               </div>
               <div className="flex items-center gap-2 no-print">
                 <button
@@ -2032,6 +2038,7 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                 </button>
                 <button 
                   onClick={() => setSelectedBillForModal(null)}
+                  aria-label="Close bill details"
                   className="p-1.5 rounded-xl border border-slate-255 dark:border-slate-800 hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
                 >
                   <X className="w-4.5 h-4.5" />
@@ -2209,7 +2216,13 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
 
       {/* ── Delete Confirmation Modal ─────────────────────────────────────────── */}
       {deleteBillId && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+        <div 
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-confirm-title"
+          aria-describedby="delete-confirm-desc"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -2231,10 +2244,10 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+              <h3 id="delete-confirm-title" className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 Delete Bill Scan?
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
+              <p id="delete-confirm-desc" className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
                 This will permanently delete this bill record from your history. This action cannot be undone.
               </p>
             </div>

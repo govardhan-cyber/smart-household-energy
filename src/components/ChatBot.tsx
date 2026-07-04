@@ -4,6 +4,8 @@ import { X, Send, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadTariffs, type TariffState } from "../utils/tariffService";
 import chatbotLogo from "../assets/chatbot-logo.png";
+import type { EnergyReport } from "../utils/reportsService";
+import type { BillRecord } from "../pages/BillAnalyzer";
 interface ChatBotLogoProps {
   className?: string;
   isHovered?: boolean;
@@ -171,22 +173,21 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
   const queryGeminiDirect = async (userPrompt: string): Promise<string> => {
     // 1. Gather context
     let reportsContext = "No energy audit reports found.";
-    let activeReport = null;
     if (user?.uid) {
       const reportsKey = `she_reports_cache_${user.uid}`;
       const reportsData = localStorage.getItem(reportsKey);
       if (reportsData) {
         try {
-          const reports = JSON.parse(reportsData);
+          const reports: EnergyReport[] = JSON.parse(reportsData);
           if (reports && reports.length > 0) {
-            activeReport = reports[0];
-            reportsContext = `Latest Energy Audit Report (created on ${activeReport.createdAt}):
-- Total Monthly Usage: ${activeReport.totalUnits} kWh
-- Estimated Monthly Bill: ₹${activeReport.estimatedBill}
-- Monthly Savings Potential: ₹${activeReport.savingsPotential}
-- Highest Energy Consuming Appliance: ${activeReport.highestConsumer}
-- Carbon Footprint: ${activeReport.beforeCo2} kg CO2/month (Can reduce to ${activeReport.afterCo2} kg CO2/month, saving ${activeReport.savedCo2} kg CO2/month, equivalent to ${activeReport.savedTrees} trees/month)
-- Appliances configured: ${activeReport.appliances.map((app: any) => `${app.name} (Qty: ${app.quantity}, Running: ${app.hours} hrs/day, Watts: ${app.watts}W)`).join(", ")}`;
+            const report = reports[0];
+            reportsContext = `Latest Energy Audit Report (created on ${report.createdAt}):
+- Total Monthly Usage: ${report.totalUnits} kWh
+- Estimated Monthly Bill: ₹${report.estimatedBill}
+- Monthly Savings Potential: ₹${report.savingsPotential}
+- Highest Energy Consuming Appliance: ${report.highestConsumer}
+- Carbon Footprint: ${report.beforeCo2} kg CO2/month (Can reduce to ${report.afterCo2} kg CO2/month, saving ${report.savedCo2} kg CO2/month, equivalent to ${report.savedTrees} trees/month)
+- Appliances configured: ${report.appliances.map((app) => `${app.name} (Qty: ${app.quantity}, Running: ${app.hours} hrs/day, Watts: ${app.watts}W)`).join(", ")}`;
           }
         } catch (e) {
           // ignore
@@ -226,10 +227,10 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       const billHistoryData = localStorage.getItem(billHistoryKey);
       if (billHistoryData) {
         try {
-          const history = JSON.parse(billHistoryData);
+          const history: BillRecord[] = JSON.parse(billHistoryData);
           if (history && history.length > 0) {
             billHistoryContext = `Extracted Utility Bill Logs (previously uploaded bills):
-` + history.slice(0, 3).map((h: any, idx: number) => `- Bill #${idx + 1}: uploaded on ${h.uploadDate}, billing period is ${h.parsedData.billingPeriod}, usage units is ${h.parsedData.unitsConsumed} kWh, bill amount is ₹${h.parsedData.totalAmount}, tariff categories is ${h.parsedData.tariffCategory}, consumer name is ${h.parsedData.consumerName}, service number is ${h.parsedData.serviceNumber}`).join("\n");
+` + history.slice(0, 3).map((h, idx) => `- Bill #${idx + 1}: uploaded on ${h.uploadDate}, billing period is ${h.parsedData.billingPeriod}, usage units is ${h.parsedData.unitsConsumed} kWh, bill amount is ₹${h.parsedData.totalAmount}, tariff categories is ${h.parsedData.tariffCategory}, consumer name is ${h.parsedData.consumerName}, service number is ${h.parsedData.serviceNumber}`).join("\n");
           }
         } catch (e) {
           // ignore
@@ -440,6 +441,8 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close Energy AI Chatbot" : "Open Energy AI Chatbot"}
+          aria-expanded={isOpen}
           className="w-13 h-13 rounded-full bg-white/10 dark:bg-slate-900/35 backdrop-blur-[12px] flex items-center justify-center shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:scale-105 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all cursor-pointer relative group overflow-hidden text-slate-800 dark:text-white"
         >
           {isOpen ? (
@@ -466,6 +469,8 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
             initial={{ opacity: 0, y: 35, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 35, scale: 0.96 }}
+            role="dialog"
+            aria-label="Energy AI Chatbot"
             className="fixed bottom-24 sm:bottom-28 left-4 right-4 sm:left-auto sm:right-6 w-auto sm:w-[380px] h-[550px] sm:h-[600px] max-w-[calc(100%-2rem)] bg-white/75 dark:bg-slate-950/75 backdrop-blur-[20px] border border-white/20 dark:border-slate-800/40 rounded-[24px] shadow-2xl overflow-hidden flex flex-col z-40 text-left no-print"
           >
             {/* Header */}
@@ -484,6 +489,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
               </div>
               <button
                 onClick={() => setIsOpen(false)}
+                aria-label="Close Chatbot"
                 className="p-1 rounded-lg hover:bg-white/10 text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
@@ -491,7 +497,11 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
             </div>
 
             {/* Conversation Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs bg-transparent">
+            <div 
+              className="flex-1 overflow-y-auto p-4 space-y-4 text-xs bg-transparent"
+              aria-live="polite"
+              aria-label="Chat messages history"
+            >
               <div className="text-center text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest pb-1 border-b border-slate-100 dark:border-slate-850">
                 Context-Aware Assistant
               </div>
@@ -563,12 +573,14 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about bills, tariffs, saving tips..."
+                aria-label="Type your message to Energy AI"
                 className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-850/80 border border-slate-255 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary-blue/10 dark:text-white"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !inputText.trim()}
+                aria-label="Send message"
                 className="p-2.5 rounded-xl bg-primary-blue hover:bg-primary-blue/95 dark:bg-primary-green dark:hover:bg-primary-green/95 text-white dark:text-slate-950 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
               >
                 <Send className="w-4 h-4" />

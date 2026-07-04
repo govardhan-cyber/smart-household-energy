@@ -4,6 +4,7 @@ import {
 } from "recharts";
 import { BarChart3, TrendingUp, Sun, IndianRupee, Sparkles } from "lucide-react";
 import { calculateBill } from "../../utils/tariffCalculator";
+import type { EnergyReport } from "../../utils/reportsService";
 
 interface ChartDataItem {
   name: string;
@@ -11,11 +12,25 @@ interface ChartDataItem {
   percentage: number;
 }
 
+export interface SolarSavingsItem {
+  name: string;
+  "Original Bill": number;
+  "With Solar Bill": number;
+  Savings: number;
+}
+
+export interface PaybackDataItem {
+  year: string;
+  Balance: number;
+  savings: number;
+  cost?: number;
+}
+
 interface ChartsProps {
   chartData?: ChartDataItem[];
   activeTheme: "light" | "dark";
   colors?: string[];
-  reports?: any[];
+  reports?: EnergyReport[];
   liveTotalUnits?: number;
   liveBill?: { netEnergyCharge: number; stateName: string };
   recommendedKw?: number;
@@ -23,8 +38,8 @@ interface ChartsProps {
   customFlatRate?: number;
   mode?: "consumption" | "solar";
   loading?: boolean;
-  solarPaybackData?: any[];
-  solarSavingsData?: any[];
+  solarPaybackData?: PaybackDataItem[];
+  solarSavingsData?: SolarSavingsItem[];
 }
 
 export const Charts: React.FC<ChartsProps> = ({
@@ -653,6 +668,27 @@ export const Charts: React.FC<ChartsProps> = ({
                     />
                   </PieChart>
                 </ResponsiveContainer>
+
+                {/* Screen-reader fallback data table */}
+                <table className="sr-only">
+                  <caption>Appliance Monthly Energy Share Distribution</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Appliance</th>
+                      <th scope="col">Usage (kWh)</th>
+                      <th scope="col">Share Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chartData.map((entry) => (
+                      <tr key={entry.name}>
+                        <td>{entry.name}</td>
+                        <td>{entry.kwh} kWh</td>
+                        <td>{entry.percentage}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-3xl font-display font-extrabold text-slate-900 dark:text-white leading-none">{liveTotalUnits}</span>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total kWh</span>
@@ -717,6 +753,25 @@ export const Charts: React.FC<ChartsProps> = ({
                     <Area type="monotone" dataKey="kwh" stroke="#10B981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorKwh)" animationDuration={800} />
                   </AreaChart>
                 </ResponsiveContainer>
+
+                {/* Screen-reader fallback data table */}
+                <table className="sr-only">
+                  <caption>6-Month Energy Trend History</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Month</th>
+                      <th scope="col">Energy Consumed (kWh)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trendData.map((d) => (
+                      <tr key={d.name}>
+                        <td>{d.name}</td>
+                        <td>{d.kwh} kWh</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
               {/* Trend Explanation Text */}
@@ -801,6 +856,29 @@ export const Charts: React.FC<ChartsProps> = ({
                 <Bar dataKey="With Solar Bill" fill="#F59E0B" radius={[3, 3, 0, 0]} animationDuration={800} />
               </BarChart>
             </ResponsiveContainer>
+
+            {/* Screen-reader fallback data table */}
+            <table className="sr-only">
+              <caption>12-Month Seasonal Bill Comparison (Original vs With Solar)</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">Original Bill (₹)</th>
+                  <th scope="col">With Solar Bill (₹)</th>
+                  <th scope="col">Monthly Savings (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resolvedSolarSavings.map((d) => (
+                  <tr key={d.name}>
+                    <td>{d.name}</td>
+                    <td>₹{d["Original Bill"]}</td>
+                    <td>₹{d["With Solar Bill"]}</td>
+                    <td>₹{d.Savings}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Explanation Text */}
@@ -851,6 +929,27 @@ export const Charts: React.FC<ChartsProps> = ({
                 <Line type="monotone" dataKey="Balance" stroke="#10B981" strokeWidth={3} dot={{ r: 4, strokeWidth: 1 }} activeDot={{ r: 6 }} animationDuration={800} />
               </LineChart>
             </ResponsiveContainer>
+
+            {/* Screen-reader fallback data table */}
+            <table className="sr-only">
+              <caption>Solar ROI Payback timeline (Year-by-Year Cumulative Balance)</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Year</th>
+                  <th scope="col">Cumulative Balance (₹)</th>
+                  <th scope="col">Annual Savings (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resolvedPaybackData.data.map((d) => (
+                  <tr key={d.year}>
+                    <td>Year {d.year}</td>
+                    <td>₹{d.Balance.toLocaleString()}</td>
+                    <td>₹{d.savings.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Explanation Text */}

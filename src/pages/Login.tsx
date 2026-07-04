@@ -530,6 +530,7 @@ export const Login: React.FC = () => {
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
+                  role="alert"
                   className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 dark:bg-red-955/30 border border-red-200 dark:border-red-800/50 text-red-655 dark:text-red-400 text-xs text-left"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -539,7 +540,7 @@ export const Login: React.FC = () => {
             </AnimatePresence>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
+            <form onSubmit={handleSubmit} aria-label="Login form" className="space-y-4 text-left">
               {/* Email Address */}
               <div className="space-y-1">
                 <label htmlFor="email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -572,7 +573,7 @@ export const Login: React.FC = () => {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-emerald-455 transition-colors"
+                    className="text-xs font-semibold text-slate-500 hover:text-blue-650 dark:hover:text-emerald-455 transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -596,7 +597,8 @@ export const Login: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    tabIndex={0}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
