@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Sun, ShieldCheck, HelpCircle, IndianRupee, Settings, MapPin, Home, Zap, Building2, Leaf, Info, Layers, ArrowUpRight, Scale, Ruler, MessageSquare, ArrowRight, Sparkles } from "lucide-react";
-import { calculateBill } from "../../utils/tariffCalculator";
+import { calculateSolarROI } from "../../utils/solarCalculator";
 import { Charts } from "./Charts";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
@@ -361,347 +361,58 @@ export const SolarCalculator: React.FC<SolarCalculatorProps> = ({
 
   const tariffKey = getTariffKey(selectedState);
 
-  // Helper to estimate units (kWh) from bill amount (₹)
-  const estimateUnitsFromBill = (bill: number, stateKey: string) => {
-    let bestUnits = 0;
-    let minDiff = Infinity;
-    for (let u = 0; u <= 4000; u++) {
-      const calc = calculateBill(u, stateKey);
-      const diff = Math.abs(calc.netEnergyCharge - bill);
-      if (diff < minDiff) {
-        minDiff = diff;
-        bestUnits = u;
-      }
-      if (calc.netEnergyCharge > bill + 100) break;
-    }
-    return bestUnits;
-  };
+  const shadedPanelsCount = Object.values(shadedPanels).filter(Boolean).length;
 
-  // 1. Current usage estimation
-  const kwhNeeded = estimateUnitsFromBill(monthlyBill, tariffKey);
+  const roiOutput = calculateSolarROI({
+    monthlyBill,
+    roofArea,
+    selectedState,
+    selectedCity,
+    solarTech,
+    roofTilt,
+    roofOrientation,
+    shadedPanelsCount,
+    isHybrid,
+    batteryKwh,
+    batteryType,
+    netMeteringPolicy,
+    buybackRate,
+    todShiftPercent,
+    tariffIncrease,
+    panelDegradation,
+    maintenanceRate
+  });
 
-  // 2. Solar sizing logic:
-  // - 1 kW needs ~100 sq ft shadow-free space
-  // - 1 kW produces ~120 kWh per month
+  const {
+    kwhNeeded,
+    recommendedKw,
+    totalUpfrontInvestment,
+    monthlyGeneration,
+    monthlySavings,
+    firstYearSavings,
+    tenYearNetSavings,
+    twentyFiveYearNetSavings,
+    paybackPeriodVal,
+    paybackData,
+    panelsNeeded,
+    oldBill,
+    monthlySavingsData,
+    totalNoSolarCost25Years,
+    totalSolarCost25Years
+  } = roiOutput;
+
+  // Derived sizing diagnostics (for JSX display)
   const kwNeededByUsage = kwhNeeded / 120;
   const maxKwBySpace = roofArea / 100;
+  // Derived net-metering values (for JSX display)
+  const newUnits = Math.max(0, kwhNeeded - monthlyGeneration);
+  const newBill = Math.max(0, oldBill - monthlySavings);
 
-  // Recommended system size in kW, capped by roof space, rounded to nearest 0.5 kW (min 1 kW)
-  const recommendedKw = Math.max(
-    1,
-    Math.round(Math.min(kwNeededByUsage, maxKwBySpace) * 2) / 2
-  );
-
-  // Dynamic cost lookup based on 2026 pricing table (after PM Surya Ghar subsidy)
-  const getEstimatedCost = (kw: number, city: string) => {
-    const prices: Record<string, number[]> = {
-      lucknow: [85000, 97000, 152000, 207000, 452000],
-      ahmedabad: [110000, 122000, 167000, 222000, 477000],
-      pune: [115000, 132000, 177000, 232000, 487000],
-      bangalore: [145000, 162000, 207000, 292000, 552000]
-    };
-    const activeCityPrices = prices[city] || prices["pune"]!;
-    
-    if (kw <= 2) {
-      return Math.round(activeCityPrices[0] * (kw / 2));
-    }
-    if (kw <= 3) {
-      return Math.round(activeCityPrices[0] + (activeCityPrices[1] - activeCityPrices[0]) * (kw - 2));
-    }
-    if (kw <= 4) {
-      return Math.round(activeCityPrices[1] + (activeCityPrices[2] - activeCityPrices[1]) * (kw - 3));
-    }
-    if (kw <= 5) {
-      return Math.round(activeCityPrices[2] + (activeCityPrices[3] - activeCityPrices[2]) * (kw - 4));
-    }
-    if (kw <= 10) {
-      return Math.round(activeCityPrices[3] + ((activeCityPrices[4] - activeCityPrices[3]) / 5) * (kw - 5));
-    }
-    return Math.round((activeCityPrices[4] / 10) * kw);
-  };
-
-  const installationCost = getEstimatedCost(recommendedKw, selectedCity);
-  
-  const orientationMultiplier = roofOrientation === "south" ? 1.0 : 0.85;
-  const tiltMultiplier = roofTilt === "flat" ? 0.90 : 1.0;
-  
-  // Calculate panels needed dynamically to compute shading factor
-  const panelWattageTmp = solarTech === "topcon" ? 580 : 500;
-  const panelsNeededTmp = Math.ceil((recommendedKw * 1000) / panelWattageTmp);
-  const shadedCount = Object.values(shadedPanels).filter(Boolean).length;
-  const shadingFactor = panelsNeededTmp > 0 
-    ? 1 - (Math.min(panelsNeededTmp, shadedCount) / panelsNeededTmp) * 0.60
-    : 1.0;
-
-  const solarEfficiencyFactor = orientationMultiplier * tiltMultiplier * shadingFactor;
-  const monthlyGeneration = recommendedKw * 120 * solarEfficiencyFactor; // kWh
-
-  // Technology details
+  // Technology details for specifications section in JSX
   const panelWattage = solarTech === "topcon" ? 580 : 500;
-  const panelsNeeded = Math.ceil((recommendedKw * 1000) / panelWattage);
   const panelEfficiency = solarTech === "topcon" ? 26 : 22.5;
   const panelWeight = solarTech === "topcon" ? 32 : 27;
   const panelSizeLabel = solarTech === "topcon" ? "~2.1 m × 1.1 m" : "~2.0 m × 1.0 m";
-
-  // 3. Net metering and Hybrid Battery simulation using real slab tariffs
-  let batteryCost = 0;
-  let batteryCostPerKwh = 15000;
-  let batteryReplacementInterval = 10;
-  if (isHybrid && batteryKwh > 0) {
-    if (batteryType === "lead-acid") {
-      batteryCostPerKwh = 7000;
-      batteryReplacementInterval = 4;
-    }
-    batteryCost = batteryKwh * batteryCostPerKwh;
-  }
-  const totalUpfrontInvestment = installationCost + batteryCost;
-
-  // Time-of-Day ratios for load shifting
-  const shiftedPeakPercent = 20 * (1 - todShiftPercent / 100);
-  const shiftedOffPeakPercent = 20 + (20 * (todShiftPercent / 100));
-  const todRatio = {
-    peakPercent: shiftedPeakPercent,
-    normalPercent: 60,
-    offPeakPercent: shiftedOffPeakPercent
-  };
-
-  const oldBillCalc = calculateBill(
-    kwhNeeded, 
-    tariffKey, 
-    7.5, 
-    todShiftPercent > 0 ? todRatio : undefined
-  );
-  const oldBill = oldBillCalc.netEnergyCharge;
-
-  let newBill = 0;
-  let newUnits = 0;
-  if (netMeteringPolicy === "net-metering") {
-    newUnits = Math.max(0, kwhNeeded - monthlyGeneration);
-    const newBillCalc = calculateBill(
-      newUnits, 
-      tariffKey, 
-      7.5, 
-      todShiftPercent > 0 ? todRatio : undefined
-    );
-    newBill = newBillCalc.netEnergyCharge;
-  } else {
-    // Net Billing (Buyback)
-    if (monthlyGeneration > kwhNeeded) {
-      newUnits = 0;
-      const excess = monthlyGeneration - kwhNeeded;
-      const buybackCredit = excess * buybackRate;
-      const fixedChargesAndTax = calculateBill(
-        0, 
-        tariffKey, 
-        7.5, 
-        todShiftPercent > 0 ? todRatio : undefined
-      ).netEnergyCharge;
-      newBill = Math.max(0, fixedChargesAndTax - buybackCredit);
-    } else {
-      newUnits = kwhNeeded - monthlyGeneration;
-      const newBillCalc = calculateBill(
-        newUnits, 
-        tariffKey, 
-        7.5, 
-        todShiftPercent > 0 ? todRatio : undefined
-      );
-      newBill = newBillCalc.netEnergyCharge;
-    }
-  }
-
-  const monthlySavings = Math.max(0, Math.round(oldBill - newBill));
-
-  // Multi-year financial timeline calculation
-  const seasonalMultipliers = [0.75, 0.7, 0.85, 1.05, 1.15, 1.1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.75];
-  const solarMultipliers = [0.95, 1.05, 1.15, 1.2, 1.15, 0.9, 0.7, 0.75, 0.9, 1.0, 0.95, 0.9];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const currentMonthIdx = new Date().getMonth();
-
-  // Generate 12-Month Solar Savings simulation (seasonal model for the first year)
-  const monthlySavingsData = months.map((m, idx) => {
-    const currentMultiplier = seasonalMultipliers[currentMonthIdx] || 1.0;
-    const baseUnits = kwhNeeded;
-    const monthUnits = Math.round(baseUnits * (seasonalMultipliers[idx] / currentMultiplier));
-    
-    const calcResult = calculateBill(
-      monthUnits, 
-      tariffKey, 
-      7.5, 
-      todShiftPercent > 0 ? todRatio : undefined
-    );
-    const oldB = calcResult.netEnergyCharge;
-    
-    const baseSolarGen = recommendedKw * 120;
-    const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
-    
-    let newB = 0;
-    if (netMeteringPolicy === "net-metering") {
-      const monthNetUnits = Math.max(0, monthUnits - monthSolarGen);
-      const newCalcResult = calculateBill(
-        monthNetUnits, 
-        tariffKey, 
-        7.5, 
-        todShiftPercent > 0 ? todRatio : undefined
-      );
-      newB = newCalcResult.netEnergyCharge;
-    } else {
-      // Net Billing
-      if (monthSolarGen > monthUnits) {
-        const excess = monthSolarGen - monthUnits;
-        const buybackCredit = excess * buybackRate;
-        const fixedChargesAndTax = calculateBill(
-          0, 
-          tariffKey, 
-          7.5, 
-          todShiftPercent > 0 ? todRatio : undefined
-        ).netEnergyCharge;
-        newB = Math.max(0, fixedChargesAndTax - buybackCredit);
-      } else {
-        const monthNetUnits = monthUnits - monthSolarGen;
-        const newCalcResult = calculateBill(
-          monthNetUnits, 
-          tariffKey, 
-          7.5, 
-          todShiftPercent > 0 ? todRatio : undefined
-        );
-        newB = newCalcResult.netEnergyCharge;
-      }
-    }
-    
-    const savings = Math.max(0, oldB - newB);
-    
-    return {
-      name: m,
-      "Original Bill": Math.round(oldB),
-      "With Solar Bill": Math.round(newB),
-      Savings: Math.round(savings)
-    };
-  });
-
-  const firstYearSavings = monthlySavingsData.reduce((sum, d) => sum + d.Savings, 0);
-
-  // Payback Simulation & 25-Year Long Term Modeling
-  const paybackData: any[] = [];
-  let cumulativeSavings = 0;
-  let paybackPeriodVal = 0;
-  let foundPayback = false;
-
-  // Year 0 entry
-  paybackData.push({
-    year: "Yr 0",
-    Balance: -totalUpfrontInvestment,
-    savings: 0,
-    cost: -totalUpfrontInvestment
-  });
-
-  let tenYearNetSavings = 0;
-  let twentyFiveYearNetSavings = 0;
-  let totalNoSolarCost25Years = 0;
-  let totalSolarCost25Years = totalUpfrontInvestment; 
-
-  for (let y = 1; y <= 25; y++) {
-    let yearlyBillNoSolar = 0;
-    let yearlyBillWithSolar = 0;
-
-    months.forEach((_, idx) => {
-      const currentMultiplier = seasonalMultipliers[currentMonthIdx] || 1.0;
-      const baseUnits = kwhNeeded;
-      const monthUnits = Math.round(baseUnits * (seasonalMultipliers[idx] / currentMultiplier));
-      
-      const oldBillBase = calculateBill(
-        monthUnits, 
-        tariffKey, 
-        7.5, 
-        todShiftPercent > 0 ? todRatio : undefined
-      ).netEnergyCharge;
-      const oldBillInflated = oldBillBase * Math.pow(1 + tariffIncrease / 100, y - 1);
-      yearlyBillNoSolar += oldBillInflated;
-
-      const baseSolarGen = recommendedKw * 120;
-      const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
-      const degradedGen = monthSolarGen * Math.pow(1 - panelDegradation / 100, y - 1);
-      
-      let newBillBase = 0;
-      if (netMeteringPolicy === "net-metering") {
-        const netUnits = Math.max(0, monthUnits - degradedGen);
-        newBillBase = calculateBill(
-          netUnits, 
-          tariffKey, 
-          7.5, 
-          todShiftPercent > 0 ? todRatio : undefined
-        ).netEnergyCharge;
-      } else {
-        // Net Billing
-        if (degradedGen > monthUnits) {
-          const excess = degradedGen - monthUnits;
-          const buybackCredit = excess * buybackRate;
-          const fixedChargesAndTax = calculateBill(
-            0, 
-            tariffKey, 
-            7.5, 
-            todShiftPercent > 0 ? todRatio : undefined
-          ).netEnergyCharge;
-          newBillBase = Math.max(0, fixedChargesAndTax - buybackCredit);
-        } else {
-          const netUnits = monthUnits - degradedGen;
-          newBillBase = calculateBill(
-            netUnits, 
-            tariffKey, 
-            7.5, 
-            todShiftPercent > 0 ? todRatio : undefined
-          ).netEnergyCharge;
-        }
-      }
-
-      const newBillInflated = newBillBase * Math.pow(1 + tariffIncrease / 100, y - 1);
-      yearlyBillWithSolar += newBillInflated;
-    });
-
-    const maintenanceCost = (maintenanceRate / 100) * installationCost * Math.pow(1.02, y - 1);
-    
-    let replacementCostThisYear = 0;
-    if (isHybrid && batteryKwh > 0 && y > 1 && (y - 1) % batteryReplacementInterval === 0) {
-      replacementCostThisYear = batteryCost * Math.pow(1.02, y - 1);
-    }
-
-    const netSavingsThisYear = Math.max(
-      -replacementCostThisYear,
-      yearlyBillNoSolar - yearlyBillWithSolar - maintenanceCost - replacementCostThisYear
-    );
-    cumulativeSavings += netSavingsThisYear;
-
-    const currentBalance = -totalUpfrontInvestment + cumulativeSavings;
-
-    totalNoSolarCost25Years += yearlyBillNoSolar;
-    totalSolarCost25Years += yearlyBillWithSolar + maintenanceCost + replacementCostThisYear;
-
-    if (y <= 15) {
-      paybackData.push({
-        year: `Yr ${y}`,
-        Balance: Math.round(currentBalance),
-        savings: Math.round(cumulativeSavings)
-      });
-    }
-
-    if (y === 10) {
-      tenYearNetSavings = currentBalance;
-    }
-    if (y === 25) {
-      twentyFiveYearNetSavings = currentBalance;
-    }
-
-    if (currentBalance >= 0 && !foundPayback) {
-      const prevBalance = -totalUpfrontInvestment + (cumulativeSavings - netSavingsThisYear);
-      const diff = currentBalance - prevBalance;
-      const fraction = diff > 0 ? Math.abs(prevBalance) / diff : 0;
-      paybackPeriodVal = (y - 1) + fraction;
-      foundPayback = true;
-    }
-  }
-
-  if (!foundPayback) {
-    paybackPeriodVal = 26; 
-  }
 
   // Cache planner outputs to local storage when configurations change
   useEffect(() => {

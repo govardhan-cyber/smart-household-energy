@@ -2,6 +2,17 @@
 
 ## Saved Versions
 
+- **Version 15**: Points to git tag `version-15`.
+  - **Features**:
+    - **Solar ROI Unit Tests:** Extracted the 25-year compounding ROI math out of `SolarCalculator.tsx` into a pure utility `src/utils/solarCalculator.ts` and wrote 5 scenario-based Vitest tests covering tariff key mapping, city cost interpolation, unit-from-bill estimation, full 25-year timeline correctness (payback year, cumulative balance), and lead-acid vs lithium battery cost differentiation.
+    - **Component Refactor:** Replaced ~260 lines of inline calculation logic in `SolarCalculator.tsx` with a single `calculateSolarROI()` call, keeping the UI identical while making the math independently testable.
+    - **Type Safety Upgrades:** Extended `global.d.ts` to declare `window.pdfjsLib` as `typeof import('pdfjs-dist')` (eliminating all `(window as any)` casts). Removed all `any` usages from `BillAnalyzer.tsx` — Tesseract logger typed with a `TesseractProgressMessage` interface, all `catch (err: any)` blocks narrowed to `catch (err: unknown)` with `instanceof Error` guards.
+    - **Modal Accessibility (A11y):** Added full focus trapping (`Tab`/`Shift+Tab` cycle, `Escape` dismiss), `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`/`aria-describedby` to all 5 modals and drawers across `BillAnalyzer.tsx`, `History.tsx`, and `SurveyData.tsx`.
+    - **Screen-Reader Chart Fallbacks:** Added `sr-only` hidden `<table>` elements with proper `<caption>` and `scope` attributes next to all 3 Recharts visualizations (Pie chart in BillAnalyzer, Pie + Bar charts in SurveyData) for full screen-reader accessibility.
+  - **Verified:** 15/15 tests passing, zero TypeScript errors, clean `vite build` in 1.64s.
+  - **Recovery Instruction**:
+    - If the user says "recover version 15", run `git checkout version-15`.
+
 - **Version 14**: Points to git tag `version-14`.
   - **Features**:
     - **Premium Light & Dark Mode Backgrounds:** Generated new, ultra-high-definition abstract tech backgrounds for both themes. Light mode features flowing silver/white metallic wave surfaces with glowing neon cyan/mint-green paths. Dark mode features charcoal/obsidian metallic curves with neon trails.

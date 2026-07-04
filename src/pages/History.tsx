@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { reportsService } from "../utils/reportsService";
@@ -191,6 +191,75 @@ export const History: React.FC = () => {
   const [sortBy, setSortBy]                 = useState<"date_desc"|"date_asc"|"bill_desc"|"bill_asc"|"units_desc">("date_desc");
   const [selectedReport, setSelectedReport] = useState<EnergyReport | null>(null);
   const [deleteReportId, setDeleteReportId] = useState<string | null>(null);
+
+  const detailsModalRef = useRef<HTMLDivElement>(null);
+  const deleteModalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedReport) {
+      setTimeout(() => detailsModalRef.current?.focus(), 50);
+    }
+  }, [selectedReport]);
+
+  useEffect(() => {
+    if (deleteReportId) {
+      setTimeout(() => deleteModalRef.current?.focus(), 50);
+    }
+  }, [deleteReportId]);
+
+  const handleDetailsModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setSelectedReport(null);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusableElements = e.currentTarget.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex="0"]'
+      );
+      if (focusableElements.length === 0) return;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
+  const handleDeleteModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setDeleteReportId(null);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusableElements = e.currentTarget.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex="0"]'
+      );
+      if (focusableElements.length === 0) return;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
 
   /* CSV export */
   const handleModalExportCSV = (report: EnergyReport) => {
@@ -518,7 +587,16 @@ export const History: React.FC = () => {
       {/* ── Detail Modal ─────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedReport && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 print-modal-parent">
+          <div 
+            ref={detailsModalRef}
+            onKeyDown={handleDetailsModalKeyDown}
+            tabIndex={-1}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 print-modal-parent outline-none"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="history-details-title"
+            aria-describedby="history-details-desc"
+          >
             <motion.div
               variants={modalOverlayVariants}
               initial="hidden"
@@ -565,9 +643,9 @@ export const History: React.FC = () => {
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center border border-blue-500/20">
                       <HistIcon className="w-4 h-4 text-primary-blue dark:text-accent-neon" />
                     </div>
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white font-display">Energy Report Details</h3>
+                    <h3 id="history-details-title" className="text-base font-extrabold text-slate-900 dark:text-white font-display">Energy Report Details</h3>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Calculated on {formatDate(selectedReport.createdAt)}</p>
+                  <p id="history-details-desc" className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Calculated on {formatDate(selectedReport.createdAt)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -891,7 +969,16 @@ export const History: React.FC = () => {
       {/* ── Delete Confirmation Modal ─────────────────────────────────────────── */}
       <AnimatePresence>
         {deleteReportId && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div 
+            ref={deleteModalRef}
+            onKeyDown={handleDeleteModalKeyDown}
+            tabIndex={-1}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 outline-none"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-confirm-title"
+            aria-describedby="delete-confirm-desc"
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -913,10 +1000,10 @@ export const History: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                <h3 id="delete-confirm-title" className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
                   Delete Calculation?
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
+                <p id="delete-confirm-desc" className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed font-semibold">
                   This will permanently delete this audit record from your cloud profile. This action cannot be undone.
                 </p>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { surveyData } from "../utils/tariffCalculator";
 import type { SurveyRecord } from "../utils/tariffCalculator";
 import { 
@@ -91,6 +91,41 @@ export const SurveyData: React.FC = () => {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedHousehold) {
+      setTimeout(() => drawerRef.current?.focus(), 50);
+    }
+  }, [selectedHousehold]);
+
+  const handleDrawerKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setSelectedHousehold(null);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusableElements = e.currentTarget.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex="0"]'
+      );
+      if (focusableElements.length === 0) return;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
   const rowsPerPage = 10;
 
   const toggleSort = (field: keyof SurveyRecord) => {
@@ -830,6 +865,26 @@ export const SurveyData: React.FC = () => {
                         />
                       </PieChart>
                     </ResponsiveContainer>
+                    {/* Screen Reader Table Fallback */}
+                    <div className="sr-only">
+                      <table>
+                        <caption>Highest Consumer Appliance Distribution</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Appliance Category</th>
+                            <th scope="col">Households Count</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pieData.map((d, i) => (
+                            <tr key={i}>
+                              <th scope="row">{d.name}</th>
+                              <td>{d.value} households</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-xl font-display font-black text-slate-850 dark:text-white">{filteredData.length}</span>
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Homes</span>
@@ -887,6 +942,26 @@ export const SurveyData: React.FC = () => {
                       <Bar dataKey="savings" fill="url(#colorSavings)" radius={[5, 5, 0, 0]} barSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
+                  {/* Screen Reader Table Fallback */}
+                  <div className="sr-only">
+                    <table>
+                      <caption>Average Monthly Savings Potential by Appliance Load</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Appliance Count Group</th>
+                          <th scope="col">Average Potential Savings</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {savingsByAppCount.map((d, i) => (
+                          <tr key={i}>
+                            <th scope="row">{d.count} appliances</th>
+                            <td>₹{d.savings}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -909,11 +984,18 @@ export const SurveyData: React.FC = () => {
             
             {/* Drawer */}
             <motion.div
+              ref={drawerRef}
+              onKeyDown={handleDrawerKeyDown}
+              tabIndex={-1}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 p-6 overflow-y-auto border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between text-left"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 p-6 overflow-y-auto border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between text-left outline-none"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="drawer-title"
+              aria-describedby="drawer-desc"
             >
               {/* Header & Avatar */}
               <div className="space-y-6">
@@ -923,8 +1005,8 @@ export const SurveyData: React.FC = () => {
                       {selectedHousehold.householdName.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-lg text-slate-900 dark:text-white">{selectedHousehold.householdName}</h3>
-                      <span className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">{selectedHousehold.memberId}</span>
+                      <h3 id="drawer-title" className="font-display font-bold text-lg text-slate-900 dark:text-white">{selectedHousehold.householdName}</h3>
+                      <span id="drawer-desc" className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">{selectedHousehold.memberId}</span>
                     </div>
                   </div>
                   <button 

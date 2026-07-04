@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { db, IS_FIREBASE_CONFIGURED } from "../firebase/config";
 import { collection, doc, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
 import { createWorker } from "tesseract.js";
+import * as pdfjsDist from "pdfjs-dist";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { 
   FileText, Upload, CheckCircle2, AlertTriangle, Eye, Trash2, 
@@ -48,18 +49,22 @@ export interface BillRecord {
 
 // ─── PDF.js Loader ───────────────────────────────────────────────────────────
 
-const loadPdfJs = (): Promise<any> => {
+const loadPdfJs = (): Promise<typeof pdfjsDist> => {
   return new Promise((resolve, reject) => {
-    if ((window as any).pdfjsLib) {
-      resolve((window as any).pdfjsLib);
+    if (window.pdfjsLib) {
+      resolve(window.pdfjsLib);
       return;
     }
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js";
     script.onload = () => {
-      const pdfjsLib = (window as any).pdfjsLib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
-      resolve(pdfjsLib);
+      const pdfjsLib = window.pdfjsLib;
+      if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+        resolve(pdfjsLib);
+      } else {
+        reject(new Error("pdfjsLib not loaded on window."));
+      }
     };
     script.onerror = () => reject(new Error("Failed to load PDF.js library."));
     document.body.appendChild(script);
@@ -281,7 +286,11 @@ export const BillAnalyzer: React.FC = () => {
     const worker = await createWorker("eng");
     try {
       // Listen to progress updates
-      (worker as any).logger = (m: any) => {
+      interface TesseractProgressMessage {
+        status: string;
+        progress: number;
+      }
+      (worker as { logger?: (m: TesseractProgressMessage) => void }).logger = (m: TesseractProgressMessage) => {
         if (m.status === "recognizing text") {
           setOcrProgress(Math.round(m.progress * 100));
           setOcrSteps(`Running OCR extraction: ${Math.round(m.progress * 100)}%`);
@@ -352,7 +361,7 @@ export const BillAnalyzer: React.FC = () => {
       "gemini-2.5-flash"
     ];
 
-    let lastError: any = null;
+    let lastError: Error | null = null;
     let parsed: ParsedBillData | null = null;
 
     for (const model of modelsToTry) {
@@ -382,9 +391,9 @@ export const BillAnalyzer: React.FC = () => {
 
         parsed = JSON.parse(resultJsonStr);
         break; // Success! Break loop.
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn(`Failed parsing with ${model}:`, err);
-        lastError = err;
+        lastError = err instanceof Error ? err : new Error(String(err));
       }
     }
 
@@ -467,7 +476,7 @@ export const BillAnalyzer: React.FC = () => {
       "gemini-2.5-flash"
     ];
 
-    let lastError: any = null;
+    let lastError: Error | null = null;
     let parsed: ParsedBillData | null = null;
 
     for (const model of modelsToTry) {
@@ -508,9 +517,9 @@ export const BillAnalyzer: React.FC = () => {
 
         parsed = JSON.parse(resultJsonStr);
         break;
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.warn(`Direct Multimodal AI parsing failed with ${model}:`, err);
-        lastError = err;
+        lastError = err instanceof Error ? err : new Error(String(err));
       }
     }
 
@@ -673,22 +682,23 @@ export const BillAnalyzer: React.FC = () => {
         try {
           structuredData = await parseImageWithGeminiMultimodal(imageSrc);
           textResult = "[Direct Multimodal AI Image Scan - Tesseract Bypassed]";
-        } catch (multiErr: any) {
+        } catch (multiErr: unknown) {
           console.error("Multimodal fallback also failed:", multiErr);
+          const multiErrMessage = multiErr instanceof Error ? multiErr.message : String(multiErr);
           if (textResult.trim()) {
             try {
               structuredData = await parseOcrWithGemini(textResult);
-            } catch (geminiErr: any) {
+            } catch (geminiErr: unknown) {
               structuredData = parseOcrWithHeuristics(textResult);
             }
           } else {
-            throw new Error(`Direct AI scanning failed: ${multiErr.message}`);
+            throw new Error(`Direct AI scanning failed: ${multiErrMessage}`);
           }
         }
       } else {
         try {
           structuredData = await parseOcrWithGemini(textResult);
-        } catch (geminiErr: any) {
+        } catch (geminiErr: unknown) {
           console.warn("Gemini parsing failed, falling back to local OCR heuristics:", geminiErr);
           structuredData = parseOcrWithHeuristics(textResult);
         }
@@ -733,11 +743,12 @@ export const BillAnalyzer: React.FC = () => {
       // Clear file inputs
       setFile(null);
       setPreviewUrl(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      const errMsg = err instanceof Error ? err.message : "Failed to process bill. Please check the file quality or API keys.";
       setStatus("error");
-      setErrorMessage(err.message || "Failed to process bill. Please check the file quality or API keys.");
-      setToast({ type: "error", message: err.message || "Error processing bill" });
+      setErrorMessage(errMsg);
+      setToast({ type: "error", message: errMsg });
     }
   };
 
@@ -766,9 +777,78 @@ export const BillAnalyzer: React.FC = () => {
         setActiveBill(remaining.length > 0 ? remaining[0] : null);
       }
       setToast({ type: "success", message: "Bill deleted successfully." });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setToast({ type: "error", message: "Failed to delete record." });
+    }
+  };
+
+  const detailsModalRef = useRef<HTMLDivElement>(null);
+  const deleteModalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedBillForModal) {
+      setTimeout(() => detailsModalRef.current?.focus(), 50);
+    }
+  }, [selectedBillForModal]);
+
+  useEffect(() => {
+    if (deleteBillId) {
+      setTimeout(() => deleteModalRef.current?.focus(), 50);
+    }
+  }, [deleteBillId]);
+
+  const handleDetailsModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setSelectedBillForModal(null);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusableElements = e.currentTarget.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex="0"]'
+      );
+      if (focusableElements.length === 0) return;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
+  const handleDeleteModalKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setDeleteBillId(null);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusableElements = e.currentTarget.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex="0"]'
+      );
+      if (focusableElements.length === 0) return;
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
     }
   };
 
@@ -1657,6 +1737,26 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
                         <Tooltip formatter={(value) => `₹${value}`} />
                       </PieChart>
                     </ResponsiveContainer>
+                    {/* Screen Reader Table Fallback */}
+                    <div className="sr-only">
+                      <table>
+                        <caption>Electricity Bill Charge Structure Breakdown</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Category</th>
+                            <th scope="col">Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {calcs?.pieData.map((d, i) => (
+                            <tr key={i}>
+                              <th scope="row">{d.name}</th>
+                              <td>₹{d.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                     {/* Center label */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                       <span className="text-[8px] font-bold text-slate-455 dark:text-slate-500 uppercase tracking-widest leading-none">Total Bill</span>
@@ -1972,7 +2072,10 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
     <AnimatePresence>
       {selectedBillForModal && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 print-modal-parent"
+          ref={detailsModalRef}
+          onKeyDown={handleDetailsModalKeyDown}
+          tabIndex={-1}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 print-modal-parent outline-none"
           role="dialog"
           aria-modal="true"
           aria-labelledby="bill-details-title"
@@ -2217,7 +2320,10 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       {/* ── Delete Confirmation Modal ─────────────────────────────────────────── */}
       {deleteBillId && (
         <div 
-          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+          ref={deleteModalRef}
+          onKeyDown={handleDeleteModalKeyDown}
+          tabIndex={-1}
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 outline-none"
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-confirm-title"
