@@ -5,7 +5,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary-blue: #2563EB;
+  --color-primary-blue: var(--accent-primary, #2563EB);
+  --color-blue-500: var(--accent-primary, #3B82F6);
+  --color-blue-600: var(--accent-primary, #2563EB);
+  --color-blue-700: var(--accent-primary, #1D4ED8);
+  --color-blue-800: var(--accent-primary, #1E40AF);
   --color-primary-green: #10B981;
   --color-accent-neon: #22D3EE;
   --color-secondary-teal: #0F766E;
@@ -33,8 +37,12 @@
   --color-amber-950: #78350F;
   --color-amber-955: #78350F;
 
-  --color-blue-650: #2563EB;
+  --color-blue-650: var(--accent-primary, #2563EB);
   --color-emerald-450: #34d399;
+  --color-blue-955: #172554;
+  --color-purple-955: #3B0764;
+  --color-orange-955: #431407;
+  --color-teal-955: #042F2E;
   --color-emerald-455: #10b981;
   --color-emerald-650: #059669;
   --color-emerald-655: #047857;
@@ -45,6 +53,47 @@
   
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+:root {
+  --accent-primary: #2563EB;
+}
+
+:root.accent-green {
+  --accent-primary: #10B981;
+}
+
+:root.accent-purple {
+  --accent-primary: #9333EA;
+}
+
+:root.accent-orange {
+  --accent-primary: #EA580C;
+}
+
+:root.accent-teal {
+  --accent-primary: #0D9488;
+}
+
+/* Vibrant high-contrast accent variants for dark mode */
+.dark {
+  --accent-primary: #60A5FA;
+}
+
+.dark.accent-green {
+  --accent-primary: #34D399;
+}
+
+.dark.accent-purple {
+  --accent-primary: #C084FC;
+}
+
+.dark.accent-orange {
+  --accent-primary: #FB923C;
+}
+
+.dark.accent-teal {
+  --accent-primary: #2DD4BF;
 }
 
 @keyframes accordion-down {
@@ -124,6 +173,18 @@ select option {
 .dark select optgroup {
   background-color: #111827 !important;
   color: #9ca3af !important;
+}
+
+/* Disable default browser focus borders/outlines globally */
+button:focus,
+button:focus-visible,
+select:focus,
+select:focus-visible,
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
 }
 
 /* Print Styles for PDF Export */

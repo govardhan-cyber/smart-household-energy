@@ -385,7 +385,7 @@ export const SurveyData: React.FC = () => {
             visible: { opacity: 1 }
           }}
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.25)] hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-shadow duration-300 flex flex-col justify-between group"
+          className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-blue-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -410,7 +410,7 @@ export const SurveyData: React.FC = () => {
             visible: { opacity: 1 }
           }}
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(249,115,22,0.25)] hover:border-orange-500/30 dark:hover:border-orange-500/40 transition-shadow duration-300 flex flex-col justify-between group"
+          className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-orange-500/30 dark:hover:border-orange-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-orange-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -436,7 +436,7 @@ export const SurveyData: React.FC = () => {
             visible: { opacity: 1 }
           }}
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(234,179,8,0.25)] hover:border-yellow-500/30 dark:hover:border-yellow-500/40 transition-shadow duration-300 flex flex-col justify-between group"
+          className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-yellow-500/30 dark:hover:border-yellow-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-yellow-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -463,7 +463,7 @@ export const SurveyData: React.FC = () => {
             visible: { opacity: 1 }
           }}
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
-          className="relative overflow-hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.25)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40 transition-shadow duration-300 flex flex-col justify-between group"
+          className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-emerald-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
           <div className="flex items-center justify-between">
@@ -484,7 +484,7 @@ export const SurveyData: React.FC = () => {
       </motion.div>
 
       {/* Control Area (Search & Collapsible Filters) */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-sm space-y-4">
         {/* Search row */}
         <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
           <div className="relative flex-1">
@@ -633,7 +633,7 @@ export const SurveyData: React.FC = () => {
                 <p className="text-xs text-slate-500 dark:text-slate-550">Adjust or reset your active filters to search again.</p>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+              <div className="bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-sm overflow-hidden flex flex-col">
                 {/* Table Element */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[850px]">
@@ -731,7 +731,7 @@ export const SurveyData: React.FC = () => {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="px-6 py-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-150 dark:border-slate-800 flex items-center justify-between">
+                  <div className="px-6 py-4 bg-white/10 dark:bg-slate-900/10 border-t border-white/20 dark:border-slate-800/30 flex items-center justify-between">
                     <span className="text-xs text-slate-500 font-semibold">
                       Page {currentPage} of {totalPages}
                     </span>
@@ -782,7 +782,7 @@ export const SurveyData: React.FC = () => {
             className="space-y-6"
           >
             {/* Chart Row 1 - Big correlation chart */}
-            <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-3">
                 <div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
@@ -825,7 +825,7 @@ export const SurveyData: React.FC = () => {
             {/* Chart Row 2 - Donut + Bar */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Pie/Donut Chart */}
-              <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 md:col-span-5 flex flex-col justify-between">
+              <div className="bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-sm space-y-4 md:col-span-5 flex flex-col justify-between">
                 <div className="border-b border-slate-100 dark:border-slate-850 pb-3">
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
                     <PieChartIcon className="w-4.5 h-4.5 text-orange-500" />
@@ -908,7 +908,7 @@ export const SurveyData: React.FC = () => {
               </div>
 
               {/* Bar Chart - Savings by Appliance Count */}
-              <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 md:col-span-7">
+              <div className="bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-sm space-y-4 md:col-span-7">
                 <div className="border-b border-slate-100 dark:border-slate-850 pb-3">
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
                     <Leaf className="w-4.5 h-4.5 text-primary-green" />
@@ -995,7 +995,7 @@ export const SurveyData: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 p-6 overflow-y-auto border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between text-left outline-none"
+              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white/75 dark:bg-slate-900/70 backdrop-blur-2xl shadow-[-10px_0_50px_-15px_rgba(0,0,0,0.15)] z-50 p-6 overflow-y-auto border-l border-white/50 dark:border-slate-850/40 flex flex-col justify-between text-left outline-none"
               role="dialog"
               aria-modal="true"
               aria-labelledby="drawer-title"
@@ -1028,22 +1028,22 @@ export const SurveyData: React.FC = () => {
                   <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Consumption Profile</h4>
                   
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-slate-50 dark:bg-slate-850/50 p-3.5 rounded-xl border border-slate-150 dark:border-slate-800/60 text-center">
+                    <div className="bg-white/20 dark:bg-slate-955/15 p-3.5 rounded-xl border border-white/30 dark:border-slate-850/20 text-center">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Monthly Usage</span>
                       <span className="text-sm font-display font-black text-slate-850 dark:text-white block">{selectedHousehold.totalUsageKwh} <span className="text-[10px] text-slate-400">kWh</span></span>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-850/50 p-3.5 rounded-xl border border-slate-150 dark:border-slate-800/60 text-center">
+                    <div className="bg-white/20 dark:bg-slate-955/15 p-3.5 rounded-xl border border-white/30 dark:border-slate-850/20 text-center">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Est. Bill</span>
                       <span className="text-sm font-display font-black text-primary-blue dark:text-primary-green block">₹{selectedHousehold.estimatedBill}</span>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-850/50 p-3.5 rounded-xl border border-slate-150 dark:border-slate-800/60 text-center">
+                    <div className="bg-white/20 dark:bg-slate-955/15 p-3.5 rounded-xl border border-white/30 dark:border-slate-850/20 text-center">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">Savings</span>
                       <span className="text-sm font-display font-black text-emerald-600 dark:text-emerald-500 block">₹{selectedHousehold.savingsPotential}</span>
                     </div>
                   </div>
 
                   {/* Average Comparison Progress Bar */}
-                  <div className="bg-slate-50 dark:bg-slate-850/50 p-4 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-2">
+                  <div className="bg-white/20 dark:bg-slate-955/15 p-4 rounded-xl border border-white/30 dark:border-slate-850/20 space-y-2">
                     <div className="flex justify-between items-center text-xs font-bold">
                       <span className="text-slate-550 dark:text-slate-400">Relative Consumption</span>
                       <span className={`${
@@ -1083,7 +1083,7 @@ export const SurveyData: React.FC = () => {
                     {selectedHousehold.appliancesSelected.map((app) => (
                       <div 
                         key={app}
-                        className="flex items-center gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-850/30 rounded-xl border border-slate-150/80 dark:border-slate-800/40"
+                        className="flex items-center gap-2.5 p-2.5 bg-white/20 dark:bg-slate-955/15 rounded-xl border border-white/30 dark:border-slate-850/20"
                       >
                         <div className="p-1.5 rounded-lg bg-white dark:bg-slate-850 shadow-sm border border-slate-100 dark:border-slate-750">
                           {getApplianceIcon(app)}

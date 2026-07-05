@@ -346,7 +346,7 @@ export const Register: React.FC = () => {
                 <div className="bg-white/65 dark:bg-slate-955/20 border border-slate-200/60 dark:border-slate-900/40 p-2.5 rounded-[20px] text-left flex items-center justify-between h-[85px] gap-2 card-client card-client-cyan">
                   <div className="min-w-0">
                     <span className="text-[8px] font-extrabold text-slate-600 dark:text-slate-450 uppercase tracking-wider block">Efficiency</span>
-                    <p className="text-xs font-black text-slate-800 dark:text-slate-205 mt-1 leading-none">Excellent</p>
+                    <p className="text-xs font-black text-slate-800 dark:text-slate-250 mt-1 leading-none">Excellent</p>
                   </div>
                   <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">

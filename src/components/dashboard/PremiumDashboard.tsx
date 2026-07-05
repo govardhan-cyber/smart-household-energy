@@ -10,6 +10,7 @@ import type { ApplianceItem, TariffResult } from "../../utils/tariffCalculator";
 import type { EnergyReport } from "../../utils/reportsService";
 import { KpiCard } from "./DashboardHero";
 import { LiveGridStatusWidget, CarbonSavingsWidget } from "./SidebarWidgets";
+import { PowerFlowPanel } from "./PowerFlowPanel";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 export interface PremiumDashboardProps {
@@ -163,6 +164,12 @@ function HeroCard({
   const avg = vsAvgTrend ?? { label: "vs similar homes", value: "24%", trend: "up" as const, type: "negative" as const };
   const badges = [mom, avg];
 
+  const formattedPotential = savingsPotential.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const [wholePart, decimalPart] = formattedPotential.split(".");
+
 
 
   return (
@@ -170,28 +177,63 @@ function HeroCard({
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      className="relative rounded-3xl overflow-hidden h-[320px] group shadow-lg hover:shadow-xl transition-shadow duration-500 border border-white/60 dark:border-slate-700/50"
+      className="relative rounded-3xl overflow-hidden h-[330px] group border border-white/50 dark:border-slate-800/60 shadow-[0_8px_32px_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] z-0"
+      style={{
+        boxShadow: `0 8px 32px 0 rgba(31, 38, 135, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 0 rgba(255, 255, 255, 0.15)`,
+      }}
     >
-      {/* ── Full-card background: sky gradient + house image ── */}
-      <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-850 dark:to-indigo-950/60" />
+      {/* ── Background radial spotlight ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 50% 35%, rgba(59,130,246,0.06) 0%, transparent 70%)`,
+        }}
+      />
 
-      {/* Ambient glows */}
+      {/* ── Diagonal specular gloss reflection ── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.35] dark:opacity-15 bg-gradient-to-tr from-transparent via-white/10 to-white/25"
+        style={{
+          clipPath: "polygon(0 0, 100% 0, 100% 35%, 0 80%)",
+        }}
+      />
+
+      {/* ── Shimmer specular highlight strip ── */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-400/0 via-blue-300/20 to-blue-400/0 opacity-70" />
+      <div
+        className="absolute top-0 left-8 right-8 h-[2px] blur-sm opacity-40"
+        style={{ background: `linear-gradient(to right, transparent, #3b82f6, transparent)` }}
+      />
+
+      {/* ── Ambient corner glows ── */}
       <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
-      <div className="absolute -bottom-16 right-1/3 w-56 h-56 bg-amber-300/20 dark:bg-amber-500/8 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
+      <div className="absolute -bottom-16 right-1/3 w-56 h-56 bg-amber-300/15 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
+
+      {/* Subtle dot-grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(148,163,184,0.3) 1px, transparent 1px)",
+          backgroundSize: "18px 18px",
+        }}
+      />
+
+      {/* ── Full-card background glass pane ── */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-slate-50/20 to-blue-50/10 dark:from-slate-900/30 dark:via-slate-950/20 dark:to-indigo-950/15 backdrop-blur-xl z-0" />
 
       {/* House illustration — covers whole card with a smooth gradient fade to ensure text legibility */}
-      <div className="absolute inset-0 w-full overflow-hidden pointer-events-none z-0">
-        {/* Smooth gradient mask from left (opaque sky/slate) to right (transparent) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-100/90 via-sky-100/40 to-transparent dark:from-slate-900/90 dark:via-slate-900/45 dark:to-transparent z-10" />
+      <div className="absolute inset-0 w-full overflow-hidden pointer-events-none z-10">
+        {/* Smooth gradient mask from left (opaque glass) to right (transparent) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/30 to-transparent dark:from-slate-950/95 dark:via-slate-950/30 dark:to-transparent z-10" />
         <motion.img
           src="/smart-house.png"
           alt="Smart Home"
-          className="absolute right-0 bottom-0 h-full w-auto max-w-none object-contain object-right-bottom"
+          className="absolute right-0 bottom-0 h-full w-auto max-w-none object-contain object-right-bottom transition-transform duration-500 group-hover:scale-105 group-hover:translate-x-1 z-0"
           animate={{ y: [0, -5, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Bottom fade */}
-        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-sky-100/30 to-transparent dark:from-slate-900/30 dark:to-transparent z-10" />
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white/20 to-transparent dark:from-slate-955/20 dark:to-transparent z-10" />
       </div>
 
       {/* ── Left: content panel — always above image ── */}
@@ -203,7 +245,7 @@ function HeroCard({
       >
         {/* Top: Greeting */}
         <motion.div variants={heroItemVariants} className="space-y-0.5">
-          <p className="text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+          <p className="text-slate-550 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
             <span>{greetingEmoji}</span>
             <span>{greeting}</span>
           </p>
@@ -222,19 +264,22 @@ function HeroCard({
 
         {/* Middle: Savings amount */}
         <motion.div variants={heroItemVariants} className="space-y-1">
-          <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
+          <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest">
             Your home could save
           </p>
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-1">
             <motion.span
               className="text-[2.6rem] sm:text-5xl font-black leading-none bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-200 bg-clip-text text-transparent tabular-nums"
               variants={savingsNumberVariants}
               initial="hidden"
               animate="visible"
             >
-              ₹{savingsPotential.toLocaleString("en-IN")}
+              ₹{wholePart}
+              {decimalPart && (
+                <span className="text-xl sm:text-2xl font-black align-baseline opacity-80 ml-0.5">.{decimalPart}</span>
+              )}
             </motion.span>
-            <span className="text-base sm:text-lg font-bold text-slate-400 dark:text-slate-500 leading-none">/mo</span>
+            <span className="text-base sm:text-lg font-bold text-slate-400 dark:text-slate-550 leading-none">/mo</span>
           </div>
         </motion.div>
 
@@ -243,11 +288,11 @@ function HeroCard({
           {badges.map((b: Badge, i: number) => {
             let badgeStyle = "bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 backdrop-blur-sm";
             if (b.type === "positive") {
-              badgeStyle = "bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800/60 backdrop-blur-sm";
+              badgeStyle = "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/30 backdrop-blur-md shadow-[0_2px_10px_rgba(16,185,129,0.05)]";
             } else if (b.type === "negative") {
-              badgeStyle = "bg-red-50/90 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200/80 dark:border-red-800/60 backdrop-blur-sm";
+              badgeStyle = "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20 dark:border-red-500/30 backdrop-blur-md shadow-[0_2px_10px_rgba(239,68,68,0.05)]";
             } else if (b.type === "neutral") {
-              badgeStyle = "bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200/80 dark:border-amber-800/60 backdrop-blur-sm";
+              badgeStyle = "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 dark:border-amber-500/30 backdrop-blur-md shadow-[0_2px_10px_rgba(245,158,11,0.05)]";
             }
             return (
               <motion.span
@@ -257,9 +302,9 @@ function HeroCard({
                 initial="hidden"
                 animate="visible"
                 whileHover={{ scale: 1.05 }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border shadow-sm cursor-default select-none transition-transform duration-200 ${badgeStyle}`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black border shadow-sm cursor-default select-none transition-transform duration-200 uppercase tracking-[0.04em] ${badgeStyle}`}
               >
-                {b.trend === "down" ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+                {b.trend === "down" ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
                 <span>{b.value} {b.label}</span>
               </motion.span>
             );
@@ -660,7 +705,8 @@ function ApplianceBreakdown({ items }: {
 }
 
 // ── 4. Power Flow Panel ───────────────────────────────────────────────────────
-function PowerFlowPanel({ totalUnits }: { totalUnits: number }) {
+// @ts-ignore
+function PowerFlowPanel_Deprecated({ totalUnits }: { totalUnits: number }) {
   const [gridPower, setGridPower] = useState(0.42);
   const [solarPower, setSolarPower] = useState(0.35);
 
@@ -867,15 +913,56 @@ function AIRecommendationsPanel({
   recs: { icon: React.ReactNode; title: string; sub: string; saving: number; color: string; bg: string; border?: string; glow: string }[];
   totalSavings: number;
 }) {
+  const formattedSavings = totalSavings.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  const [wholePart, decimalPart] = formattedSavings.split(".");
+
   return (
     <motion.div
       variants={recommendationsPanelVariants}
       initial="hidden"
       animate="visible"
-      className="bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl shadow-lg p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-md transition-shadow duration-300"
+      className="relative bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl border border-white/50 dark:border-slate-800/40 rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-5 sm:p-6 flex flex-col gap-4 h-full hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] transition-all duration-300 group cursor-default"
+      style={{
+        boxShadow: `0 8px 32px 0 rgba(31, 38, 135, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 0 rgba(255, 255, 255, 0.15)`,
+      }}
     >
+      {/* ── Background radial spotlight ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 50% 35%, rgba(59,130,246,0.04) 0%, transparent 70%)`,
+        }}
+      />
+
+      {/* ── Diagonal specular gloss reflection ── */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.35] dark:opacity-15 bg-gradient-to-tr from-transparent via-white/10 to-white/25"
+        style={{
+          clipPath: "polygon(0 0, 100% 0, 100% 35%, 0 80%)",
+        }}
+      />
+
+      {/* ── Shimmer specular highlight strip ── */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-blue-400/0 via-blue-300/20 to-blue-400/0 opacity-70" />
+      <div
+        className="absolute top-0 left-8 right-8 h-[2px] blur-sm opacity-40"
+        style={{ background: `linear-gradient(to right, transparent, #3b82f6, transparent)` }}
+      />
+
+      {/* Subtle dot-grid texture */}
+      <div
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(148,163,184,0.3) 1px, transparent 1px)",
+          backgroundSize: "18px 18px",
+        }}
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="relative z-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-white/20 dark:bg-slate-900/30 border border-white/10 dark:border-white/5 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -886,7 +973,7 @@ function AIRecommendationsPanel({
       </div>
 
       {/* Rec rows */}
-      <div className="flex-1 space-y-3.5">
+      <div className="relative z-10 flex-1 space-y-3.5">
         {recs.map((rec, i) => (
           <motion.div
             key={i}
@@ -894,9 +981,9 @@ function AIRecommendationsPanel({
             variants={recommendationItemVariants}
             initial="hidden"
             animate="visible"
-            className={`card-client motion-card ${rec.glow} group bg-white/20 dark:bg-slate-900/30 backdrop-blur-md border border-white/10 dark:border-white/5 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-[border-color,background-color,box-shadow] duration-300 shadow-sm`}
+            className={`card-client motion-card ${rec.glow} group bg-white/25 dark:bg-slate-955/15 border border-white/40 dark:border-slate-850/20 p-4 rounded-2xl flex items-center gap-4 cursor-default transition-all duration-300 shadow-sm hover:shadow-md hover:border-white/60 dark:hover:border-slate-700/30`}
           >
-            <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-150 dark:border-slate-800/50"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+            <div className={`w-11 h-11 rounded-2xl ${rec.bg} border ${rec.border || "border-slate-200/40 dark:border-slate-800/40"} flex items-center justify-center shrink-0 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
               <div className={`${rec.color} transition-transform duration-300 group-hover:scale-110`}>{rec.icon}</div>
             </div>
             <div className="flex-1 min-w-0">
@@ -912,16 +999,30 @@ function AIRecommendationsPanel({
       </div>
 
       {/* Total savings box */}
-      <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/10 dark:to-teal-950/10 rounded-2xl p-4 border border-emerald-500/20 dark:border-emerald-900/25">
-        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-450 mb-1.5">Total Potential Savings</p>
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="relative z-10 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/10 dark:to-teal-950/10 rounded-2xl p-4 border border-emerald-500/25 dark:border-emerald-900/25 shadow-sm group-hover:border-emerald-500/40 dark:group-hover:border-emerald-900/40 transition-colors duration-300"
+      >
+        <p className="text-xs font-black text-emerald-600 dark:text-emerald-450 mb-1.5 uppercase tracking-wider text-[9px]">Total Potential Savings</p>
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">₹{totalSavings.toLocaleString("en-IN")}</span>
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">/month</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white leading-none">
+              ₹{wholePart}
+              {decimalPart && (
+                <span className="text-base font-black align-baseline opacity-80 ml-0.5">.{decimalPart}</span>
+              )}
+            </span>
+            <span className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider ml-1">/month</span>
           </div>
-          <span className="text-2xl">🌱</span>
+          <motion.span
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="text-[1.6rem] cursor-default select-none filter drop-shadow-[0_2px_8px_rgba(16,185,129,0.2)]"
+          >
+            🌱
+          </motion.span>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -1161,7 +1262,7 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
               {/* Left col: Appliance + Power Flow */}
               <div className="lg:col-span-2 space-y-5">
                 <ApplianceBreakdown items={applianceData} />
-                <PowerFlowPanel totalUnits={totalUnits} />
+                <PowerFlowPanel totalUnits={totalUnits} activeAppliances={activeAppliances} />
               </div>
               {/* Right col: AI Recommendations */}
               <div className="lg:col-span-1">

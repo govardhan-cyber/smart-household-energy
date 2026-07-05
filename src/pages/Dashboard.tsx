@@ -1,46 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { reportsService } from "../utils/reportsService";
-import type { EnergyReport } from "../utils/reportsService";
-import { calculateBill, defaultAppliances, getSlabsForState, getApplianceDecayRate } from "../utils/tariffCalculator";
-import type { ApplianceItem, TariffResult } from "../utils/tariffCalculator";
-import { 
-  Zap, ChevronRight,
-  ShieldCheck, Sparkles, Check, AlertTriangle, Leaf, Printer, Download,
-  Sun, Wind, Lightbulb, Snowflake, SlidersHorizontal, BarChart3
-} from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Zap, Sun, Sparkles, Check, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface RecommendationItem {
-  id: string;
-  title: string;
-  description: string;
-  savings: number;
-  badge: "High" | "Medium" | "Low" | "Minor";
-  badgeColor: string;
-  icon: React.ReactNode;
-  difficulty?: "Easy" | "Medium" | "Hard";
-  impact?: "High" | "Medium" | "Low";
-}
-
-interface AnalysisResult {
-  totalUnits: number;
-  billing: TariffResult;
-  highestConsumer: string;
-  savingsPotential: number;
-  usageAfter: number;
-  billAfter: number;
-  recommendations: RecommendationItem[];
-  beforeCo2: number;
-  beforeTrees: number;
-  afterCo2: number;
-  afterTrees: number;
-  savedCo2: number;
-  savedTrees: number;
-}
-
-
-
 import { ApplianceSelector } from "../components/dashboard/ApplianceSelector";
 import { ConsumptionCalculator } from "../components/dashboard/ConsumptionCalculator";
 import { SavingsAdvisor } from "../components/dashboard/SavingsAdvisor";
@@ -49,6 +10,10 @@ import { SolarCalculator } from "../components/dashboard/SolarCalculator";
 import { AIHomeAudit } from "../components/dashboard/AIHomeAudit";
 import { DashboardWelcomeState } from "../components/dashboard/DashboardHero";
 import { PremiumDashboard } from "../components/dashboard/PremiumDashboard";
+import { DashboardStepProgress } from "../components/dashboard/DashboardStepProgress";
+import { DashboardSidebarSummary } from "../components/dashboard/DashboardSidebarSummary";
+import { DashboardSlabBreakdown } from "../components/dashboard/DashboardSlabBreakdown";
+import { useDashboardState } from "../hooks/useDashboardState.tsx";
 
 const tabVariants = {
   hidden: { opacity: 0 },
@@ -62,46 +27,62 @@ const tabVariants = {
   }
 };
 
-
-// Count-up/down animation component for premium feel
-const AnimatedNumber: React.FC<{
-  value: number;
-  duration?: number;
-  formatter?: (v: number) => string;
-}> = ({ value, duration = 400, formatter = (v) => Math.round(v).toString() }) => {
-  const [displayValue, setDisplayValue] = useState(value);
-
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const startValue = displayValue;
-    const endValue = value;
-    
-    if (startValue === endValue) return;
-
-    let animationFrameId: number;
-
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const easedProgress = progress * (2 - progress); // Ease out quad
-      const current = startValue + easedProgress * (endValue - startValue);
-      setDisplayValue(current);
-      if (progress < 1) {
-        animationFrameId = window.requestAnimationFrame(step);
-      }
-    };
-    
-    animationFrameId = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(animationFrameId);
-  }, [value, duration]);
-
-  return <span>{formatter(displayValue)}</span>;
-};
+const COLORS = ["#1E40AF", "#16A34A", "#0F766E", "#F97316", "#EF4444", "#8B5CF6", "#EC4899", "#F59E0B"];
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const {
+    user,
+    currentStep,
+    setCurrentStep,
+    activeTab,
+    setActiveTab,
+    renderedTab,
+    appliances,
+    activeAppliances,
+    analysisResult,
+    isAnalyzing,
+    reports,
+    reportsLoading,
+    toast,
+    setToast,
+    hasInitiated,
+    liveTotalUnits,
+    liveBill,
+    benchmarkDiffPercent,
+    isAboveBenchmark,
+    benchmarkCharge,
+    benchmarkUnits,
+    liveSavingsPotential,
+    solarOffsetPercent,
+    recommendedKw,
+    chartData,
+    momTrend,
+    vsAvgTrend,
+    toggleAppliance,
+    updateQuantity,
+    updateHours,
+    updateUnitHours,
+    updateWatts,
+    updateAge,
+    updateUnitAge,
+    handleAnalyze,
+    handleReset,
+    handleExportCSV,
+    handleStartAudit,
+    handleRunAudit
+  } = useDashboardState();
 
-  
+  const location = useLocation();
+
+  // Sync tab state with URL parameter (e.g. ?tab=solar or ?tab=audit)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab === "solar" || tab === "audit") {
+      setActiveTab(tab);
+    }
+  }, [location.search, setActiveTab]);
+
   // Detect theme state for Recharts components
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(
     () => (document.documentElement.classList.contains("dark") ? "dark" : "light")
@@ -115,779 +96,16 @@ export const Dashboard: React.FC = () => {
     return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 
-  // History states for stats calculation
-  const [reports, setReports] = useState<EnergyReport[]>([]);
-  const [reportsLoading, setReportsLoading] = useState(true);
-  const [toast, setToast] = useState<{
-    type: "success" | "error" | "info";
-    message: string;
-  } | null>(null);
-
+  // Smooth scroll to top of page/wizard on step or tab transition
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  // Wizard States
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
-  const [activeTab, setActiveTab] = useState<"wizard" | "solar" | "audit">("wizard");
-  const [renderedTab, setRenderedTab] = useState<"wizard" | "solar" | "audit">("wizard");
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setRenderedTab(activeTab);
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [activeTab]);
-  const [appliances, setAppliances] = useState<ApplianceItem[]>(() => {
-    // Initial state setup with quantity=1, hours=6 for AC and Refrigerator, quantity=0 for others.
-    return defaultAppliances.map(app => {
-      let qty = app.quantity;
-      let hrs = app.hours;
-      if (app.id === 'ac') { qty = 1; hrs = 6; }
-      else if (app.id === 'fridge') { qty = 1; hrs = 24; }
-      else if (app.id === 'fan') { qty = 2; hrs = 12; }
-      else if (app.id === 'lights') { qty = 4; hrs = 8; }
-      else if (app.id === 'lights_tube') { qty = 2; hrs = 6; }
-      return { 
-        ...app, 
-        quantity: qty, 
-        hours: hrs,
-        unitHours: Array(qty).fill(hrs),
-        age: 0,
-        unitAges: Array(qty).fill(0)
-      };
-    });
-  });
-
-  // Selected state logic: if quantity > 0, the appliance is selected
-  const toggleAppliance = (appId: string) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const isSelected = app.quantity > 0;
-        const newQty = isSelected ? 0 : 1;
-        const defaultHours = app.hours || 6;
-        return {
-          ...app,
-          quantity: newQty,
-          hours: defaultHours,
-          unitHours: Array(newQty).fill(defaultHours),
-          age: 0,
-          unitAges: Array(newQty).fill(0)
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateQuantity = (appId: string, increment: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const newQty = Math.max(0, app.quantity + increment);
-        
-        let newUnitHours = [...(app.unitHours || [])];
-        if (newUnitHours.length < newQty) {
-          const padVal = newUnitHours.length > 0 ? newUnitHours[newUnitHours.length - 1] : (app.hours || 6);
-          while (newUnitHours.length < newQty) {
-            newUnitHours.push(padVal);
-          }
-        } else if (newUnitHours.length > newQty) {
-          newUnitHours = newUnitHours.slice(0, newQty);
-        }
-        
-        const avgHours = newQty > 0 
-          ? Math.round((newUnitHours.reduce((sum, h) => sum + h, 0) / newQty) * 10) / 10
-          : app.hours;
-
-        let newUnitAges = [...(app.unitAges || [])];
-        if (newUnitAges.length < newQty) {
-          const padAgeVal = newUnitAges.length > 0 ? newUnitAges[newUnitAges.length - 1] : (app.age || 0);
-          while (newUnitAges.length < newQty) {
-            newUnitAges.push(padAgeVal);
-          }
-        } else if (newUnitAges.length > newQty) {
-          newUnitAges = newUnitAges.slice(0, newQty);
-        }
-
-        const avgAge = newQty > 0
-          ? Math.round((newUnitAges.reduce((sum, a) => sum + a, 0) / newQty) * 10) / 10
-          : app.age;
-
-        return { 
-          ...app, 
-          quantity: newQty, 
-          unitHours: newUnitHours,
-          hours: avgHours,
-          unitAges: newUnitAges,
-          age: avgAge
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateHours = (appId: string, hours: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const validatedHours = Math.min(24, Math.max(0, hours));
-        return { 
-          ...app, 
-          hours: validatedHours,
-          unitHours: Array(app.quantity).fill(validatedHours)
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateUnitHours = (appId: string, unitIndex: number, hours: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const validatedHours = Math.min(24, Math.max(0, hours));
-        const newUnitHours = [...(app.unitHours || Array(app.quantity).fill(app.hours))];
-        newUnitHours[unitIndex] = validatedHours;
-        
-        const avgHours = app.quantity > 0 
-          ? Math.round((newUnitHours.reduce((sum, h) => sum + h, 0) / app.quantity) * 10) / 10
-          : app.hours;
-
-        return { 
-          ...app, 
-          unitHours: newUnitHours,
-          hours: avgHours
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateWatts = (appId: string, watts: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        return { 
-          ...app, 
-          watts: Math.max(1, watts)
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateAge = (appId: string, age: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const validatedAge = Math.min(15, Math.max(0, age));
-        return { 
-          ...app, 
-          age: validatedAge,
-          unitAges: Array(app.quantity).fill(validatedAge)
-        };
-      }
-      return app;
-    }));
-  };
-
-  const updateUnitAge = (appId: string, unitIndex: number, age: number) => {
-    setAppliances(prev => prev.map(app => {
-      if (app.id === appId) {
-        const validatedAge = Math.min(15, Math.max(0, age));
-        const newUnitAges = [...(app.unitAges || Array(app.quantity).fill(app.age || 0))];
-        newUnitAges[unitIndex] = validatedAge;
-        
-        const avgAge = app.quantity > 0 
-          ? Math.round((newUnitAges.reduce((sum, a) => sum + a, 0) / app.quantity) * 10) / 10
-          : app.age;
-
-        return { 
-          ...app, 
-          unitAges: newUnitAges,
-          age: avgAge
-        };
-      }
-      return app;
-    }));
-  };
-
-  // Calculations states
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // Load previous reports for the user
-  const loadReports = async (initializeInputs = false) => {
-    if (!user) return;
-    setReportsLoading(true);
-
-    const applyReportsData = (userReports: EnergyReport[]) => {
-      setReports(userReports);
-      if (userReports.length > 0 && initializeInputs) {
-        // Initialize dashboard state with the latest report if available
-        const latest = userReports[0];
-        setAppliances(prev => prev.map(app => {
-          const match = latest.appliances.find(la => la.name.toLowerCase() === app.name.toLowerCase());
-          if (match) {
-            return { 
-              ...app, 
-              quantity: match.quantity, 
-              hours: match.hours,
-              unitHours: Array(match.quantity).fill(match.hours)
-            };
-          }
-          return { ...app, quantity: 0, hours: app.hours, unitHours: [] };
-        }));
-      }
-    };
-
-    // 1. Try to load from cache immediately
-    const cacheKey = `she_reports_cache_${user.uid}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    if (cachedData) {
-      try {
-        const parsed = JSON.parse(cachedData) as EnergyReport[];
-        applyReportsData(parsed);
-        setReportsLoading(false);
-      } catch (e) {
-        console.error("Failed to parse cached reports in dashboard:", e);
-      }
-    }
-
-    // 2. Fetch fresh data from network in background
-    try {
-      const userReports = await reportsService.getUserReports(user.uid);
-      applyReportsData(userReports);
-    } catch (error) {
-      console.error("Failed to load user reports from database:", error);
-    } finally {
-      setReportsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadReports(true);
-  }, [user]);
-
-  // Synchronize appliance wattages when user settings update
-  useEffect(() => {
-    if (user) {
-      setAppliances(prev => prev.map(app => {
-        const customWatt = user.customWattages?.[app.id];
-        if (customWatt !== undefined && customWatt > 0) {
-          return { ...app, watts: customWatt };
-        }
-        const defaultApp = defaultAppliances.find(da => da.id === app.id);
-        return { ...app, watts: defaultApp ? defaultApp.watts : app.watts };
-      }));
-    }
-  }, [user]);
-
-  // Calculate live summary data on step 2 changes
-  const activeAppliances = appliances.filter(app => app.quantity > 0);
-
-  const [hasInitiated, setHasInitiated] = useState(false);
-
-  useEffect(() => {
-    if (reports.length > 0) {
-      setHasInitiated(true);
-    }
-  }, [reports]);
-
-  useEffect(() => {
-    if (activeAppliances.length > 0) {
-      setHasInitiated(true);
-    }
-  }, [activeAppliances.length]);
-  const liveTotalUnits = Math.round(activeAppliances.reduce((sum, app) => {
-    const decayRate = getApplianceDecayRate(app.id);
-    let kwh = 0;
-    if (decayRate > 0) {
-      for (let i = 0; i < app.quantity; i++) {
-        const uHours = app.unitHours?.[i] ?? app.hours ?? 0;
-        const uAge = app.unitAges?.[i] ?? app.age ?? 0;
-        const effectiveWatts = app.watts * (1 + uAge * decayRate);
-        kwh += (effectiveWatts / 1000) * uHours * 30;
-      }
+    const wizardEl = document.getElementById("wizard-progress-bar");
+    if (wizardEl && activeTab === "wizard") {
+      const y = wizardEl.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
     } else {
-      kwh = app.quantity * (app.watts / 1000) * app.hours * 30;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-    return sum + kwh;
-  }, 0));
-  const liveBill = calculateBill(liveTotalUnits, user?.tariffState || "ap", user?.customFlatRate || 7.5);
-
-  // Benchmarking Calculations
-  const benchmarkUnits = 250;
-  const benchmarkBill = calculateBill(benchmarkUnits, user?.tariffState || "ap", user?.customFlatRate || 7.5);
-  const benchmarkCharge = benchmarkBill.netEnergyCharge;
-  const liveCharge = liveBill.netEnergyCharge;
-  const isAboveBenchmark = liveCharge > benchmarkCharge;
-  const benchmarkDiffPercent = benchmarkCharge > 0
-    ? Math.round((Math.abs(liveCharge - benchmarkCharge) / benchmarkCharge) * 100)
-    : 0;
-
-  // Live savings potential calculation (runs on every render based on active appliances)
-  const liveAcApp = appliances.find(a => a.id === "ac" && a.quantity > 0);
-  const liveAcSavedKwh = liveAcApp 
-    ? liveAcApp.quantity * (liveAcApp.watts / 1000) * (liveAcApp.hours > 2 ? 2 : liveAcApp.hours * 0.5) * 30 
-    : 0;
-
-  const liveLightApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
-  const liveLightSavedKwh = liveLightApp 
-    ? liveLightApp.quantity * (90 / 1000) * liveLightApp.hours * 30 * 0.75 
-    : 0;
-
-  const liveTubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
-  const liveTubeSavedKwh = liveTubeApp 
-    ? liveTubeApp.quantity * (22 / 1000) * liveTubeApp.hours * 30 
-    : 0;
-
-  const liveFridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-  const liveFridgeSavedKwh = liveFridgeApp 
-    ? liveFridgeApp.quantity * (200 / 1000) * liveFridgeApp.hours * 30 * 0.15 
-    : 0;
-
-  const liveStandbySavedKwh = liveTotalUnits * 0.05;
-  const liveTotalSavedKwh = liveAcSavedKwh + liveLightSavedKwh + liveTubeSavedKwh + liveFridgeSavedKwh + liveStandbySavedKwh;
-  const liveUsageAfter = Math.max(0, liveTotalUnits - liveTotalSavedKwh);
-  const liveBillAfter = calculateBill(liveUsageAfter, user?.tariffState || "ap", user?.customFlatRate || 7.5);
-  const liveSavingsPotential = Math.max(0, liveBill.netEnergyCharge - liveBillAfter.netEnergyCharge);
-
-  // Solar Offset (%) and Capacity (kW) estimation
-  const kwNeededByUsage = liveTotalUnits / 120;
-  const recommendedKw = Math.max(1, Math.round(Math.min(kwNeededByUsage, 3) * 2) / 2); // default cap at 3 kW based on 300 sq ft
-  const solarGenKwh = recommendedKw * 120;
-  const solarOffsetPercent = liveTotalUnits > 0 ? Math.min(100, Math.round((solarGenKwh / liveTotalUnits) * 100)) : 0;
-
-  // Trigger analysis and save to Firestore
-  const handleAnalyze = async () => {
-    if (activeAppliances.length === 0) return;
-    setIsAnalyzing(true);
-    
-    // Simulate beautiful micro-animation loading
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Calculate Highest Consumer
-    let maxKwh = 0;
-    let highestApp = "None";
-    activeAppliances.forEach(app => {
-      const decayRate = getApplianceDecayRate(app.id);
-      let kwh = 0;
-      if (decayRate > 0) {
-        for (let i = 0; i < app.quantity; i++) {
-          const uHours = app.unitHours?.[i] ?? app.hours ?? 0;
-          const uAge = app.unitAges?.[i] ?? app.age ?? 0;
-          const effectiveWatts = app.watts * (1 + uAge * decayRate);
-          kwh += (effectiveWatts / 1000) * uHours * 30;
-        }
-      } else {
-        kwh = app.quantity * (app.watts / 1000) * app.hours * 30;
-      }
-      if (kwh > maxKwh) {
-        maxKwh = kwh;
-        highestApp = app.name;
-      }
-    });
-
-    // Calculate dynamic saved kWh for each recommendation
-    const acApp = appliances.find(a => a.id === "ac" && a.quantity > 0);
-    const acSavedKwh = acApp 
-      ? acApp.quantity * (acApp.watts / 1000) * (acApp.hours > 2 ? 2 : acApp.hours * 0.5) * 30 
-      : 0;
-
-    const lightApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
-    const lightSavedKwh = lightApp 
-      ? lightApp.quantity * (90 / 1000) * lightApp.hours * 30 * 0.75 
-      : 0;
-
-    const tubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
-    const tubeSavedKwh = tubeApp 
-      ? tubeApp.quantity * (22 / 1000) * tubeApp.hours * 30 
-      : 0;
-
-    const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-    const fridgeSavedKwh = fridgeApp 
-      ? fridgeApp.quantity * (200 / 1000) * fridgeApp.hours * 30 * 0.15 
-      : 0;
-
-    const standbySavedKwh = liveTotalUnits * 0.05;
-
-    const fanApp = appliances.find(a => a.id === "fan" && a.quantity > 0);
-    const fanSavedKwh = fanApp 
-      ? fanApp.quantity * (35 / 1000) * fanApp.hours * 30 
-      : 0;
-
-    const totalSavedKwh = acSavedKwh + lightSavedKwh + tubeSavedKwh + fridgeSavedKwh + standbySavedKwh + fanSavedKwh;
-    const usageAfter = Math.max(0, liveTotalUnits - totalSavedKwh);
-
-    const billBefore = liveBill;
-    const billAfter = calculateBill(usageAfter, user?.tariffState || "ap", user?.customFlatRate || 7.5);
-    const totalSavingsMoney = Math.max(0, billBefore.netEnergyCharge - billAfter.netEnergyCharge);
-    const totalSavedKwhSafe = totalSavedKwh || 1;
-
-    // Generate smart saving recommendations
-    const tips: RecommendationItem[] = [];
-
-    if (acApp && acSavedKwh > 0) {
-      const moneySaved = (acSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      const acReducedHours = acApp.hours > 2 ? acApp.hours - 2 : acApp.hours / 2;
-      tips.push({
-        id: "ac_reduction",
-        title: "Reduce AC usage",
-        description: `Lower daily usage from ${acApp.hours} hrs to ${acReducedHours} hrs per day`,
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "High",
-        badgeColor: "bg-green-50 text-primary-green dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
-        icon: <Wind className="w-5 h-5 text-primary-green" />,
-        difficulty: "Easy",
-        impact: "High"
-      });
-    }
-
-    if (lightApp && lightSavedKwh > 0) {
-      const moneySaved = (lightSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      tips.push({
-        id: "led_upgrade",
-        title: "Switch to LED bulbs",
-        description: "Replace conventional bulbs with LED to save ~75% energy per bulb",
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "High",
-        badgeColor: "bg-green-50 text-primary-green dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
-        icon: <Lightbulb className="w-5 h-5 text-primary-green" />,
-        difficulty: "Easy",
-        impact: "High"
-      });
-    }
-
-    if (tubeApp && tubeSavedKwh > 0) {
-      const moneySaved = (tubeSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      tips.push({
-        id: "tube_led_upgrade",
-        title: "Switch to T5 LED Tube Lights",
-        description: "Replace 40W conventional tube lights with 18W T5 LEDs",
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "High",
-        badgeColor: "bg-green-50 text-primary-green dark:bg-green-950/20 border-green-200 dark:border-green-900/50",
-        icon: <Lightbulb className="w-5 h-5 text-primary-green" />,
-        difficulty: "Easy",
-        impact: "High"
-      });
-    }
-
-    if (fridgeApp && fridgeSavedKwh > 0) {
-      const moneySaved = (fridgeSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      tips.push({
-        id: "fridge_optimization",
-        title: "Set optimal refrigerator temperature",
-        description: "Maintain 3-5°C for fridge and -18°C for freezer to save ~15% energy",
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "Medium",
-        badgeColor: "bg-orange-50 text-warning-orange dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50",
-        icon: <Snowflake className="w-5 h-5 text-warning-orange" />,
-        difficulty: "Easy",
-        impact: "Medium"
-      });
-    }
-
-    if (standbySavedKwh > 0) {
-      const moneySaved = (standbySavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      tips.push({
-        id: "standby_loads",
-        title: "Eliminate standby power",
-        description: "Unplug unused appliances or use smart power strips to cut phantom load",
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "Minor",
-        badgeColor: "bg-slate-100 text-slate-500 dark:bg-slate-800 border-slate-200 dark:border-slate-750",
-        icon: <Zap className="w-5 h-5 text-slate-500" />,
-        difficulty: "Easy",
-        impact: "Low"
-      });
-    }
-
-    if (fanApp && fanSavedKwh > 0) {
-      const moneySaved = (fanSavedKwh / totalSavedKwhSafe) * totalSavingsMoney;
-      tips.push({
-        id: "fan_bldc_upgrade",
-        title: "Switch to BLDC fans",
-        description: "Replace standard ceiling fans (75W) with 5-star brushless DC (BLDC) fans (35W) to save ~50% energy per fan",
-        savings: Math.round(moneySaved * 10) / 10,
-        badge: "Medium",
-        badgeColor: "bg-orange-50 text-warning-orange dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50",
-        icon: <Wind className="w-5 h-5 text-warning-orange" />,
-        difficulty: "Easy",
-        impact: "High"
-      });
-    }
-
-    // Add age-based upgrade recommendations
-    const unitUpgradeCosts: Record<string, number> = {
-      ac: 40000,
-      fridge: 25000,
-      fan: 3500
-    };
-    const unitUpgradeWatts: Record<string, number> = {
-      ac: 1200,
-      fridge: 130,
-      fan: 28
-    };
-
-    Object.entries(unitUpgradeCosts).forEach(([appId, costPerUnit]) => {
-      const app = appliances.find(a => a.id === appId && a.quantity > 0);
-      if (!app) return;
-
-      const decayRate = getApplianceDecayRate(appId);
-      const ages = app.unitAges || Array(app.quantity).fill(app.age || 0);
-      const oldUnitsIndices = ages.reduce((acc: number[], age, idx) => {
-        if (age >= 5) acc.push(idx);
-        return acc;
-      }, []);
-
-      if (oldUnitsIndices.length > 0) {
-        let currentOldKwh = 0;
-        let newUpgradedKwh = 0;
-        const targetWatts = unitUpgradeWatts[appId];
-
-        oldUnitsIndices.forEach((idx) => {
-          const uHours = app.unitHours?.[idx] ?? app.hours ?? 0;
-          const uAge = ages[idx];
-          const effectiveWatts = app.watts * (1 + uAge * decayRate);
-          currentOldKwh += (effectiveWatts / 1000) * uHours * 30;
-          newUpgradedKwh += (targetWatts / 1000) * uHours * 30;
-        });
-
-        const savedKwh = Math.max(0, currentOldKwh - newUpgradedKwh);
-        const usageAfterUpgrade = Math.max(0, liveTotalUnits - savedKwh);
-        const billBeforeUpgrade = liveBill;
-        const billAfterUpgrade = calculateBill(usageAfterUpgrade, user?.tariffState || "ap", user?.customFlatRate || 7.5);
-        const monthlySavingsMoney = Math.max(0, billBeforeUpgrade.netEnergyCharge - billAfterUpgrade.netEnergyCharge);
-        
-        if (monthlySavingsMoney > 10) {
-          const totalInvestment = oldUnitsIndices.length * costPerUnit;
-          const paybackYears = Math.round((totalInvestment / (monthlySavingsMoney * 12)) * 10) / 10;
-          const maxAge = Math.max(...oldUnitsIndices.map(i => ages[i]));
-
-          tips.push({
-            id: `upgrade_${appId}`,
-            title: `Replace Old ${app.name}`,
-            description: `Upgrading ${oldUnitsIndices.length} old ${app.name}(s) (up to ${maxAge} yrs old) to new BEE 5-star models saves ₹${Math.round(monthlySavingsMoney)}/mo. Est. payback: ${paybackYears} years.`,
-            savings: Math.round(monthlySavingsMoney * 10) / 10,
-            badge: paybackYears <= 6 ? "Medium" : "Low",
-            badgeColor: paybackYears <= 6 ? "bg-orange-50 text-warning-orange dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50" : "bg-slate-100 text-slate-500 dark:bg-slate-800 border-slate-200 dark:border-slate-750",
-            icon: appId === "ac" || appId === "fan" ? <Wind className="w-5 h-5 text-warning-orange" /> : <Snowflake className="w-5 h-5 text-primary-green" />,
-            difficulty: paybackYears <= 6 ? "Medium" : "Hard",
-            impact: paybackYears <= 6 ? "High" : "Medium"
-          });
-        }
-      }
-    });
-
-    const roundedTotal = Math.round(totalSavingsMoney * 10) / 10;
-    const sumRounded = tips.reduce((sum, t) => sum + t.savings, 0);
-    const diff = Math.round((roundedTotal - sumRounded) * 10) / 10;
-    if (diff !== 0 && tips.length > 0) {
-      tips[0].savings = Math.round((tips[0].savings + diff) * 10) / 10;
-    }
-
-    const result = {
-      totalUnits: liveTotalUnits,
-      billing: liveBill,
-      highestConsumer: highestApp,
-      savingsPotential: roundedTotal,
-      usageAfter: Math.round(usageAfter * 10) / 10,
-      billAfter: Math.round(billAfter.netEnergyCharge * 10) / 10,
-      recommendations: tips,
-      // Carbon footprint calculations (0.82 kg CO2 per kWh)
-      beforeCo2: Math.round(liveTotalUnits * 0.82 * 10) / 10,
-      beforeTrees: Math.round((liveTotalUnits * 0.82 / 1.83) * 10) / 10,
-      afterCo2: Math.round(usageAfter * 0.82 * 10) / 10,
-      afterTrees: Math.round((usageAfter * 0.82 / 1.83) * 10) / 10,
-      savedCo2: Math.round((liveTotalUnits - usageAfter) * 0.82 * 10) / 10,
-      savedTrees: Math.round(((liveTotalUnits - usageAfter) * 0.82 / 1.83) * 10) / 10
-    };
-
-    setAnalysisResult(result);
-    setCurrentStep(3);
-    setIsAnalyzing(false);
-    setToast({
-      type: "success",
-      message: "Analysis completed successfully!"
-    });
-
-    // Auto-save the energy report to Firestore/Database in the background
-    if (user) {
-      const mappedAppliances = activeAppliances.map(app => {
-        const decayRate = getApplianceDecayRate(app.id);
-        let finalWatts = app.watts;
-        if (decayRate > 0 && app.quantity > 0) {
-          const ages = app.unitAges || Array(app.quantity).fill(app.age || 0);
-          const sumAgesHours = ages.reduce((sum, age, idx) => {
-            const uHours = app.unitHours?.[idx] ?? app.hours ?? 0;
-            return sum + age * uHours;
-          }, 0);
-          const sumHours = (app.unitHours || Array(app.quantity).fill(app.hours)).reduce((sum, h) => sum + h, 0);
-          const avgWeightedAge = sumHours > 0 ? (sumAgesHours / sumHours) : (app.age || 0);
-          finalWatts = app.watts * (1 + avgWeightedAge * decayRate);
-        }
-
-        return {
-          name: app.name,
-          quantity: app.quantity,
-          hours: app.hours,
-          watts: Math.round(finalWatts),
-          age: app.age || 0,
-          unitAges: app.unitAges || []
-        };
-      });
-
-      reportsService.saveReport({
-        userId: user.uid,
-        appliances: mappedAppliances,
-        totalUnits: liveTotalUnits,
-        estimatedBill: liveBill.netEnergyCharge,
-        savingsPotential: roundedTotal,
-        highestConsumer: highestApp,
-        // Premium properties
-        tariffState: user.tariffState || "ap",
-        beforeCo2: result.beforeCo2,
-        afterCo2: result.afterCo2,
-        savedCo2: result.savedCo2,
-        savedTrees: result.savedTrees,
-        billAfter: result.billAfter,
-        usageAfter: result.usageAfter
-      }).then(() => {
-        loadReports(false);
-      }).catch(e => {
-        console.error("Could not auto-save report in background:", e);
-      });
-    }
-  };
-
-  // Reset analysis flow
-  const handleReset = () => {
-    setCurrentStep(1);
-    setAnalysisResult(null);
-  };
-
-
-  const handleExportCSV = (report: AnalysisResult) => {
-    if (!report) return;
-    const headers = ["Appliance", "Quantity", "Usage (hrs/day)", "Wattage (W)", "Estimated Monthly kWh"];
-    const rows = activeAppliances.map(app => {
-      const kwh = Math.round(app.quantity * (app.watts / 1000) * app.hours * 30);
-      return [app.name, app.quantity, app.hours, app.watts, kwh];
-    });
-    
-    rows.push([]);
-    rows.push(["Total Monthly Units", "", "", "", report.totalUnits]);
-    rows.push(["Estimated Monthly Bill (Before)", "", "", "", report.billing.netEnergyCharge]);
-    rows.push(["Savings Potential", "", "", "", report.savingsPotential]);
-    rows.push(["Usage After Optimizations", "", "", "", report.usageAfter]);
-    rows.push(["Estimated Monthly Bill (After)", "", "", "", report.billAfter]);
-    rows.push(["Carbon Footprint (Before)", "", "", "", `${report.beforeCo2} kg CO2`]);
-    rows.push(["Carbon Footprint (After)", "", "", "", `${report.afterCo2} kg CO2`]);
-    rows.push(["Trees needed to offset", "", "", "", report.beforeTrees]);
-    rows.push(["Trees saved", "", "", "", report.savedTrees]);
-    
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(","), ...rows.map(e => e.map(val => `"${val}"`).join(","))].join("\n");
-      
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `energy_report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };  // Recharts Chart Formatter
-  const chartData = activeAppliances.map(app => {
-    const kwh = Math.round(app.quantity * (app.watts / 1000) * app.hours * 30);
-    return {
-      name: app.name,
-      kwh: kwh,
-      percentage: liveTotalUnits > 0 ? Math.round((kwh / liveTotalUnits) * 100) : 0
-    };
-  }).sort((a, b) => b.kwh - a.kwh);
-  const COLORS = ["#1E40AF", "#16A34A", "#0F766E", "#F97316", "#EF4444", "#8B5CF6", "#EC4899", "#F59E0B"];  // Calculate health score dynamically
-
-
-  // Audit triggers
-  const handleStartAudit = () => {
-    setHasInitiated(true);
-    setActiveTab("wizard");
-    setCurrentStep(1);
-    setTimeout(() => {
-      const wizardEl = document.getElementById("wizard-progress-bar");
-      if (wizardEl) {
-        const y = wizardEl.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    }, 100);
-  };
-
-  const handleRunAudit = () => {
-    setActiveTab("wizard");
-    setTimeout(() => {
-      const wizardEl = document.getElementById("wizard-progress-bar");
-      if (wizardEl) {
-        const y = wizardEl.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    }, 100);
-  };
-
-  const getMomTrend = () => {
-    let diff = 0;
-    let label = "vs last month (est.)";
-    let trend: "up" | "down" | "neutral" = "down";
-    let type: "positive" | "negative" | "neutral" = "positive";
-
-    if (reports.length >= 2) {
-      const latestVal = reports[0].totalUnits;
-      const prevVal = reports[1].totalUnits;
-      if (prevVal > 0) {
-        diff = ((latestVal - prevVal) / prevVal) * 100;
-        label = "vs last month";
-      }
-    } else if (reports.length === 1) {
-      const latestVal = liveTotalUnits;
-      const prevVal = reports[0].totalUnits;
-      if (prevVal > 0) {
-        diff = ((latestVal - prevVal) / prevVal) * 100;
-        label = "vs saved baseline";
-      }
-    } else {
-      diff = -4;
-      label = "vs last month (est.)";
-    }
-
-    if (diff > 0) {
-      trend = "up";
-      type = "negative";
-    } else if (diff < 0) {
-      trend = "down";
-      type = "positive";
-    } else {
-      trend = "neutral";
-      type = "neutral";
-    }
-
-    return {
-      label,
-      value: `${Math.abs(Math.round(diff))}%`,
-      trend,
-      type
-    };
-  };
-
-  const momTrend = getMomTrend();
-
-  const vsAvgTrend = {
-    label: "vs typical home",
-    value: `${benchmarkDiffPercent}%`,
-    trend: isAboveBenchmark ? ("up" as const) : ("down" as const),
-    type: isAboveBenchmark ? ("negative" as const) : ("positive" as const)
-  };
-
-
+  }, [currentStep, activeTab]);
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 pt-4 pb-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-4">
@@ -899,7 +117,7 @@ export const Dashboard: React.FC = () => {
               <span className="w-6 h-6 bg-gradient-to-br from-blue-600 to-teal-500 rounded-full flex items-center justify-center text-white text-[10px] font-extrabold">⚡</span>
               SMART HOUSEHOLD ENERGY PORTAL
             </h1>
-            <p className="text-xs text-slate-500 mt-1 font-medium">
+            <p className="text-xs text-slate-505 mt-1 font-medium">
               Energy Consumption, Conservation & Solar Planning Report
             </p>
           </div>
@@ -910,6 +128,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      
       {/* Tab Selector */}
       <div className="flex justify-center no-print relative z-10">
         <div className="flex backdrop-blur-md bg-slate-200/50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200/30 dark:border-slate-800/50 shadow-inner relative">
@@ -920,7 +139,7 @@ export const Dashboard: React.FC = () => {
             className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "wizard"
                 ? "text-slate-900 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                : "text-slate-550 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-305"
             }`}
           >
             {activeTab === "wizard" && (
@@ -945,6 +164,7 @@ export const Dashboard: React.FC = () => {
               <span>Home Audit Wizard</span>
             </span>
           </motion.button>
+          
           <motion.button
             whileHover="hover"
             whileTap={{ scale: 0.98 }}
@@ -952,7 +172,7 @@ export const Dashboard: React.FC = () => {
             className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "solar"
                 ? "text-slate-900 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                : "text-slate-550 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-305"
             }`}
           >
             {activeTab === "solar" && (
@@ -977,6 +197,7 @@ export const Dashboard: React.FC = () => {
               <span>Solar ROI Calculator</span>
             </span>
           </motion.button>
+          
           <motion.button
             whileHover="hover"
             whileTap={{ scale: 0.98 }}
@@ -984,7 +205,7 @@ export const Dashboard: React.FC = () => {
             className={`relative flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-colors duration-300 active:scale-[0.98] ${
               activeTab === "audit"
                 ? "text-slate-900 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                : "text-slate-550 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-305"
             }`}
           >
             {activeTab === "audit" && (
@@ -1074,477 +295,142 @@ export const Dashboard: React.FC = () => {
                   solarOffsetPercent={solarOffsetPercent}
                 />
 
-              {/* Step Progress Bar */}
-              <div id="wizard-progress-bar" className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl px-8 py-6 rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-md no-print max-w-4xl mx-auto w-full overflow-hidden">
-                {/* Subtle background glow */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-blue/[0.03] via-transparent to-primary-green/[0.03] dark:from-primary-blue/[0.06] dark:to-primary-green/[0.06] pointer-events-none rounded-2xl" />
+                {/* Step Progress Bar */}
+                <DashboardStepProgress 
+                  currentStep={currentStep}
+                  setCurrentStep={setCurrentStep}
+                  activeAppliancesLength={activeAppliances.length}
+                />
 
-                <div className="relative flex items-center w-full">
-                  {[
-                    { step: 1, label: "Appliances",     sub: "Select devices",   Icon: Zap,               color: "from-blue-500 to-primary-blue",   glow: "shadow-blue-500/40"   },
-                    { step: 2, label: "Usage",           sub: "Set hours & days", Icon: SlidersHorizontal, color: "from-violet-500 to-indigo-500",   glow: "shadow-violet-500/40" },
-                    { step: 3, label: "Analysis",        sub: "Review usage",     Icon: BarChart3,         color: "from-emerald-500 to-teal-500",    glow: "shadow-emerald-500/40"},
-                    { step: 4, label: "Recommendations", sub: "Save energy",      Icon: Leaf,              color: "from-teal-400 to-primary-green",  glow: "shadow-teal-500/40"   },
-                  ].map((s, idx, arr) => {
-                    const isCompleted = currentStep > s.step;
-                    const isActive    = currentStep === s.step;
-                    const isClickable = s.step <= currentStep || activeAppliances.length > 0;
-                    return (
-                      <React.Fragment key={s.step}>
-                        {/* Step node */}
-                        <motion.button
-                          disabled={!isClickable}
-                          onClick={() => setCurrentStep(s.step as 1 | 2 | 3 | 4)}
-                          whileHover={isClickable ? { scale: 1.06, y: -2 } : {}}
-                          whileTap={isClickable ? { scale: 0.95 } : {}}
-                          className={`flex flex-col items-center gap-3 shrink-0 focus:outline-none transition-all duration-300 ${isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-30"}`}
-                        >
-                          {/* Circle */}
-                          <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ${
-                            isCompleted
-                              ? `bg-gradient-to-br ${s.color} shadow-lg ${s.glow}`
-                              : isActive
-                              ? `bg-gradient-to-br ${s.color} shadow-xl ${s.glow}`
-                              : "bg-slate-100/90 dark:bg-slate-800/70 border-2 border-slate-200/80 dark:border-slate-700/60"
-                          }`}>
-                            {/* Outer pulse ring for active */}
-                            {isActive && (
-                              <>
-                                <span className="absolute -inset-1 rounded-full animate-ping opacity-30 bg-gradient-to-br from-primary-blue to-primary-green" />
-                                <span className="absolute -inset-0.5 rounded-full border-2 border-primary-blue/40 dark:border-primary-green/40" />
-                              </>
-                            )}
-                            {isCompleted ? (
-                              <Check className="w-6 h-6 text-white stroke-[2.5]" />
-                            ) : isActive ? (
-                              <s.Icon className="w-6 h-6 text-white drop-shadow-sm" />
-                            ) : (
-                              <span className="text-base font-bold text-slate-400 dark:text-slate-500 font-display">{s.step}</span>
-                            )}
-                          </div>
-
-                          {/* Labels */}
-                          <div className="flex flex-col items-center leading-tight gap-0.5">
-                            <span className={`text-xs sm:text-[13px] font-bold transition-colors duration-300 font-display whitespace-nowrap ${
-                              isActive    ? "text-slate-900 dark:text-white"
-                              : isCompleted ? "text-slate-600 dark:text-slate-300"
-                              : "text-slate-400 dark:text-slate-500"
-                            }`}>
-                              {s.label}
-                            </span>
-                            <span className={`text-[10px] hidden sm:block font-medium tracking-wide transition-colors duration-300 whitespace-nowrap ${
-                              isActive    ? "text-slate-500 dark:text-slate-400"
-                              : isCompleted ? "text-slate-400 dark:text-slate-500"
-                              : "text-slate-300 dark:text-slate-600"
-                            }`}>
-                              {s.sub}
-                            </span>
-                          </div>
-                        </motion.button>
-
-                        {/* Connector */}
-                        {idx < arr.length - 1 && (
-                          <div className="flex-1 mx-4 mb-10 space-y-1">
-                            <div className="h-[2px] rounded-full bg-slate-200/80 dark:bg-slate-700/60 relative overflow-hidden">
-                              <motion.div
-                                className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${s.color}`}
-                                initial={{ width: 0 }}
-                                animate={{ width: currentStep > s.step ? "100%" : "0%" }}
-                                transition={{ duration: 0.6, ease: "easeInOut" }}
-                              />
-                            </div>
-                          </div>
+                {/* Main Working Area */}
+                {currentStep !== 4 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    {/* Left Side: Input wizard flow */}
+                    <div className="lg:col-span-7 space-y-6">
+                      <div className="bg-white/40 dark:bg-slate-900/30 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-white/50 dark:border-slate-800/40 shadow-[0_8px_32px_rgba(31,38,135,0.04)] space-y-6">
+                        
+                        {currentStep === 1 && (
+                          <ApplianceSelector
+                            appliances={appliances}
+                            toggleAppliance={toggleAppliance}
+                            onNext={() => setCurrentStep(2)}
+                            hasSelection={activeAppliances.length > 0}
+                          />
                         )}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
-              </div>
 
+                        {currentStep === 2 && (
+                          <ConsumptionCalculator
+                            activeAppliances={activeAppliances}
+                            updateQuantity={updateQuantity}
+                            updateHours={updateHours}
+                            updateUnitHours={updateUnitHours}
+                            updateWatts={updateWatts}
+                            updateAge={updateAge}
+                            updateUnitAge={updateUnitAge}
+                            activeTheme={activeTheme}
+                            isAnalyzing={isAnalyzing}
+                            onBack={() => setCurrentStep(1)}
+                            onAnalyze={handleAnalyze}
+                          />
+                        )}
 
+                        {currentStep === 3 && analysisResult && (
+                          <DashboardSlabBreakdown 
+                            totalUnits={analysisResult.totalUnits}
+                            billing={analysisResult.billing}
+                            beforeCo2={analysisResult.beforeCo2}
+                            beforeTrees={analysisResult.beforeTrees}
+                            tariffState={user?.tariffState || "ap"}
+                            customFlatRate={user?.customFlatRate || 7.5}
+                            onBack={() => setCurrentStep(2)}
+                            onReset={handleReset}
+                            onNext={() => setCurrentStep(4)}
+                            onExportCSV={() => handleExportCSV(analysisResult)}
+                          />
+                        )}
+                      </div>
+                    </div>
 
-
-          {/* Main Working Area: Split 2-column layout (Steps 1, 2, 3) */}
-          {currentStep !== 4 && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
-              {/* Left Side: Input wizard flow (Col span 7) */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-                  {/* STEP 1 CONTENT: Appliance selector grid */}
-                  {currentStep === 1 && (
-                    <div className="space-y-6">
-                      <ApplianceSelector
-                        appliances={appliances}
-                        toggleAppliance={toggleAppliance}
-                        onNext={() => setCurrentStep(2)}
-                        hasSelection={activeAppliances.length > 0}
+                    {/* Right Side: Sidebar Summary */}
+                    <div className="lg:col-span-5 space-y-6">
+                      <DashboardSidebarSummary 
+                        liveTotalUnits={liveTotalUnits}
+                        liveBill={liveBill}
+                        isAboveBenchmark={isAboveBenchmark}
+                        benchmarkDiffPercent={benchmarkDiffPercent}
+                        benchmarkCharge={benchmarkCharge}
+                        benchmarkUnits={benchmarkUnits}
+                        user={user}
                       />
                     </div>
-                  )}
-
-                  {/* STEP 2 CONTENT: Quantities and daily sliders */}
-                  {currentStep === 2 && (
-                    <div className="">
-                      <ConsumptionCalculator
-                        activeAppliances={activeAppliances}
-                        updateQuantity={updateQuantity}
-                        updateHours={updateHours}
-                        updateUnitHours={updateUnitHours}
-                        updateWatts={updateWatts}
-                        updateAge={updateAge}
-                        updateUnitAge={updateUnitAge}
-                        activeTheme={activeTheme}
-                        isAnalyzing={isAnalyzing}
-                        onBack={() => setCurrentStep(1)}
-                        onAnalyze={handleAnalyze}
-                      />
-                    </div>
-                  )}
-
-                  {/* STEP 3 CONTENT: Calculation report details */}
-                  {currentStep === 3 && analysisResult && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 text-left">
-                            <Sparkles className="w-5 h-5 text-yellow-500" />
-                            Analysis Completed
-                          </h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 text-left">
-                            Your calculations have been saved to your account.
-                          </p>
-                        </div>
-
-                        {/* Export Action Buttons */}
-                        <div className="flex gap-2 no-print shrink-0">
-                          <button
-                            onClick={() => handleExportCSV(analysisResult)}
-                            className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-850 dark:text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            title="Download CSV report"
-                          >
-                            <Download className="w-3.5 h-3.5 text-slate-550" />
-                            <span className="hidden sm:inline">Export CSV</span>
-                          </button>
-                          <button
-                            onClick={() => window.print()}
-                            className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-850 dark:text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            title="Print / Save PDF report"
-                          >
-                            <Printer className="w-3.5 h-3.5 text-slate-550" />
-                            <span className="hidden sm:inline">Print PDF</span>
-                          </button>
-                        </div>
-                      </div>
-
-
-                      {/* Slabs breakdown details */}
-                      <div className="space-y-3">
-                        <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-left">
-                          {analysisResult.billing.stateName} Slab breakdown (Calculated for {analysisResult.totalUnits} units)
-                        </h4>
-                        <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/50 text-left text-xs">
-                          <div className="grid grid-cols-3 bg-slate-100 dark:bg-slate-800 py-2.5 px-4 font-bold text-slate-550 dark:text-slate-400">
-                            <span>Consumption Slab</span>
-                            <span className="text-center">Tariff Rate</span>
-                            <span className="text-right">Charges</span>
-                          </div>
-                          <div className="divide-y divide-slate-150 dark:divide-slate-800">
-                            {getSlabsForState(user?.tariffState || "ap", user?.customFlatRate || 7.5).map((slab, idx) => {
-                              const unitsInSlab = Math.max(0, Math.min(analysisResult.totalUnits - slab.prev, slab.max));
-                              const slabRateNum = parseFloat(slab.rate.replace("₹", ""));
-                              const slabCharge = unitsInSlab * slabRateNum;
-
-                              if (unitsInSlab === 0) return null;
-
-                              return (
-                                <div key={idx} className="grid grid-cols-3 py-2 px-4 text-slate-655 dark:text-slate-350">
-                                  <span>{slab.limit} <span className="text-[10px] text-slate-400 dark:text-slate-550 font-semibold">({unitsInSlab.toFixed(1)} units)</span></span>
-                                  <span className="text-center">{slab.rate}</span>
-                                  <span className="text-right font-semibold">₹{slabCharge.toFixed(2)}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <div className="bg-slate-100 dark:bg-slate-800/80 p-4 border-t border-slate-150 dark:border-slate-800 space-y-1.5 text-xs text-slate-600 dark:text-slate-350">
-                            <div className="flex justify-between">
-                              <span>Gross Energy Charge:</span>
-                              <span className="font-semibold">₹{analysisResult.billing.grossEnergyCharge.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-primary-green">
-                              <span>Less Govt. Subsidy:</span>
-                              <span className="font-bold">-₹{analysisResult.billing.subsidy.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1.5 border-t border-slate-200 dark:border-slate-700">
-                              <span>Net Energy Charges:</span>
-                              <span>₹{analysisResult.billing.netEnergyCharge.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Environmental Carbon Footprint Card */}
-                      <div className="bg-gradient-to-tr from-green-50 to-emerald-50 dark:from-emerald-950/20 dark:to-green-950/15 p-5 rounded-2xl border border-green-200 dark:border-green-900/40 space-y-2 text-left">
-                        <h4 className="text-xs font-bold text-green-700 dark:text-primary-green flex items-center gap-1.5 uppercase tracking-wider">
-                          <Leaf className="w-4 h-4 text-green-600 dark:text-primary-green animate-bounce" />
-                          Environmental Carbon Footprint
-                        </h4>
-                        <p className="text-xs text-slate-655 dark:text-slate-400">
-                          Your monthly energy usage generates estimated CO2 emissions of <span className="font-bold text-slate-888 dark:text-white">{analysisResult.beforeCo2} kg</span>.
-                          It requires <span className="font-bold text-slate-888 dark:text-white">{analysisResult.beforeTrees.toFixed(0)} trees</span> to absorb these emissions. Switch to Step 4 to see how optimizations can reduce your footprint!
-                        </p>
-                      </div>
-
-                      {/* Navigation Buttons for Step 3 */}
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setCurrentStep(2)}
-                            className="h-11 px-5 flex items-center justify-center text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                          >
-                            Back
-                          </button>
-                          <button
-                            onClick={handleReset}
-                            className="h-11 px-5 flex items-center justify-center text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                          >
-                            Reset
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => setCurrentStep(4)}
-                          className="h-11 px-6 flex items-center justify-center gap-1.5 text-sm font-bold rounded-xl text-white bg-primary-blue hover:bg-primary-blue/90 dark:bg-primary-green dark:text-slate-950 dark:hover:bg-primary-green/90 transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] shadow-primary-blue/15"
-                        >
-                          Next: Recommendations
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6 sm:p-7 rounded-[32px] border border-white/20 dark:border-slate-800/40 shadow-2xl space-y-6 text-left relative overflow-hidden">
-                  {/* Decorative top-right color accent */}
-                  <div className="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 opacity-20 blur-xl pointer-events-none rounded-full" />
-                  
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Summary</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Calculations based on selected options.
-                    </p>
                   </div>
+                )}
 
-                  {/* Total units card */}
-                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-blue group cursor-default">
-                    {/* Glowing wash circle */}
-                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/5 dark:bg-primary-green/5 blur-xl pointer-events-none rounded-full" />
+                {/* STEP 3 CHARTS SECTION */}
+                {currentStep === 3 && analysisResult && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full pt-4"
+                  >
+                    <Charts 
+                      chartData={chartData} 
+                      activeTheme={activeTheme} 
+                      colors={COLORS} 
+                      reports={reports}
+                      liveTotalUnits={liveTotalUnits}
+                      liveBill={liveBill}
+                      tariffState={user?.tariffState || "ap"}
+                      customFlatRate={user?.customFlatRate || 7.5}
+                      mode="consumption"
+                      loading={reportsLoading}
+                      recommendedKw={recommendedKw}
+                    />
+                  </motion.div>
+                )}
+
+                {/* STEP 4: RECOMMENDATIONS PAGE */}
+                {currentStep === 4 && analysisResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-8"
+                  >
+                    <SavingsAdvisor
+                      analysisResult={analysisResult}
+                      activeApplianceIds={activeAppliances.map(a => a.id)}
+                      onExportCSV={() => handleExportCSV(analysisResult)}
+                      onPrint={() => window.print()}
+                      onBack={() => setCurrentStep(2)}
+                      onReset={handleReset}
+                      onStartNewAudit={() => {
+                        handleReset();
+                        setActiveTab("audit");
+                      }}
+                    />
                     
-                    <div className="flex items-center justify-between relative z-10">
-                      <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
-                        Estimated Monthly Usage
-                      </span>
-                      <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/30 dark:border-blue-900/30 text-primary-blue dark:text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                        <Zap className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div className="flex items-baseline gap-1 relative z-10">
-                      <span className="text-4xl font-display font-extrabold text-slate-900 dark:text-white leading-none">
-                        <AnimatedNumber value={liveTotalUnits} />
-                      </span>
-                      <span className="text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider ml-1">kWh (Units)</span>
-                    </div>
-                  </div>
-
-                  {/* Estimated bill card */}
-                  <div className="relative overflow-hidden bg-white/45 dark:bg-slate-950/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-emerald group cursor-default">
-                    {/* Glowing wash circle */}
-                    <div className="absolute -right-6 -top-6 w-28 h-28 bg-primary-blue/10 dark:bg-primary-green/10 blur-xl pointer-events-none rounded-full" />
-                    
-                    <div className="flex items-center justify-between relative z-10">
-                       <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-display">
-                        Estimated Monthly Bill
-                      </span>
-                      <span className="text-[10px] text-green-600 dark:text-primary-green font-extrabold uppercase tracking-wider bg-green-50/90 dark:bg-green-950/40 px-2.5 py-0.5 rounded-full border border-green-200/50 dark:border-green-900/40 backdrop-blur-md shadow-sm transition-transform duration-300 group-hover:scale-105">
-                        After Subsidy
-                      </span>
-                    </div>
-                    <div className="flex items-baseline gap-1.5 relative z-10">
-                      <span className="text-4xl font-display font-extrabold text-primary-blue dark:text-primary-green leading-none">
-                        ₹<AnimatedNumber value={liveBill.netEnergyCharge} />
-                      </span>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-450 truncate max-w-[160px]" title={`${liveBill.stateName} Net`}>
-                        {liveBill.stateName} Net
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Benchmarking Comparison Banner */}
-                  <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default group ${
-                    isAboveBenchmark 
-                      ? "bg-red-50/40 border-red-200/50 border-l-alert-red text-alert-red dark:bg-red-950/10 dark:border-red-900/30" 
-                      : "bg-green-50/40 border-green-200/50 border-l-primary-green text-primary-green dark:bg-green-950/10 dark:border-green-900/30"
-                  }`}>
-                    {isAboveBenchmark ? (
-                      <>
-                        <div className="p-1.5 rounded-xl bg-red-150/40 dark:bg-red-900/30 text-alert-red shadow-inner transition-transform duration-300 group-hover:scale-110">
-                          <AlertTriangle className="w-4 h-4 shrink-0" />
-                        </div>
-                        <div className="space-y-0.5">
-                          <span className="font-bold">You spend {benchmarkDiffPercent}% more than similar homes.</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                            Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="p-1.5 rounded-xl bg-green-150/40 dark:bg-green-900/30 text-primary-green shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                          <Sparkles className="w-4.5 h-4.5 shrink-0 text-primary-green animate-pulse" />
-                        </div>
-                        <div className="space-y-0.5">
-                          <span className="font-bold">Great job! You spend {benchmarkDiffPercent}% less than similar homes.</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                            Average household bill: ₹{benchmarkCharge.toFixed(0)} ({benchmarkUnits} kWh)
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Budget Progress Tracker */}
-                  {user && (
-                    <div className="relative overflow-hidden bg-white/45 dark:bg-slate-955/20 backdrop-blur-md p-5 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 shadow-sm space-y-4 transition-all duration-300 card-client card-client-cyan group cursor-default">
-                      {/* Glow circle */}
-                      <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-blue-500/5 dark:bg-green-500/5 blur-xl pointer-events-none rounded-full" />
-                      
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider relative z-10 font-display">
-                        <span>Budget Tracking</span>
-                        <span className="text-slate-700 dark:text-slate-350 font-sans group-hover:text-slate-900 dark:group-hover:text-white transition-colors duration-200">
-                          ₹<AnimatedNumber value={liveBill.netEnergyCharge} /> / ₹{user.monthlyBudgetBill || 3000}
-                        </span>
-                      </div>
-                      
-                      {/* Progress Bar */}
-                      {(() => {
-                        const budgetLimit = user.monthlyBudgetBill || 3000;
-                        const percent = Math.min(100, Math.round((liveBill.netEnergyCharge / budgetLimit) * 100));
-                        const isExceeded = liveBill.netEnergyCharge > budgetLimit;
-                        return (
-                          <div className="space-y-3.5 relative z-10">
-                            <div className="w-full h-3.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden shadow-inner p-0.5 relative">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${percent}%` }}
-                                transition={{ type: "spring", stiffness: 80, damping: 15 }}
-                                className={`h-full rounded-full relative overflow-hidden ${
-                                  isExceeded 
-                                    ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-[0_0_10px_rgba(239,68,68,0.4)]" 
-                                    : percent > 80 
-                                      ? "bg-gradient-to-r from-orange-400 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" 
-                                      : "bg-gradient-to-r from-primary-blue to-primary-green dark:from-primary-green dark:to-emerald-400 shadow-[0_0_10px_rgba(37,99,235,0.25)]"
-                                }`}
-                              >
-                                {/* Sheen effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-transparent pointer-events-none" />
-                              </motion.div>
-                            </div>
-                            
-                            {/* Budget warning alert card */}
-                            {isExceeded && (
-                              <div className="flex items-start gap-2.5 p-3 bg-red-50/60 border border-red-100/50 rounded-xl dark:bg-red-950/20 dark:border-red-900/50 text-alert-red dark:text-red-400 text-[10px] font-bold mt-1 shadow-sm">
-                                <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse" />
-                                <span>Budget Exceeded! Reduce AC or other device hours to meet target.</span>
-                              </div>
-                            )}
-                            {!isExceeded && percent > 80 && (
-                              <div className="flex items-start gap-2.5 p-3 bg-orange-50/60 border border-orange-100/50 rounded-xl dark:bg-orange-950/10 dark:border-orange-900/30 text-warning-orange text-[10px] font-bold mt-1 shadow-sm">
-                                <AlertTriangle className="w-4 h-4 shrink-0" />
-                                <span>Approaching budget limit (over 80% used). Consider optimizing usage.</span>
-                              </div>
-                            )}
-                            {!isExceeded && percent <= 80 && (
-                              <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-green-600 dark:text-primary-green uppercase tracking-wider">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-primary-green animate-ping" />
-                                <span>Safe Zone: Within target budget</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Privacy note */}
-                  <div className="flex items-center gap-2 text-xs text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-4 group/privacy cursor-default">
-                    <ShieldCheck className="w-4 h-4 text-green-500 transition-transform duration-300 group-hover/privacy:scale-110 group-hover/privacy:rotate-12" />
-                    <span className="group-hover/privacy:text-slate-500 dark:group-hover/privacy:text-slate-350 transition-colors duration-300">SaaS encryption active. Data is private to your profile.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3 CHARTS SECTION (Only visible on Step 3) */}
-          {currentStep === 3 && analysisResult && (
-            <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="w-full pt-4"
-            >
-              <Charts 
-                chartData={chartData} 
-                activeTheme={activeTheme} 
-                colors={COLORS} 
-                reports={reports}
-                liveTotalUnits={liveTotalUnits}
-                liveBill={liveBill}
-                tariffState={user?.tariffState || "ap"}
-                customFlatRate={user?.customFlatRate || 7.5}
-                mode="consumption"
-                loading={reportsLoading}
-                recommendedKw={recommendedKw}
-              />
-            </motion.div>
-          )}
-
-          {/* STEP 4: RECOMMENDATIONS PAGE (Full width) */}
-          {currentStep === 4 && analysisResult && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
-            >
-              <SavingsAdvisor
-                analysisResult={analysisResult}
-                activeApplianceIds={activeAppliances.map(a => a.id)}
-                onExportCSV={() => handleExportCSV(analysisResult)}
-                onPrint={() => window.print()}
-                onBack={() => setCurrentStep(3)}
-                onReset={handleReset}
-              />
-              
-              <Charts 
-                chartData={chartData} 
-                activeTheme={activeTheme} 
-                colors={COLORS} 
-                reports={reports}
-                liveTotalUnits={liveTotalUnits}
-                liveBill={liveBill}
-                tariffState={user?.tariffState || "ap"}
-                customFlatRate={user?.customFlatRate || 7.5}
-                mode="consumption"
-                loading={reportsLoading}
-                recommendedKw={recommendedKw}
-              />
-            </motion.div>
-          )}
-        </>
-      )}
+                    <Charts 
+                      chartData={chartData} 
+                      activeTheme={activeTheme} 
+                      colors={COLORS} 
+                      reports={reports}
+                      liveTotalUnits={liveTotalUnits}
+                      liveBill={liveBill}
+                      tariffState={user?.tariffState || "ap"}
+                      customFlatRate={user?.customFlatRate || 7.5}
+                      mode="consumption"
+                      loading={reportsLoading}
+                      recommendedKw={recommendedKw}
+                    />
+                  </motion.div>
+                )}
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
@@ -1552,12 +438,13 @@ export const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className={`fixed bottom-5 right-5 z-[100] flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border shadow-xl text-xs font-bold ${
+            onClick={() => setToast(null)}
+            className={`fixed bottom-5 right-5 z-[100] flex items-center gap-2.5 px-4.5 py-3.5 rounded-2xl border shadow-xl text-xs font-bold cursor-pointer select-none hover:opacity-90 active:scale-95 transition-all ${
               toast.type === "success"
                 ? "bg-green-50 dark:bg-green-950/80 border-green-250 dark:border-green-900 text-green-600 dark:text-green-450"
                 : toast.type === "error"
                 ? "bg-red-50 dark:bg-red-950/80 border-red-200 dark:border-red-900 text-alert-red dark:text-red-400"
-                : "bg-blue-50 dark:bg-blue-950/80 border-blue-200 dark:border-blue-900 text-primary-blue dark:text-blue-400"
+                : "bg-blue-50 dark:bg-blue-955/80 border-blue-200 dark:border-blue-900 text-primary-blue dark:text-blue-400"
             }`}
           >
             {toast.type === "success" && <Check className="w-4.5 h-4.5 shrink-0" />}

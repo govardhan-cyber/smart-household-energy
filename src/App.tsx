@@ -138,12 +138,18 @@ const App: React.FC = () => {
   useEffect(() => {
     initTariffCalculator().catch(console.error);
     const savedTheme = localStorage.getItem("theme") || "light";
+    const savedAccent = localStorage.getItem("she_accent") || "blue";
     const root = document.documentElement;
+    
     if (savedTheme === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
+    
+    // Set accent class
+    root.classList.remove("accent-blue", "accent-green", "accent-purple", "accent-orange", "accent-teal");
+    root.classList.add(`accent-${savedAccent}`);
   }, []);
 
   return (

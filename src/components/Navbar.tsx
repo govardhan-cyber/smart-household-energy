@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, Receipt, ClipboardList } from "lucide-react";
+import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, Receipt, ClipboardList, Bell, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 
@@ -9,6 +9,15 @@ const defaultIconVariants: Variants = {
   normal: { scale: 1, rotate: 0, y: 0 },
   active: { scale: 1.1, rotate: 0, y: 0 },
   hover: { scale: 1.2, transition: { type: "spring", stiffness: 400, damping: 10 } }
+};
+
+const bellVariants: Variants = {
+  normal: { rotate: 0, scale: 1 },
+  hover: { 
+    rotate: [0, -18, 15, -10, 6, 0],
+    scale: 1.12,
+    transition: { duration: 0.5, ease: "easeInOut" }
+  }
 };
 
 const iconVariants: Record<string, Variants> = {
@@ -88,6 +97,108 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+
+  // Notification states
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+    time: string;
+    read: boolean;
+  }>>([]);
+
+  const loadNotifications = () => {
+    const notifyHigh = localStorage.getItem("she_notify_high") !== "false";
+    const solarAlerts = localStorage.getItem("she_solar_alerts") !== "false";
+    const aiTips = localStorage.getItem("she_ai_tips") === "true";
+    const monthlyReports = localStorage.getItem("she_monthly_reports") !== "false";
+
+    const list: Array<{
+      id: string;
+      type: "success" | "error" | "info";
+      title: string;
+      message: string;
+      time: string;
+      read: boolean;
+    }> = [];
+
+    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
+
+    if (notifyHigh) {
+      list.push({
+        id: "high_usage",
+        type: "error",
+        title: "Usage Alert",
+        message: "Comfort appliances (AC/Heater) are running 15% above baseline.",
+        time: "2 min ago",
+        read: !!readStates["high_usage"]
+      });
+    }
+    if (solarAlerts) {
+      list.push({
+        id: "solar_yield",
+        type: "info",
+        title: "Solar Yield Peak",
+        message: "Daily generation peaked at 14.8 kWh today (Optimal).",
+        time: "1 hour ago",
+        read: !!readStates["solar_yield"]
+      });
+    }
+    if (aiTips) {
+      list.push({
+        id: "ai_tip",
+        type: "info",
+        title: "AI Energy Tip",
+        message: "Turn down Refrigerator dial to 4°C to save 8% power.",
+        time: "3 hours ago",
+        read: !!readStates["ai_tip"]
+      });
+    }
+    if (monthlyReports) {
+      list.push({
+        id: "monthly_report",
+        type: "success",
+        title: "Monthly Report",
+        message: "Slab charge analysis is ready for view.",
+        time: "1 day ago",
+        read: !!readStates["monthly_report"]
+      });
+    }
+
+    setNotifications(list);
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadNotifications();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (notificationOpen) {
+      loadNotifications();
+    }
+  }, [notificationOpen]);
+
+  const toggleReadNotification = (id: string) => {
+    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
+    readStates[id] = true;
+    localStorage.setItem("she_read_notifications", JSON.stringify(readStates));
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllAsRead = () => {
+    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
+    notifications.forEach(n => {
+      readStates[n.id] = true;
+    });
+    localStorage.setItem("she_read_notifications", JSON.stringify(readStates));
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
 
   useEffect(() => {
@@ -250,6 +361,130 @@ export const Navbar: React.FC = () => {
                 </AnimatePresence>
               </button>
 
+              {/* Notification icon */}
+              {user && (
+                <div className="relative">
+                  <motion.button
+                    onClick={() => {
+                      setNotificationOpen(prev => !prev);
+                      setDropdownOpen(false);
+                    }}
+                    whileHover="hover"
+                    whileTap={{ scale: 0.94 }}
+                    className="rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer flex items-center justify-center w-9.5 h-9.5"
+                    title="Notifications"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <motion.div
+                      variants={bellVariants}
+                      className="relative z-10 shrink-0"
+                    >
+                      <Bell className="w-4 h-4" />
+                    </motion.div>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 flex items-center justify-center bg-gradient-to-r from-red-500 to-rose-600 border border-white dark:border-slate-900 shadow-[0_2px_8px_rgba(239,68,68,0.45)] text-[8px] font-black text-white leading-none rounded-full z-20 scale-90">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {notificationOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setNotificationOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 12, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          style={{ zIndex: 100 }}
+                          className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-955 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+                        >
+                          {/* Header */}
+                          <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-50/50 to-emerald-50/30 dark:from-blue-955/15 dark:to-emerald-955/10 border-b border-slate-100 dark:border-slate-900/60">
+                            <span className="text-[11px] font-black text-slate-850 dark:text-white uppercase tracking-wider">Notifications</span>
+                            {notifications.length > 0 && (
+                              <button
+                                onClick={markAllAsRead}
+                                className="text-[10px] font-black text-primary-blue dark:text-primary-green hover:underline cursor-pointer uppercase tracking-wider focus:outline-none"
+                              >
+                                Mark all read
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Notifications List */}
+                          <div className="max-h-[320px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900">
+                            {notifications.length === 0 ? (
+                              <div className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
+                                <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-700 opacity-60" />
+                                <p className="text-[11px] font-bold">No active notifications</p>
+                                <p className="text-[10px] mt-0.5 opacity-80">Enable alert toggles in Settings.</p>
+                              </div>
+                            ) : (
+                              notifications.map((notif) => {
+                                const IconMap = {
+                                  error: AlertTriangle,
+                                  info: Info,
+                                  success: CheckCircle2
+                                };
+                                const DynamicIcon = IconMap[notif.type] || Info;
+                                const colorStyles = {
+                                  error: "bg-red-50 text-red-500 dark:bg-red-950/20 dark:text-red-400",
+                                  info: "bg-blue-50 text-blue-500 dark:bg-blue-955/20 dark:text-blue-400",
+                                  success: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20 dark:text-emerald-400"
+                                };
+
+                                return (
+                                  <div
+                                    key={notif.id}
+                                    onClick={() => toggleReadNotification(notif.id)}
+                                    className={`px-5 py-3.5 flex items-start gap-3.5 cursor-pointer transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/40 text-left relative ${
+                                      !notif.read ? "bg-blue-50/10 dark:bg-blue-955/5" : ""
+                                    }`}
+                                  >
+                                    <div className={`p-2 rounded-xl shrink-0 ${colorStyles[notif.type]}`}>
+                                      <DynamicIcon className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[10.5px] font-black text-slate-800 dark:text-white uppercase tracking-wide truncate">
+                                          {notif.title}
+                                        </span>
+                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 shrink-0">
+                                          {notif.time}
+                                        </span>
+                                      </div>
+                                      <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                                        {notif.message}
+                                      </p>
+                                    </div>
+                                    {!notif.read && (
+                                      <span className="absolute top-4 right-5 w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                    )}
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+
+                          {/* Footer link to Settings */}
+                          <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-900 text-center">
+                            <Link
+                              to="/settings?tab=notifications"
+                              onClick={() => setNotificationOpen(false)}
+                              className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                            >
+                              Configure Notifications
+                            </Link>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
               {user ? (
                 /* User Dropdown */
                 <div className="relative">
@@ -358,6 +593,129 @@ export const Navbar: React.FC = () => {
 
             {/* ── Mobile Menu Toggles ───────────────────────────────── */}
             <div className="flex md:hidden items-center gap-2">
+              {user && (
+                <div className="relative">
+                  <motion.button
+                    onClick={() => {
+                      setNotificationOpen(prev => !prev);
+                      setMobileMenuOpen(false); // Close mobile main menu when opening notifications
+                    }}
+                    whileHover="hover"
+                    whileTap={{ scale: 0.94 }}
+                    className="rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer flex items-center justify-center w-9.5 h-9.5"
+                    title="Notifications"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <motion.div
+                      variants={bellVariants}
+                      className="relative z-10 shrink-0"
+                    >
+                      <Bell className="w-4 h-4" />
+                    </motion.div>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 flex items-center justify-center bg-gradient-to-r from-red-500 to-rose-600 border border-white dark:border-slate-900 shadow-[0_2px_8px_rgba(239,68,68,0.45)] text-[8px] font-black text-white leading-none rounded-full z-20 scale-90">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {notificationOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setNotificationOpen(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 12, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          style={{ zIndex: 100 }}
+                          className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-955 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+                        >
+                          {/* Header */}
+                           <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-50/50 to-emerald-50/30 dark:from-blue-955/15 dark:to-emerald-955/10 border-b border-slate-100 dark:border-slate-900/60">
+                             <span className="text-[11px] font-black text-slate-850 dark:text-white uppercase tracking-wider">Notifications</span>
+                             {notifications.length > 0 && (
+                               <button
+                                 onClick={markAllAsRead}
+                                 className="text-[10px] font-black text-primary-blue dark:text-primary-green hover:underline cursor-pointer uppercase tracking-wider focus:outline-none"
+                               >
+                                 Mark all read
+                               </button>
+                             )}
+                           </div>
+
+                           {/* Notifications List */}
+                           <div className="max-h-[280px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900">
+                             {notifications.length === 0 ? (
+                               <div className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
+                                 <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-700 opacity-60" />
+                                 <p className="text-[11px] font-bold">No active notifications</p>
+                                 <p className="text-[10px] mt-0.5 opacity-80">Enable alert toggles in Settings.</p>
+                               </div>
+                             ) : (
+                               notifications.map((notif) => {
+                                 const IconMap = {
+                                   error: AlertTriangle,
+                                   info: Info,
+                                   success: CheckCircle2
+                                 };
+                                 const DynamicIcon = IconMap[notif.type] || Info;
+                                 const colorStyles = {
+                                   error: "bg-red-50 text-red-500 dark:bg-red-950/20 dark:text-red-450",
+                                   info: "bg-blue-50 text-blue-500 dark:bg-blue-955/20 dark:text-blue-400",
+                                   success: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20 dark:text-emerald-400"
+                                 };
+
+                                 return (
+                                   <div
+                                     key={notif.id}
+                                     onClick={() => toggleReadNotification(notif.id)}
+                                     className={`px-5 py-3.5 flex items-start gap-3.5 cursor-pointer transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/40 text-left relative ${
+                                       !notif.read ? "bg-blue-50/10 dark:bg-blue-955/5" : ""
+                                     }`}
+                                   >
+                                     <div className={`p-2 rounded-xl shrink-0 ${colorStyles[notif.type]}`}>
+                                       <DynamicIcon className="w-4 h-4" />
+                                     </div>
+                                     <div className="min-w-0 flex-1">
+                                       <div className="flex items-center justify-between gap-2">
+                                         <span className="text-[10.5px] font-black text-slate-800 dark:text-white uppercase tracking-wide truncate">
+                                           {notif.title}
+                                         </span>
+                                         <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 shrink-0">
+                                           {notif.time}
+                                         </span>
+                                       </div>
+                                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                                         {notif.message}
+                                       </p>
+                                     </div>
+                                     {!notif.read && (
+                                       <span className="absolute top-4 right-5 w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                     )}
+                                   </div>
+                                 );
+                               })
+                             )}
+                           </div>
+
+                           {/* Footer link to Settings */}
+                           <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-900 text-center">
+                             <Link
+                               to="/settings?tab=notifications"
+                               onClick={() => setNotificationOpen(false)}
+                               className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                             >
+                               Configure Notifications
+                             </Link>
+                           </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
               <button
                 onClick={toggleTheme}
                 className="p-2.5 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative overflow-hidden"
@@ -366,7 +724,7 @@ export const Navbar: React.FC = () => {
               </button>
               <button
                 onClick={() => setMobileMenuOpen(prev => !prev)}
-                className="p-2.5 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-855 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative overflow-hidden"
+                className="p-2.5 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative overflow-hidden"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span

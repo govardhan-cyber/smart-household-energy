@@ -87,19 +87,6 @@ const SCHEDULING_ITEMS = [
   }
 ];
 
-const getGlowClasses = (badge: "High" | "Medium" | "Low" | "Minor") => {
-  switch (badge) {
-    case "High":
-      return "hover:shadow-[0_0_30px_rgba(16,185,129,0.18)] hover:border-emerald-500/30 dark:hover:shadow-[0_0_40px_rgba(16,185,129,0.25)] dark:hover:border-emerald-500/40";
-    case "Medium":
-      return "hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30 dark:hover:shadow-[0_0_40px_rgba(249,115,22,0.22)] dark:hover:border-orange-500/40";
-    case "Low":
-    case "Minor":
-    default:
-      return "hover:shadow-[0_0_30px_rgba(37,99,235,0.12)] hover:border-blue-500/30 dark:hover:shadow-[0_0_40px_rgba(37,99,235,0.2)] dark:hover:border-blue-500/40";
-  }
-};
-
 interface SavingsAdvisorProps {
   analysisResult: AnalysisResult;
   activeApplianceIds: string[];
@@ -107,6 +94,7 @@ interface SavingsAdvisorProps {
   onPrint: () => void;
   onBack: () => void;
   onReset: () => void;
+  onStartNewAudit?: () => void;
 }
 
 export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
@@ -115,7 +103,8 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
   onExportCSV,
   onPrint,
   onBack,
-  onReset
+  onReset,
+  onStartNewAudit
 }) => {
   // Animation variants
   const listVariants = {
@@ -231,15 +220,37 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
               Low: "bg-slate-500/10 text-slate-700 dark:text-slate-450 border-slate-500/20"
             };
 
-            const glowClass = getGlowClasses(tip.badge);
             const savingsPercent = Math.min(100, Math.round((tip.savings / Math.max(1, analysisResult.savingsPotential)) * 100));
+
+            const hoverBorderClass = tip.badge === "High" 
+              ? "hover:border-emerald-450 dark:hover:border-emerald-500/50" 
+              : tip.badge === "Medium"
+                ? "hover:border-amber-455 dark:hover:border-amber-500/50"
+                : "hover:border-sky-455 dark:hover:border-sky-500/50";
 
             return (
               <motion.div
                 key={tip.id}
                 variants={itemVariants}
-                className={`group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl shadow-sm p-6 flex flex-col justify-between gap-5 hover:border-slate-350 hover:-translate-y-1 transition-[transform,border-color,box-shadow] duration-300 relative overflow-hidden ${glowClass}`}
+                whileHover={{ 
+                  y: -7, 
+                  scale: 1.015,
+                  boxShadow: tip.badge === "High"
+                    ? "0 20px 35px -10px rgba(16,185,129,0.22)"
+                    : tip.badge === "Medium"
+                      ? "0 20px 35px -10px rgba(249,115,22,0.18)"
+                      : "0 20px 35px -10px rgba(56,189,248,0.15)"
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                className={`group bg-white/40 dark:bg-slate-955/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-3xl shadow-sm p-6 flex flex-col justify-between gap-5 transition-[border-color,box-shadow] duration-300 relative overflow-hidden ${hoverBorderClass}`}
               >
+                {/* Ambient glows */}
+                <div className={`absolute -right-8 -top-8 w-36 h-36 blur-3xl opacity-10 dark:opacity-15 rounded-full pointer-events-none group-hover:scale-125 transition-all duration-700 ${
+                  tip.badge === "High" ? "bg-emerald-400" : tip.badge === "Medium" ? "bg-amber-400" : "bg-sky-400"
+                }`} />
+                {/* Specular Reflective Gloss Sheen */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent translate-y-[-100%] group-hover:translate-y-[100%] transition-transform duration-1000 ease-out pointer-events-none" />
+                
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="p-2.5 rounded-xl bg-white/20 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300 border border-white/10 dark:border-white/5 shrink-0 group-hover:scale-110 group-hover:text-primary-blue dark:group-hover:text-primary-green transition-[transform,colors] duration-300">
@@ -554,7 +565,7 @@ export const SavingsAdvisor: React.FC<SavingsAdvisorProps> = ({
           </motion.button>
         </div>
         <motion.button
-          onClick={onReset}
+          onClick={onStartNewAudit || onReset}
           whileHover={{ 
             y: -2, 
             scale: 1.03, 

@@ -2,6 +2,21 @@
 
 ## Saved Versions
 
+- **Version 17**: Points to git tag `version-17`.
+  - **Features**:
+    - **Header Glass Control Center & HUD Status:** Overhauled the top settings hero header by wrapping it in a unified, floating glass console deck with accent spotlight glows. Redesigned the individual status cards on the right into borderless, frosted status chips (`bg-white/40 dark:bg-slate-900/40 backdrop-blur-md`) with real-time accent color circular progress rings, interactive cloud sync spinners, and blinking status animations.
+    - **Widescreen Glassmorphic Details Panel:** Redesigned the main right details pane from a solid white/dark card into a frosted glass container layout (`bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 border-slate-250 dark:border-slate-855 backdrop-blur-md`).
+    - **Frosted Navigation Sidebar Deck:** Grouped the sidebar tabs navigation buttons in a matching glass container card, converting inactive buttons into borderless, semi-translucent glass hover pills (`bg-slate-50/30 dark:bg-slate-900/20 hover:bg-slate-50/70 dark:hover:bg-slate-900/50`).
+    - **Glass Calibrator Inputs & Segmented Switches:** Converted all input dropdown selectors, text input fields, and subtab segmented control button lists into glassmorphic controls with backdrop blur styling.
+    - **Admin Database Manager Glass Modal:** Refined the regional slab database editor popup dialog modal to use translucent gradients (`bg-gradient-to-r from-slate-50/90 to-slate-100/70 dark:from-slate-900/90 dark:to-slate-950/85 backdrop-blur-xl border border-slate-250 dark:border-slate-855 shadow-2xl`).
+    - **Interactive Diagnostics Center:** Integrated a system diagnostic test panel in the About tab. Clicking "Run Diagnostics" simulates a scan and generates a detailed report of local storage, Firebase API, active DISCOM rates, Vitest scenario compounding math, and latency specs.
+    - **Upgraded Profile Summary Card:** Restyled the profile completion ring with a dynamic accent color SVG path. Swapped flat badge indicators with translucent iOS capsules, and added an AI Savings Score footer bar.
+    - **Clean Toggle Switch Knobs:** Removed the tick mark icon from all ToggleSwitch knobs to restore a clean, minimal solid white iOS-style circle knob.
+    - **Dynamic Translucent Preference Icons:** Swapped opaque gradients on notifications preferences card icon wrappers with translucent accent backdrops (`bg-primary-blue/10 dark:bg-primary-blue/15 text-primary-blue`), making Lucide icons highly visible.
+  - **Verified:** 15/15 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 17", run `git checkout version-17`.
+
 - **Version 16**: Points to git tag `version-16`.
   - **Features**:
     - **React Error Boundary:** Created `src/components/ErrorBoundary.tsx` — a class-based boundary with a styled "Something went wrong / Try Again" fallback card. Wrapped all 6 protected routes (Dashboard, Bill Analyzer, History, Survey Data, Profile, Settings) individually plus a top-level `<ErrorBoundary page="App">` catch-all in `App.tsx`. A crash in one tab now shows a recovery card instead of blanking the entire app.
