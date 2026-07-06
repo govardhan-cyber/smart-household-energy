@@ -63,7 +63,7 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
   return (
     <div
       style={{ perspective: 1200 }}
-      className={`w-full flex ${heightClass}`}
+      className={`w-full flex justify-center ${heightClass}`}
     >
       <motion.div
         ref={cardRef}

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { getFriendlyErrorMessage } from "../utils/firebaseErrors";
 
 export const Profile: React.FC = () => {
   const { user, updateUserProfile, changePassword, logout } = useAuth();
@@ -40,6 +41,14 @@ export const Profile: React.FC = () => {
     return { score: 4, label: "Strong", color: "text-emerald-500 bg-emerald-500" };
   };
   const strength = getPasswordStrength(newPassword);
+
+  const newPasswordRules = [
+    { label: "Min 8 characters", val: newPassword.length >= 8 },
+    { label: "One uppercase (A-Z)", val: /[A-Z]/.test(newPassword) },
+    { label: "One number (0-9)", val: /[0-9]/.test(newPassword) },
+    { label: "One special char (@$!%*?&)", val: /[@$!%*?&#]/.test(newPassword) }
+  ];
+  const isPasswordValid = newPasswordRules.every(r => r.val);
 
   // Animation variants
   const containerVariants = {
@@ -93,7 +102,7 @@ export const Profile: React.FC = () => {
       setProfileSuccess(true);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to update profile information.");
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -111,8 +120,8 @@ export const Profile: React.FC = () => {
       setError("Passwords do not match.");
       return;
     }
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!isPasswordValid) {
+      setError("Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.");
       return;
     }
 
@@ -124,7 +133,7 @@ export const Profile: React.FC = () => {
       setConfirmPassword("");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to change password. Re-authentication might be required.");
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -627,6 +636,21 @@ export const Profile: React.FC = () => {
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+
+                  {/* Dynamic Password Rules Checklist */}
+                  {newPassword && !isPasswordValid && (
+                    <div className="mt-2 p-3 bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 space-y-1.5 text-left">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 block mb-1">Password Requirements</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                        {newPasswordRules.map((rule, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 text-[10px] font-bold transition-all">
+                            <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${rule.val ? "text-emerald-500" : "text-slate-300 dark:text-slate-650"}`} />
+                            <span className={rule.val ? "text-emerald-600 dark:text-emerald-450" : "text-slate-400 dark:text-slate-500"}>{rule.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm New Password input with visibility toggle and check confirmation icon */}
@@ -652,7 +676,7 @@ export const Profile: React.FC = () => {
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
-                    {confirmPassword && newPassword === confirmPassword && confirmPassword.length >= 6 && (
+                    {confirmPassword && newPassword === confirmPassword && isPasswordValid && (
                       <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-500">
                         <CheckCircle2 className="w-4.5 h-4.5 fill-emerald-50 dark:fill-transparent" />
                       </div>
@@ -685,7 +709,7 @@ export const Profile: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={loading || !newPassword || newPassword !== confirmPassword || newPassword.length < 6}
+                  disabled={loading || !newPassword || newPassword !== confirmPassword || !isPasswordValid}
                   className="px-6 py-3 text-xs font-bold rounded-2xl text-slate-800 bg-slate-100 dark:text-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
                 >
                   {loading ? "Updating..." : "Update Password"}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Zap, ShieldCheck, Sparkles, Brain, Leaf } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Zap, ShieldCheck, Sparkles, Brain, Leaf, CheckCircle2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeDCard } from "../components/ThreeDCard";
+
+import { getFriendlyErrorMessage } from "../utils/firebaseErrors";
 
 /* ── animated floating orb ─────────────────────────────────────── */
 const Orb = ({ className }: { className: string }) => (
@@ -31,9 +33,27 @@ export const Register: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showMatchError, setShowMatchError] = useState(false);
+  const [shakeTrigger, setShakeTrigger] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: "None", color: "bg-slate-200 dark:bg-slate-800" };
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[@$!%*?&#]/.test(pass)) score++;
+    
+    if (score <= 1) return { score, label: "Very Weak", color: "bg-red-500" };
+    if (score === 2) return { score, label: "Weak", color: "bg-orange-500" };
+    if (score === 3) return { score, label: "Medium", color: "bg-amber-500" };
+    return { score, label: "Strong", color: "bg-emerald-500" };
+  };
+  const strength = getPasswordStrength(password);
 
   useEffect(() => {
     const handleThemeChange = () => {
@@ -58,27 +78,44 @@ export const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setShowPasswordError(false);
+    setShowMatchError(false);
+
     if (!fullName || !email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setShakeTrigger(prev => !prev);
       return;
     }
 
-    setError(null);
+    const lengthValid = password.length >= 8;
+    const upperValid = /[A-Z]/.test(password);
+    const numValid = /[0-9]/.test(password);
+    const specialValid = /[@$!%*?&#]/.test(password);
+
+    let hasError = false;
+    if (!lengthValid || !upperValid || !numValid || !specialValid) {
+      setShowPasswordError(true);
+      hasError = true;
+    }
+    if (password !== confirmPassword) {
+      setShowMatchError(true);
+      hasError = true;
+    }
+
+    if (hasError) {
+      setShakeTrigger(prev => !prev);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await register(fullName, email, password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to create account. Email might be already in use.");
+      setError(getFriendlyErrorMessage(err));
+      setShakeTrigger(prev => !prev);
     } finally {
       setIsSubmitting(false);
     }
@@ -92,18 +129,22 @@ export const Register: React.FC = () => {
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to sign in with Google.");
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const inputBase = (field: string) =>
-    `block w-full pl-11 pr-4 py-2.5 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none border bg-white/85 dark:bg-slate-955/55 border-slate-250 dark:border-slate-800 disabled:opacity-50 disabled:cursor-not-allowed ${
-      focusedField === field
-        ? "border-blue-600 dark:border-emerald-500 shadow-[0_0_0_4px_rgba(37,99,235,0.12)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"
-        : "hover:border-slate-400 dark:hover:border-slate-700"
+  const inputBase = (field: string) => {
+    const isError = (field === "password" && showPasswordError) || (field === "confirmPassword" && showMatchError);
+    return `block w-full pl-11 pr-4 py-2.5 rounded-xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none border bg-white/85 dark:bg-slate-955/55 disabled:opacity-50 disabled:cursor-not-allowed ${
+      isError
+        ? "border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.12)] focus:border-red-500 focus:ring-4 focus:ring-red-550/10"
+        : focusedField === field
+          ? "border-blue-600 dark:border-emerald-500 shadow-[0_0_0_4px_rgba(37,99,235,0.12)] dark:shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"
+          : "border-slate-250 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
     }`;
+  };
 
   return (
     <div className="flex-1 flex min-h-screen bg-transparent transition-colors duration-300 relative overflow-hidden select-none">
@@ -587,7 +628,13 @@ export const Register: React.FC = () => {
             </AnimatePresence>
 
             {/* Signup Form */}
-            <form onSubmit={handleSubmit} aria-label="Registration form" className="space-y-4 text-left">
+            <motion.form 
+              onSubmit={handleSubmit} 
+              aria-label="Registration form" 
+              animate={shakeTrigger ? { x: [0, -6, 6, -6, 6, -3, 3, 0] } : {}}
+              transition={{ duration: 0.4 }}
+              className="space-y-4 text-left"
+            >
               {/* Full Name */}
               <div className="space-y-1">
                 <label htmlFor="name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -665,6 +712,52 @@ export const Register: React.FC = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+
+                {/* Dynamic Password Rules Checklist */}
+                {password && strength.score < 4 && (
+                  <div className="mt-2 space-y-2 text-left px-1">
+                    {/* Strength Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider">Strength:</span>
+                        <span className={`font-black uppercase tracking-wider ${
+                          strength.label === "Strong" ? "text-emerald-500" : strength.label === "Medium" ? "text-amber-500" : "text-red-500"
+                        }`}>{strength.label}</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {[1, 2, 3, 4].map(idx => (
+                          <div key={idx} className={`h-1 rounded-full transition-all duration-300 ${idx <= strength.score ? strength.color : "bg-slate-100 dark:bg-slate-800"}`} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Requirements checklist - borderless, compact columns */}
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-1">
+                      {[
+                        { label: "8+ characters", val: password.length >= 8 },
+                        { label: "Uppercase (A-Z)", val: /[A-Z]/.test(password) },
+                        { label: "Number (0-9)", val: /[0-9]/.test(password) },
+                        { label: "Special symbol", val: /[@$!%*?&#]/.test(password) }
+                      ].map((rule, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 text-[10px] font-extrabold transition-all">
+                          <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 transition-colors duration-200 ${rule.val ? "text-emerald-500" : "text-slate-200 dark:text-slate-800"}`} />
+                          <span className={rule.val ? "text-emerald-600 dark:text-emerald-450" : "text-slate-400 dark:text-slate-550"}>{rule.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {showPasswordError && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="flex items-center gap-1.5 text-[10.5px] font-black text-red-550 dark:text-red-400 mt-1.5"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Please satisfy all password requirements.</span>
+                  </motion.div>
+                )}
               </div>
 
               {/* Confirm Password */}
@@ -688,6 +781,16 @@ export const Register: React.FC = () => {
                     placeholder="••••••••"
                   />
                 </div>
+                {showMatchError && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="flex items-center gap-1.5 text-[10.5px] font-black text-red-500 mt-1.5"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Passwords do not match.</span>
+                  </motion.div>
+                )}
               </div>
 
               {/* Submit CTA button */}
@@ -745,7 +848,7 @@ export const Register: React.FC = () => {
                   Sign up with Google
                 </motion.span>
               </motion.button>
-            </form>
+            </motion.form>
 
             {/* Security Note Footer */}
             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-550">

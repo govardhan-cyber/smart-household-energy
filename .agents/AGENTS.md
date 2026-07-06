@@ -2,6 +2,16 @@
 
 ## Saved Versions
 
+- **Version 18**: Points to git tag `version-18`.
+  - **Features**:
+    - **Solar Net-Metering & Firestore Omission Protection:** Full support for solar net-metered bills. Added dynamic Import/Export/Net Billed units display, CO2 efficiency adjustments, and incremental database model payload construction to omit `undefined` keys (preventing Firestore `addDoc` validation failures).
+    - **Grid-Layout OCR Distance & Precedence Heuristics:** Upgraded regex patterns to support multi-column and grid layouts using character-distance matches (`[\s\S]{0,100}?`). Configured bill amount extraction with strict precedence (Net Amount/Amount Due before gross Total Amount) to accurately subtract government subsidies. Added comma/semicolon name segmentation to cleanly extract consumer names from long address blocks.
+    - **Vibrant Card Glowing Effect:** Enhanced the top-right corner highlights of all 4 dashboard results cards. Integrated high-opacity blur vectors with premium blending modes (`mix-blend-multiply` in light mode, `mix-blend-screen` in dark mode) and smooth scaling hover transitions.
+    - **Admin Contact Masking:** Masked administrative contact email addresses in user-facing modals to preserve privacy.
+  - **Verified:** 15/15 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 18", run `git checkout version-18`.
+
 - **Version 17**: Points to git tag `version-17`.
   - **Features**:
     - **Header Glass Control Center & HUD Status:** Overhauled the top settings hero header by wrapping it in a unified, floating glass console deck with accent spotlight glows. Redesigned the individual status cards on the right into borderless, frosted status chips (`bg-white/40 dark:bg-slate-900/40 backdrop-blur-md`) with real-time accent color circular progress rings, interactive cloud sync spinners, and blinking status animations.

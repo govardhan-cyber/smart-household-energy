@@ -35,6 +35,9 @@ export interface ParsedBillData {
   totalAmount: number;
   tariffCategory: string;
   energyInsights: string[];
+  solarImportUnits?: number;
+  solarExportUnits?: number;
+  netBilledUnits?: number;
 }
 
 export interface BillRecord {
@@ -424,14 +427,19 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
     const units = data.unitsConsumed || 150;
     const amount = data.totalAmount || 1000;
 
-    const co2 = parseFloat((units * 0.82).toFixed(2));
+    // Use net grid units for environmental and efficiency impact if solar net-metering is active
+    const netUnits = data.solarExportUnits !== undefined && data.solarExportUnits > 0
+      ? (data.netBilledUnits !== undefined ? data.netBilledUnits : Math.max(0, (data.solarImportUnits || units) - data.solarExportUnits))
+      : units;
+
+    const co2 = parseFloat((netUnits * 0.82).toFixed(2));
     
     const baseline = 100 + (familySize * 45) + (houseType === "villa" ? 120 : houseType === "independent" ? 60 : 0);
     let score = 95;
-    if (units > baseline) {
-      score = Math.max(10, Math.round(90 - ((units - baseline) / baseline) * 45));
+    if (netUnits > baseline) {
+      score = Math.max(10, Math.round(90 - ((netUnits - baseline) / baseline) * 45));
     } else {
-      score = Math.min(100, Math.round(95 - (units / baseline) * 8));
+      score = Math.min(100, Math.round(95 - (netUnits / baseline) * 8));
     }
 
     let grade = "B";

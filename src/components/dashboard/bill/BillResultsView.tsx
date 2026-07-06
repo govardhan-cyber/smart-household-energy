@@ -77,29 +77,54 @@ export const BillResultsView: React.FC<BillResultsViewProps> = ({
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
           className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 border-l-4 border-l-primary-blue shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow duration-300"
         >
-          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-blue-400 dark:bg-blue-600 group-hover:scale-125 transition-transform duration-500" />
+          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-45 dark:opacity-30 rounded-full pointer-events-none bg-blue-400 dark:bg-blue-600 mix-blend-multiply dark:mix-blend-screen group-hover:scale-125 group-hover:opacity-65 transition-all duration-500" />
           
           <div className="flex items-center justify-between relative z-10">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
-              Extracted Consumption
+              {activeBill.parsedData.solarExportUnits !== undefined && activeBill.parsedData.solarExportUnits > 0 ? "Net Metering Summary" : "Extracted Consumption"}
             </span>
             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
               <Zap className="w-5 h-5 text-primary-blue dark:text-blue-400" />
             </div>
           </div>
           
-          <div className="mt-4 relative z-10">
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
-                {activeBill.parsedData.unitsConsumed}
-              </span>
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
-                kWh
-              </span>
-            </div>
-            <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
-              {activeBill.parsedData.billingPeriod || "Monthly period"}
-            </p>
+          <div className="mt-4 relative z-10 w-full">
+            {activeBill.parsedData.solarExportUnits !== undefined && activeBill.parsedData.solarExportUnits > 0 ? (
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+                    {activeBill.parsedData.solarImportUnits || activeBill.parsedData.unitsConsumed}
+                  </span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
+                    kWh (Import)
+                  </span>
+                </div>
+                <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 space-y-1 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 mt-1.5">
+                  <div className="flex justify-between text-amber-600 dark:text-amber-500">
+                    <span>Solar Exported:</span>
+                    <span className="font-bold">-{activeBill.parsedData.solarExportUnits} kWh</span>
+                  </div>
+                  <div className="flex justify-between text-blue-600 dark:text-cyan-400 font-bold border-t border-dashed border-slate-100 dark:border-slate-800/50 pt-1 mt-0.5">
+                    <span>Net Billed Grid:</span>
+                    <span>{activeBill.parsedData.netBilledUnits !== undefined ? activeBill.parsedData.netBilledUnits : Math.max(0, (activeBill.parsedData.solarImportUnits || activeBill.parsedData.unitsConsumed) - activeBill.parsedData.solarExportUnits)} kWh</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+                    {activeBill.parsedData.unitsConsumed}
+                  </span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-555">
+                    kWh
+                  </span>
+                </div>
+                <p className="text-[10px] font-semibold text-slate-505 dark:text-slate-500 mt-2 leading-relaxed uppercase">
+                  {activeBill.parsedData.billingPeriod || "Monthly period"}
+                </p>
+              </>
+            )}
           </div>
         </motion.div>
 
@@ -109,7 +134,7 @@ export const BillResultsView: React.FC<BillResultsViewProps> = ({
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
           className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 border-l-4 border-l-amber-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow duration-300"
         >
-          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-amber-400 dark:bg-amber-600 group-hover:scale-125 transition-transform duration-500" />
+          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-45 dark:opacity-30 rounded-full pointer-events-none bg-amber-400 dark:bg-amber-600 mix-blend-multiply dark:mix-blend-screen group-hover:scale-125 group-hover:opacity-65 transition-all duration-500" />
           
           <div className="flex items-center justify-between relative z-10">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">
@@ -138,7 +163,7 @@ export const BillResultsView: React.FC<BillResultsViewProps> = ({
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
           className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 border-l-4 border-l-primary-green shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow duration-300"
         >
-          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-emerald-400 dark:bg-emerald-600 group-hover:scale-125 transition-transform duration-500" />
+          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-45 dark:opacity-30 rounded-full pointer-events-none bg-emerald-400 dark:bg-emerald-600 mix-blend-multiply dark:mix-blend-screen group-hover:scale-125 group-hover:opacity-65 transition-all duration-500" />
           
           <div className="flex items-center justify-between relative z-10">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">
@@ -175,7 +200,7 @@ export const BillResultsView: React.FC<BillResultsViewProps> = ({
           whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
           className="bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 border-l-4 border-l-cyan-500 shadow-sm text-left flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow duration-300"
         >
-          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-20 dark:opacity-10 rounded-full pointer-events-none bg-cyan-400 dark:bg-cyan-600 group-hover:scale-125 transition-transform duration-500" />
+          <div className="absolute -right-12 -top-12 w-36 h-36 blur-2xl opacity-45 dark:opacity-30 rounded-full pointer-events-none bg-cyan-400 dark:bg-cyan-600 mix-blend-multiply dark:mix-blend-screen group-hover:scale-125 group-hover:opacity-65 transition-all duration-500" />
           
           <div className="flex items-center justify-between relative z-10">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">

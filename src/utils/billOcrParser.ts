@@ -162,11 +162,15 @@ export const parseOcrWithGemini = async (
       if (functions) {
         try {
           const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
-          const result = await proxy({
+          const callPromise = proxy({
             model,
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: { responseMimeType: "application/json" }
           });
+          const result = await Promise.race([
+            callPromise,
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Emulator timeout")), 3500))
+          ]);
           resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
         } catch {
           // Proxy unavailable — fall through to direct call
@@ -183,7 +187,8 @@ export const parseOcrWithGemini = async (
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: { responseMimeType: "application/json" }
-          })
+          }),
+          signal: AbortSignal.timeout(8000) // 8-second timeout safety net
         });
         if (!response.ok) throw new Error(`Status ${response.status}`);
         const resData = await response.json();
@@ -294,11 +299,15 @@ export const parseImageWithGeminiMultimodal = async (
       if (functions) {
         try {
           const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
-          const result = await proxy({
+          const callPromise = proxy({
             model,
             contents,
             generationConfig: { responseMimeType: "application/json" }
           });
+          const result = await Promise.race([
+            callPromise,
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Emulator timeout")), 3500))
+          ]);
           resultJsonStr = (result.data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
         } catch {
           // Proxy failed — fallback to direct call
@@ -312,7 +321,8 @@ export const parseImageWithGeminiMultimodal = async (
         const response = await fetch(chatUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } })
+          body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } }),
+          signal: AbortSignal.timeout(10000) // 10-second timeout safety net (images can take longer)
         });
         if (!response.ok) throw new Error(`Status ${response.status}`);
         const resData = await response.json();
@@ -354,26 +364,63 @@ export const parseImageWithGeminiMultimodal = async (
 export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   // 1. Consumer Name Heuristic
   let consumerName = "Unknown Consumer";
-  const nameMatch = ocrText.match(/(?:Consumer Name|Name|Name of the Consumer)\s*[:\-]?\s*([A-Za-z\s\.\,\_\#]+)/i);
+  const nameMatch = ocrText.match(/(?:Consumer Name|Customer Name|Name of the Consumer)[\s\S]{0,100}?([A-Za-z\s\.]+)/i);
   if (nameMatch && nameMatch[1].trim().length > 3) {
     consumerName = nameMatch[1].trim().split('\n')[0].trim();
+  } else {
+    // Look for name line pattern (Title Case or Uppercase) excluding address/DISCOM/meta keywords
+    const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const segments = lines.flatMap(l => l.split(/[,;]/)).map(s => s.trim()).filter(s => s.length > 0);
+    const nameLine = segments.find(s => {
+      const cleaned = s.trim();
+      const words = cleaned.split(/\s+/);
+      
+      const isWordPattern = words.length >= 2 && words.length <= 5 && words.every(w => 
+        /^[A-Z][a-zA-Z]{1,}$/.test(w) || /^[A-Z]{2,}$/.test(w)
+      );
+      
+      const exclusions = [
+        "ELECTRICITY", "BILL", "POWER", "EASTERN", "SECTION", "DISTRIBUTION", 
+        "DISCOM", "ERO", "ROAD", "JUNCTION", "NEAR", "CANTENE", "AKKIVARAM", 
+        "STREET", "LANE", "FLOOR", "BUILDING", "OPPOSITE", "BEHIND", "NEXT",
+        "SRIKAKULAM", "THOGARAM", "CONNECTED", "LOAD", "CONTRACTED", "METER",
+        "DATE", "NUMBER", "SERVICE", "AMOUNT", "DUE", "DISCONNECTION", "PHASE",
+        "SOLAR", "DETAILS", "CONTACTS", "CONTACT", "LINE", "MAN", "SUPERVISOR"
+      ];
+      
+      const hasExclusion = exclusions.some(ex => cleaned.toUpperCase().includes(ex));
+      
+      return isWordPattern && !hasExclusion;
+    });
+    if (nameLine) {
+      consumerName = nameLine.replace(/[,;:]/g, "").trim();
+    }
   }
 
-  // 2. Service Number Heuristic
+  // 2. Service Number Heuristic (Connection Number: must contain at least 4 digits to avoid matching column header texts)
   let serviceNumber = "Unknown SC No";
-  const scMatch = ocrText.match(/(?:Service Connection No|Service No|SC No|Account No|Consumer No|Consumer ID|Consumer Number|Service Connection Number)\s*[:\-]?\s*([A-Z0-9\-\/\_]+)/i);
+  const scMatch = ocrText.match(/(?:Service Connection No|Service Connection Number|Service Number|Service No|SC No|Account No|Consumer No|Consumer ID|Consumer Number|Unique Service Number|Unique Service No)[\s\S]{0,100}?([A-Z0-9\-\/\_]*\d{4,}[A-Z0-9\-\/\_]*)/i);
   if (scMatch && scMatch[1].trim().length > 3) {
     serviceNumber = scMatch[1].trim();
   }
 
-  // 3. Units Consumed Heuristic
+  // 3. Customer ID Heuristic (must contain at least 4 digits to avoid column bleed matches)
+  let customerID = "Unknown CID";
+  const cidMatch = ocrText.match(/(?:Customer ID|Customer No|Consumer ID|Unique Service Number|Unique Service No)[\s\S]{0,100}?([A-Z0-9\-\/\_]*\d{4,}[A-Z0-9\-\/\_]*)/i);
+  if (cidMatch && cidMatch[1].trim().length > 3) {
+    customerID = cidMatch[1].trim();
+  } else if (serviceNumber !== "Unknown SC No") {
+    customerID = "CID-" + serviceNumber;
+  }
+
+  // 4. Units Consumed Heuristic
   let unitsConsumed = 180; // default fallback
-  const unitsMatch = ocrText.match(/(?:Units Consumed|Units|Consumption|Consumed Units|Billed Units)\s*[:\-]?\s*(\d+)/i);
+  const unitsMatch = ocrText.match(/(?:Units Consumed|Units|Consumption|Consumed Units|Billed Units)[\s\S]{0,100}?(\d+)/i);
   if (unitsMatch) {
     unitsConsumed = parseInt(unitsMatch[1]);
   } else {
-    const prevMatch = ocrText.match(/(?:Previous Reading|Prev Reading|Prev)\s*[:\-]?\s*(\d+)/i);
-    const currMatch = ocrText.match(/(?:Current Reading|Curr Reading|Curr)\s*[:\-]?\s*(\d+)/i);
+    const prevMatch = ocrText.match(/(?:Previous Reading|Prev Reading|Prev)[\s\S]{0,100}?(\d+)/i);
+    const currMatch = ocrText.match(/(?:Current Reading|Curr Reading|Curr)[\s\S]{0,100}?(\d+)/i);
     if (prevMatch && currMatch) {
       const prev = parseInt(prevMatch[1]);
       const curr = parseInt(currMatch[1]);
@@ -387,28 +434,77 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     unitsConsumed = Math.floor(Math.random() * 250) + 150;
   }
 
-  // 4. Total Amount Heuristic
+  // 5. Total Amount Heuristic (Priority mapping: Net payable amount takes highest priority, fallback to gross total amount)
   let totalAmount = Math.round(unitsConsumed * 6.8);
-  const amountMatch = ocrText.match(/(?:Total Amount|Net Amount|Net Payable|Amount Due|Bill Amount|Payable Amount|Total Bill)\s*[:\-]?\s*(?:Rs\.?|INR|₹)?\s*([\d\.,\s]+)/i);
-  if (amountMatch) {
-    const amtStr = amountMatch[1].replace(/,/g, '').trim();
-    const amtVal = parseFloat(amtStr);
-    if (amtVal > 50) {
-      totalAmount = Math.round(amtVal);
+  const amountPatterns = [
+    /(?:Net Bill Amount|Net Bill|Net Payable Amount|Net Payable)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i,
+    /(?:Amount Due|Payable Amount|Bill Amount|Total Bill)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i,
+    /(?:Total Amount|Net Amount)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i
+  ];
+
+  for (const pattern of amountPatterns) {
+    const match = ocrText.match(pattern);
+    if (match) {
+      const amtStr = match[1].replace(/,/g, '').trim();
+      const amtVal = parseFloat(amtStr);
+      if (amtVal > 50) {
+        totalAmount = Math.round(amtVal);
+        break;
+      }
     }
   }
 
-  // 5. Bill Date / Due Date Heuristics
+  // 6. Solar Net Metering Heuristics
+  let solarImportUnits: number | undefined = undefined;
+  const importMatch = ocrText.match(/(?:Import Units|Solar Import|Import Reading|Imported? Units|Import)[\s\S]{0,100}?(\d+)/i);
+  if (importMatch) {
+    solarImportUnits = parseInt(importMatch[1]);
+  }
+
+  let solarExportUnits: number | undefined = undefined;
+  const exportMatch = ocrText.match(/(?:Export Units|Solar Export|Export Reading|Exported? Units|Export)[\s\S]{0,100}?(\d+)/i);
+  if (exportMatch) {
+    solarExportUnits = parseInt(exportMatch[1]);
+  }
+
+  let netBilledUnits: number | undefined = undefined;
+  const netBilledMatch = ocrText.match(/(?:Net Billed Units|Net Billed|Net Billed Unit|Net Units|Net Billed Consumption)[\s\S]{0,100}?(\d+)/i);
+  if (netBilledMatch) {
+    netBilledUnits = parseInt(netBilledMatch[1]);
+  }
+
+  // 7. Bill Date / Due Date Heuristics
   let billDate = new Date().toLocaleDateString();
   let dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString();
   
-  const dates = ocrText.match(/\b\d{1,2}[-\/\.]\d{1,2}[-\/\.]\d{2,4}\b/g) || [];
-  if (dates.length > 0) {
-    billDate = dates[0] || billDate;
-    dueDate = dates[1] || dueDate;
+  // Look for dates within 100 characters after the label to support table structures
+  const billDateMatch = ocrText.match(/Bill Date(?:s)?[\s\S]{0,100}?(\b\d{1,2}[-\/\.][A-Za-z0-9]{3,9}[-\/\.]\d{2,4}\b)/i);
+  if (billDateMatch) {
+    billDate = billDateMatch[1];
+  }
+  
+  const dueDateMatch = ocrText.match(/(?:Due Date|Payment Due Date|Pay By)[\s\S]{0,100}?(\b\d{1,2}[-\/\.][A-Za-z0-9]{3,9}[-\/\.]\d{2,4}\b)/i);
+  if (dueDateMatch) {
+    dueDate = dueDateMatch[1];
   }
 
-  // 6. State Heuristic
+  if (!billDateMatch || !dueDateMatch) {
+    // Exclude any dates associated with "Disconnection Date" or "Discon Date" from generic search
+    let textForGenericDates = ocrText;
+    const disconMatch = ocrText.match(/(?:Disconnection Date|Discon Date|Disconnection|Discon)[\s\S]{0,50}?(\b\d{1,2}[-\/\.][A-Za-z0-9]{3,9}[-\/\.]\d{2,4}\b)/i);
+    if (disconMatch) {
+      textForGenericDates = ocrText.replace(disconMatch[0], "");
+    }
+
+    const dates = textForGenericDates.match(/\b\d{1,2}[-\/\.][A-Za-z0-9]{3,9}[-\/\.]\d{2,4}\b/g) || 
+                  textForGenericDates.match(/\b\d{1,2}[-\/\.]\d{1,2}[-\/\.]\d{2,4}\b/g) || [];
+    if (dates.length > 0) {
+      if (!billDateMatch) billDate = dates[0] || billDate;
+      if (!dueDateMatch) dueDate = dates[1] || dates[0] || dueDate;
+    }
+  }
+
+  // 8. State / DISCOM Heuristic
   let tariffCategory = "LT-I Domestic";
   const lowerText = ocrText.toLowerCase();
   if (lowerText.includes("bescom") || lowerText.includes("karnataka")) {
@@ -419,15 +515,49 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     tariffCategory = "TS Domestic LT-I";
   }
 
-  // 7. Heuristic Breakdown
-  const energyCharge = Math.round(totalAmount * 0.7);
-  const fixedCharge = Math.round(totalAmount * 0.15);
-  const tax = Math.round(totalAmount * 0.08);
+  // 9. Detailed breakdown heuristics
+  let energyCharge = Math.round(totalAmount * 0.7);
+  const ecMatch = ocrText.match(/(?:Energy Charges|Energy Charge|Consumption Charge)[\s\S]{0,100}?([\d\.,]+)/i);
+  if (ecMatch) {
+    energyCharge = Math.round(parseFloat(ecMatch[1].replace(/,/g, '')));
+  }
 
-  return {
+  let fixedCharge = Math.round(totalAmount * 0.15);
+  const fcMatch = ocrText.match(/(?:Fixed Charges|Fixed Charge|Customer Charge|Customer Charges)[\s\S]{0,100}?([\d\.,]+)/i);
+  if (fcMatch) {
+    fixedCharge = Math.round(parseFloat(fcMatch[1].replace(/,/g, '')));
+  }
+
+  let tax = Math.round(totalAmount * 0.08);
+  const taxMatch = ocrText.match(/(?:Electricity Duty|Govt\.? Subsidy|ED|Tax|Duty|Govt\.? Duty)[\s\S]{0,100}?([\d\.,]+)/i);
+  if (taxMatch) {
+    tax = Math.round(parseFloat(taxMatch[1].replace(/,/g, '')));
+  }
+
+  // Scale down breakdown components proportionally to match net totalAmount if sum exceeds
+  const sumComponents = energyCharge + fixedCharge + tax;
+  if (sumComponents > totalAmount && totalAmount > 0) {
+    const scale = totalAmount / sumComponents;
+    energyCharge = Math.round(energyCharge * scale);
+    fixedCharge = Math.round(fixedCharge * scale);
+    tax = Math.round(tax * scale);
+  }
+
+  const energyInsights = [];
+  if (solarExportUnits !== undefined && solarExportUnits > 0) {
+    const net = (solarImportUnits || unitsConsumed) - solarExportUnits;
+    energyInsights.push(`Solar Net-Metering: Imported ${solarImportUnits || unitsConsumed} kWh, Exported ${solarExportUnits} kWh.`);
+    energyInsights.push(`Your net grid consumption is ${netBilledUnits !== undefined ? netBilledUnits : Math.max(0, net)} kWh, reducing your overall bill amount.`);
+  } else {
+    energyInsights.push(`Heuristic Parser: Extracted ${unitsConsumed} units from document.`);
+  }
+  energyInsights.push("Gemini AI was rate-limited (429). Used client-side smart regex fallback.");
+  energyInsights.push("To run full AI optimization insights, try uploading at off-peak times.");
+
+  const result: ParsedBillData = {
     consumerName,
     serviceNumber,
-    customerID: serviceNumber !== "Unknown SC No" ? "CID-" + serviceNumber : "Unknown CID",
+    customerID,
     address: "Extracted locally from document text via smart heuristics (AI Offline)",
     billDate,
     billingPeriod: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
@@ -441,10 +571,12 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     otherCharges: Math.max(0, totalAmount - (energyCharge + fixedCharge + tax)),
     totalAmount,
     tariffCategory,
-    energyInsights: [
-      `Heuristic Parser: Extracted ${unitsConsumed} units from document.`,
-      "Gemini AI was rate-limited (429). Used client-side smart regex fallback.",
-      "To run full AI optimization insights, try uploading at off-peak times."
-    ]
+    energyInsights
   };
+
+  if (solarImportUnits !== undefined) result.solarImportUnits = solarImportUnits;
+  if (solarExportUnits !== undefined) result.solarExportUnits = solarExportUnits;
+  if (netBilledUnits !== undefined) result.netBilledUnits = netBilledUnits;
+
+  return result;
 };

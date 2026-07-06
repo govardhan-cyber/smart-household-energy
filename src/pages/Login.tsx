@@ -5,6 +5,8 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle, Zap, ShieldCheck, ArrowRight, Spa
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeDCard } from "../components/ThreeDCard";
 
+import { getFriendlyErrorMessage } from "../utils/firebaseErrors";
+
 /* ── animated floating orb ─────────────────────────────────────── */
 const Orb = ({ className }: { className: string }) => (
   <motion.div
@@ -76,14 +78,14 @@ export const Login: React.FC = () => {
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setError(null); setIsSubmitting(true);
     try { await login(email, password, rememberMe); navigate(from, { replace: true }); }
-    catch (err: any) { setError(err.message || "Failed to log in. Please check your credentials."); }
+    catch (err: any) { setError(getFriendlyErrorMessage(err)); }
     finally { setIsSubmitting(false); }
   };
 
   const handleGoogleSignIn = async () => {
     setError(null); setIsSubmitting(true);
     try { await loginWithGoogle(); navigate(from, { replace: true }); }
-    catch (err: any) { setError(err.message || "Failed to sign in with Google."); }
+    catch (err: any) { setError(getFriendlyErrorMessage(err)); }
     finally { setIsSubmitting(false); }
   };
 

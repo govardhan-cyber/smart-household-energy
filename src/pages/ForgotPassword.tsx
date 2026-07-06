@@ -5,6 +5,8 @@ import { Mail, AlertCircle, ArrowLeft, CheckCircle2, Zap, ShieldCheck } from "lu
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeDCard } from "../components/ThreeDCard";
 
+import { getFriendlyErrorMessage } from "../utils/firebaseErrors";
+
 /* ── animated floating orb ─────────────────────────────────────── */
 const Orb = ({ className }: { className: string }) => (
   <motion.div
@@ -15,7 +17,7 @@ const Orb = ({ className }: { className: string }) => (
 );
 
 export const ForgotPassword: React.FC = () => {
-  const { resetPassword } = useAuth();
+  const { resetPassword, isMock } = useAuth();
   
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export const ForgotPassword: React.FC = () => {
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to send reset link. Please check the email address.");
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,7 +53,7 @@ export const ForgotPassword: React.FC = () => {
     }`;
 
   return (
-    <div className="flex-1 flex items-center lg:items-start justify-center py-12 lg:pt-28 px-4 sm:px-6 lg:px-8 bg-transparent transition-colors duration-300 relative overflow-hidden select-none min-h-screen">
+    <div className="flex-1 flex flex-col items-center justify-start pt-20 md:pt-28 lg:pt-36 px-4 sm:px-6 lg:px-8 bg-transparent transition-colors duration-300 relative overflow-hidden select-none min-h-screen">
       {/* Glow Orbs */}
       <Orb className="w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 -top-24 -left-24" />
       <Orb className="w-80 h-80 bg-emerald-500/5 bottom-0 right-0" />
@@ -80,20 +82,35 @@ export const ForgotPassword: React.FC = () => {
           {/* Alerts Area */}
           <AnimatePresence>
             {/* Success Alert */}
-            {success && (
+             {success && (
               <motion.div 
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 role="alert"
-                className="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-450 text-xs text-left"
+                className={`flex items-start gap-2.5 p-3 rounded-xl text-xs text-left border ${
+                  isMock 
+                    ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40 text-amber-600 dark:text-amber-400"
+                    : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-450"
+                }`}
               >
                 <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold">Reset link sent!</span>
-                  <p className="mt-0.5 text-[11px] text-slate-650 dark:text-slate-300 leading-snug">
-                    Please check your inbox (and spam folder) for instructions to reset your password.
-                  </p>
+                  {isMock ? (
+                    <>
+                      <span className="font-bold">Mock Reset Generated!</span>
+                      <p className="mt-0.5 text-[11px] leading-snug opacity-90">
+                        Firebase is not configured. The password reset operation has been simulated (check developer console logs for details).
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold">Reset link sent!</span>
+                      <p className="mt-0.5 text-[11px] leading-snug opacity-90">
+                        Please check your inbox (and spam folder) for instructions to reset your password.
+                      </p>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}

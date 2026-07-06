@@ -1,9 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.scheduledTariffSync = exports.syncStateTariffs = exports.getAuditRecommendations = exports.generateSolarForecast = exports.calculateEnergyScore = exports.validateAndSaveReport = void 0;
+exports.sendIssueReport = exports.scheduledTariffSync = exports.syncStateTariffs = exports.getAuditRecommendations = exports.generateSolarForecast = exports.calculateEnergyScore = exports.validateAndSaveReport = exports.geminiProxy = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const nodemailer = require("nodemailer");
+const firestore_1 = require("firebase-admin/firestore");
 admin.initializeApp();
+// ─── Gemini API Proxy ─────────────────────────────────────────────────────────
+// Keeps GEMINI_API_KEY on the server — never shipped in the browser bundle.
+// Deploy the key once:  firebase functions:config:set gemini.key="YOUR_KEY"
+exports.geminiProxy = functions.https.onCall(async (request) => {
+    if (!request.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "You must be signed in to use the AI assistant.");
+    }
+    const geminiKey = functions.config().gemini?.key ?? "";
+    if (!geminiKey) {
+        throw new functions.https.HttpsError("failed-precondition", "Gemini API key is not configured on the server.");
+    }
+    const { model, contents, generationConfig, systemInstruction } = request.data;
+    if (!model || !contents) {
+        throw new functions.https.HttpsError("invalid-argument", "Request must include model and contents.");
+    }
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+    const body = { contents };
+    if (generationConfig)
+        body.generationConfig = generationConfig;
+    if (systemInstruction)
+        body.systemInstruction = systemInstruction;
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30_000)
+    });
+    if (!response.ok) {
+        throw new functions.https.HttpsError("internal", `Gemini API returned status ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+});
 /**
  * HTTPS Callable function to validate energy calculations server-side.
  * This prevents client-side tampering of savings potentials or bills before committing.
@@ -34,7 +69,7 @@ exports.validateAndSaveReport = functions.https.onCall(async (request) => {
     }
     // 3. Save report securely
     const reportRef = admin.firestore().collection("energy_reports").doc();
-    const serverTimestamp = admin.firestore.FieldValue.serverTimestamp();
+    const serverTimestamp = firestore_1.FieldValue.serverTimestamp();
     const secureReport = {
         ...data,
         totalUnits: calculatedUnits,
@@ -237,9 +272,113 @@ exports.scheduledTariffSync = functions.scheduler.onSchedule("0 0 * * *", async 
     // Check if we can write a heartbeat log
     const syncLogRef = admin.firestore().collection("system_logs").doc("tariff_sync_heartbeat");
     await syncLogRef.set({
-        lastSyncRun: admin.firestore.FieldValue.serverTimestamp(),
+        lastSyncRun: firestore_1.FieldValue.serverTimestamp(),
         status: "success",
         source: "scheduler_cron"
     });
+});
+exports.sendIssueReport = functions.https.onCall(async (request) => {
+    // 1. Validate payload
+    const data = request.data;
+    const { issueType, description, screenshotUrl, userEmail, userName } = data;
+    if (!issueType || !description) {
+        throw new functions.https.HttpsError("invalid-argument", "Request must include issueType and description.");
+    }
+    // 2. Save report to Firestore
+    const reportRef = admin.firestore().collection("issue_reports").doc();
+    const serverTimestamp = firestore_1.FieldValue.serverTimestamp();
+    const uid = request.auth?.uid || "anonymous";
+    const secureReport = {
+        issueType,
+        description,
+        screenshotUrl: screenshotUrl || null,
+        userEmail: userEmail || null,
+        userName: userName || null,
+        uid,
+        createdAt: serverTimestamp,
+    };
+    await reportRef.set(secureReport);
+    // 3. Send email via Nodemailer
+    const gmailUser = functions.config().gmail?.user ?? process.env.GMAIL_USER ?? "";
+    const gmailPass = functions.config().gmail?.pass ?? process.env.GMAIL_PASS ?? "";
+    if (!gmailUser || !gmailPass) {
+        console.warn("Gmail SMTP credentials are not configured on the server. Skipping email notification.");
+        return {
+            success: true,
+            reportId: reportRef.id,
+            emailSent: false,
+            msg: "Report saved to database, but SMTP configurations are missing to send email."
+        };
+    }
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: gmailUser,
+                pass: gmailPass,
+            },
+        });
+        const htmlContent = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
+          <h2 style="color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 0;">New Issue Report Submitted</h2>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold; width: 120px;">Issue Type:</td>
+              <td style="padding: 6px 0; color: #0f172a;">${issueType}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">User Name:</td>
+              <td style="padding: 6px 0; color: #0f172a;">${userName || "Anonymous"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">User Email:</td>
+              <td style="padding: 6px 0; color: #0f172a;">${userEmail || "Not provided"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Firebase UID:</td>
+              <td style="padding: 6px 0; color: #475569; font-family: monospace; font-size: 12px;">${uid}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Report ID:</td>
+              <td style="padding: 6px 0; color: #475569; font-family: monospace; font-size: 12px;">${reportRef.id}</td>
+            </tr>
+          </table>
+          <div style="margin-top: 20px; padding: 15px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">Description:</h4>
+            <p style="margin: 0; color: #334155; line-height: 1.5; white-space: pre-wrap;">${description}</p>
+          </div>
+          ${screenshotUrl ? `
+            <div style="margin-top: 20px;">
+              <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">Screenshot:</h4>
+              <a href="${screenshotUrl}" target="_blank" style="display: inline-block; color: #3b82f6; text-decoration: none; font-weight: bold; margin-bottom: 8px;">View Full Image</a>
+              <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; max-height: 300px; text-align: center; background-color: #f1f5f9;">
+                <img src="${screenshotUrl}" alt="Screenshot" style="max-width: 100%; max-height: 300px; object-fit: contain;" />
+              </div>
+            </div>
+          ` : ""}
+        </div>
+      `;
+        await transporter.sendMail({
+            from: `"Smart Household Energy Support" <${gmailUser}>`,
+            to: "govardhan4705@gmail.com",
+            subject: `[${issueType}] New Issue Report (#${reportRef.id})`,
+            text: `Issue Type: ${issueType}\nReported by: ${userName || "Anonymous"} (${userEmail || "No email"})\n\nDescription:\n${description}\n\n${screenshotUrl ? `Screenshot: ${screenshotUrl}` : ""}`,
+            html: htmlContent,
+        });
+        return {
+            success: true,
+            reportId: reportRef.id,
+            emailSent: true
+        };
+    }
+    catch (error) {
+        console.error("Nodemailer failed to send email:", error);
+        return {
+            success: true,
+            reportId: reportRef.id,
+            emailSent: false,
+            error: error.message || "Failed to send email"
+        };
+    }
 });
 //# sourceMappingURL=index.js.map

@@ -4,6 +4,7 @@ import {
   Zap, Heart, ExternalLink, FileText, Layout, History, Database, HelpCircle,
   ShieldCheck, Lock, Cpu, Leaf, Globe, ArrowRight, MessageSquare, IndianRupee
 } from "lucide-react";
+import { ReportIssueModal } from "./ReportIssueModal";
 
 // Inline SVG social icons to support different lucide-react versions
 const GithubIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -73,31 +74,21 @@ const AnimatedStat: React.FC<{
 };
 
 export const Footer: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [supportInitialType, setSupportInitialType] = useState<string>("Bug Report");
 
   const handleLinkClick = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes("@") || email.length < 5) {
-      setStatus("error");
-      setMessage("Please enter a valid email address.");
-      return;
-    }
-    setStatus("loading");
-    setTimeout(() => {
-      setStatus("success");
-      setMessage("Thank you! You've been subscribed.");
-      setEmail("");
-    }, 1200);
+  const handleOpenSupportModal = (type: string) => {
+    setSupportInitialType(type);
+    setIsSupportOpen(true);
   };
 
   return (
-    <footer className="relative w-full bg-white/40 dark:bg-slate-950/40 backdrop-blur-lg border-t border-slate-200/50 dark:border-slate-800/65 transition-colors duration-300 mt-auto overflow-hidden">
+    <>
+      <footer className="relative w-full bg-white/40 dark:bg-slate-950/40 backdrop-blur-lg border-t border-slate-200/50 dark:border-slate-800/65 transition-colors duration-300 mt-auto overflow-hidden">
       {/* Specular Reflective Gloss Sheen top highlight */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
       
@@ -347,54 +338,29 @@ export const Footer: React.FC = () => {
               </ul>
             </div>
 
-            {/* Column 5: Newsletter Column (Col span-2) */}
+            {/* Column 5: Support Column (Col span-2) */}
             <div className="lg:col-span-2 relative lg:pl-6 pt-2">
               <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-slate-200/85 dark:via-slate-800/60 to-transparent hidden lg:block" />
               <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest mb-3">
-                Newsletter
+                Support
               </h4>
-              <div className="space-y-3 mt-3">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  Weekly saving tips &amp; Andhra Pradesh tariff slab updates.
-                </p>
-                {status === "success" ? (
-                  <div className="flex items-center gap-2 text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl p-2.5 animate-fadeIn">
-                    <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span className="font-bold leading-tight">{message}</span>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubscribe} className="space-y-2">
-                    <div className="relative flex items-center">
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={status === "loading"}
-                        className="w-full bg-white/60 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/65 rounded-xl py-1.5 pl-3 pr-8 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 dark:focus:border-cyan-400/50 transition-all disabled:opacity-50"
-                      />
-                      <button
-                        type="submit"
-                        disabled={status === "loading"}
-                        aria-label="Subscribe"
-                        className="absolute right-1.5 p-1 text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-colors disabled:opacity-50"
-                      >
-                        {status === "loading" ? (
-                          <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
-                        ) : (
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                    {status === "error" && (
-                      <p className="text-[10px] font-semibold text-rose-500 leading-tight">
-                        {message}
-                      </p>
-                    )}
-                  </form>
-                )}
-              </div>
+              <ul className="space-y-2">
+                <li>
+                  <button 
+                    onClick={() => handleOpenSupportModal("Bug Report")} 
+                    className="w-full text-left group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">Report Issue</span>
+                  </button>
+                </li>
+                <li>
+                  <Link to="/faq" onClick={handleLinkClick} className="group flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-500 dark:hover:text-cyan-400 transition-all duration-300 py-1.5 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-100/50 dark:hover:bg-slate-900/30 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-colors duration-300 mt-0.5 shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform duration-300 leading-snug">FAQ</span>
+                  </Link>
+                </li>
+              </ul>
             </div>
 
           </div>
@@ -501,5 +467,11 @@ export const Footer: React.FC = () => {
 
       </div>
     </footer>
+    <ReportIssueModal 
+      isOpen={isSupportOpen} 
+      onClose={() => setIsSupportOpen(false)} 
+      initialType={supportInitialType}
+    />
+  </>
   );
 };

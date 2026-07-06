@@ -1,10 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import type { Auth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import type { Firestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import type { Functions } from "firebase/functions";
+import { getStorage } from "firebase/storage";
+import type { FirebaseStorage } from "firebase/storage";
 
 // ---------------------------------------------------------------------------
 // All Firebase credentials MUST be supplied via environment variables.
@@ -48,6 +50,7 @@ let app;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
 let functions: Functions | null = null;
+let storage: FirebaseStorage | null = null;
 
 if (IS_FIREBASE_CONFIGURED) {
   try {
@@ -55,6 +58,13 @@ if (IS_FIREBASE_CONFIGURED) {
     auth = getAuth(app);
     db = getFirestore(app);
     functions = getFunctions(app);
+    storage = getStorage(app);
+
+    // Connect to local emulators during development
+    if (import.meta.env.DEV) {
+      connectFirestoreEmulator(db, "127.0.0.1", 8080);
+      connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+    }
   } catch (error) {
     console.error("[Firebase] Failed to initialize services:", error);
   }
@@ -64,6 +74,6 @@ if (IS_FIREBASE_CONFIGURED) {
   );
 }
 
-export { auth, db, functions };
+export { auth, db, functions, storage };
 export default firebaseConfig;
 

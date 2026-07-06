@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { 
   Settings as SetIcon, Sun, Moon, Bell, Save, CheckCircle2, ShieldCheck, Plus, Trash2,
   Cpu, Info, IndianRupee, X, Sparkles, Monitor,
-  Cloud, AlertCircle, AlertTriangle, UserCheck,
+  AlertCircle, AlertTriangle, UserCheck,
   ChevronDown, MapPin, Building, Wind, Snowflake, Fan, Tv, Calendar, TrendingUp, Lightbulb,
   Activity, Globe, Zap
 } from "lucide-react";
@@ -48,6 +48,7 @@ const ToggleSwitch: React.FC<{
 
 export const Settings: React.FC = () => {
   const { user, updateUserSettings } = useAuth();
+  const isAdmin = user?.email === "govardhan4705@gmail.com";
   
   // Theme state synced with documentElement
   const [theme, setTheme] = useState<"light" | "dark" | "system">(
@@ -101,9 +102,8 @@ export const Settings: React.FC = () => {
   const [tvType, setTvType] = useState("LED");
   const [solarInstalled, setSolarInstalled] = useState("no");
 
-  // Eco mode and cloud sync mock animations
+  // Eco mode mock animations
   const [ecoMode, setEcoMode] = useState(false);
-  const [cloudSyncing, setCloudSyncing] = useState(false);
 
   // Update success flags
   const [success, setSuccess] = useState(false);
@@ -480,16 +480,6 @@ export const Settings: React.FC = () => {
     }
   };
 
-  // Mock cloud reload animation
-  const triggerCloudSync = () => {
-    if (cloudSyncing) return;
-    setCloudSyncing(true);
-    setTimeout(() => {
-      setCloudSyncing(false);
-      alert("Settings successfully synchronized with Google Cloud Services.");
-    }, 1200);
-  };
-
   // Admin tariff handlers
   const handleAdminFieldChange = (field: string, value: string | number) => {
     setAdminTariff((prev) => {
@@ -692,7 +682,7 @@ export const Settings: React.FC = () => {
   const budgetDeficit = totalCalculatedBill - (Number(monthlyBudgetBill) || 0);
 
   const inputBase = (field: string, hasLeftIcon = false, hasRightIcon = false) =>
-    `block w-full ${hasLeftIcon ? "pl-9" : "pl-4"} ${hasRightIcon ? "pr-12" : "pr-4"} py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 transition-all duration-200 outline-none border bg-slate-50/40 dark:bg-slate-950/40 border-slate-250 dark:border-slate-855 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+    `block w-full ${hasLeftIcon ? "pl-9" : "pl-4"} ${hasRightIcon ? "pr-12" : "pr-4"} py-3 rounded-2xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 transition-all duration-200 outline-none border bg-slate-50/40 dark:bg-slate-955/40 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${
       focusedField === field
         ? "border-primary-blue dark:border-primary-green ring-4 ring-blue-500/10 dark:ring-primary-green/10"
         : "border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700"
@@ -707,95 +697,130 @@ export const Settings: React.FC = () => {
       <form onSubmit={handleSaveSettings}>
         <div className="space-y-6">
           
-          {/* Main settings Content Area */}
           <main className="space-y-6 w-full pb-24">
-                   {/* Sleek Dashboard Hero Header - Unified Glass Console */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/60 dark:to-slate-950/45 p-6 sm:p-7 rounded-3xl border border-slate-250 dark:border-slate-850 shadow-md backdrop-blur-md flex flex-col xl:flex-row xl:items-center justify-between gap-6 text-left mb-6">
-              {/* Decorative accent spotlight blobs in the corners */}
-              <div className="absolute top-0 right-0 -mt-12 -mr-12 w-32 h-32 bg-primary-blue/8 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-32 h-32 bg-primary-blue/6 rounded-full blur-2xl pointer-events-none" />
+            {/* Sleek Dashboard Hero Header - Unified Glass Console */}
+            <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200/20 dark:border-slate-800/20 shadow-md relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6 text-left mb-6">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 dark:bg-primary-green/5 rounded-full blur-3xl pointer-events-none" />
               
-              <div className="relative z-10 space-y-1.5 max-w-2xl">
-                <div className="inline-flex items-center gap-1.5 bg-primary-blue/10 text-primary-blue px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  <SetIcon className="w-3.5 h-3.5" /> Platform Control Center
+              <div className="flex items-center gap-4 text-left z-10">
+                <div className="p-3.5 rounded-full bg-white/10 dark:bg-primary-green/10 text-white dark:text-primary-green shrink-0">
+                  <SetIcon className="w-6 h-6 text-blue-100 dark:text-primary-green" />
                 </div>
-                <h1 className="text-3xl font-display font-black text-slate-900 dark:text-white tracking-tight">Settings</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Manage your account status, personalize your AI assistant, and optimize your home's energy preferences.
-                </p>
+                <div className="space-y-1">
+                  <h1 className="text-2xl sm:text-3xl font-display font-black text-white leading-tight">Settings</h1>
+                  <p className="text-xs sm:text-sm font-medium text-blue-100/90 dark:text-slate-350 leading-relaxed max-w-[650px]">
+                    Manage your account status, personalize your AI assistant, and optimize your home's energy preferences.
+                  </p>
+                </div>
               </div>
 
-              {/* Status Chips HUD Row */}
-              <div className="relative z-10 flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
-                
-                {/* HUD Chip 1: Profile Completion */}
-                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200/40 dark:border-slate-800/40 px-3.5 py-2.5 rounded-2xl flex items-center gap-3 shadow-sm hover:bg-white/60 dark:hover:bg-slate-900/60 hover:scale-102 transition-all duration-300">
-                  <div className="relative flex items-center justify-center w-8 h-8 shrink-0">
-                    <svg className="w-8 h-8 transform -rotate-90">
-                      <circle cx="16" cy="16" r="13" className="stroke-slate-100 dark:stroke-slate-850/50" strokeWidth="2.5" fill="none" />
-                      <circle 
-                        cx="16" 
-                        cy="16" 
-                        r="13" 
-                        className="stroke-primary-blue" 
-                        strokeWidth="2.5" 
-                        fill="none" 
-                        strokeDasharray={2 * Math.PI * 13} 
-                        strokeDashoffset={2 * Math.PI * 13 * (1 - 0.92)} 
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span className="absolute text-[8.5px] font-black text-slate-700 dark:text-slate-350">92%</span>
-                  </div>
-                  <div className="text-left leading-none">
-                    <span className="block text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Profile</span>
-                    <span className="block text-[11px] font-extrabold text-slate-800 dark:text-white mt-1">Completion</span>
-                  </div>
-                </div>
-
-                {/* HUD Chip 2: Cloud Sync */}
-                <button
-                  type="button"
-                  onClick={triggerCloudSync}
-                  className="bg-white/40 dark:bg-slate-900/40 border border-slate-200/40 dark:border-slate-800/40 px-3.5 py-2.5 rounded-2xl flex items-center gap-3 shadow-sm hover:bg-white/60 dark:hover:bg-slate-900/60 hover:scale-102 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 cursor-pointer text-left"
+              {/* 3D Floating Console/Gear Graphic inside the header */}
+              <div className="relative hidden md:block shrink-0 z-10 w-48 h-36 flex items-center justify-center [perspective:1000px]">
+                <motion.div
+                  style={{ transformStyle: "preserve-3d" }}
+                  animate={{ 
+                    y: [0, -6, 0],
+                    rotate: [0, 1.5, 0]
+                  }}
+                  whileHover={{ 
+                    rotateX: -12, 
+                    rotateY: 18,
+                    scale: 1.08,
+                  }}
+                  transition={{ 
+                    y: {
+                      duration: 3.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    },
+                    rotate: {
+                      duration: 4.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    },
+                    type: "spring", 
+                    stiffness: 400, 
+                    damping: 25 
+                  }}
+                  className="relative w-44 h-30 cursor-pointer select-none"
                 >
-                  <div className={`p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-450 shrink-0 ${cloudSyncing ? "animate-spin" : ""}`}>
-                    <Cloud className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-none">
-                    <span className="block text-[8px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">Cloud Sync</span>
-                    <span className="block text-[11px] font-extrabold text-emerald-600 dark:text-emerald-450 flex items-center gap-1 mt-1">
-                      {cloudSyncing ? "Syncing..." : "Active"} <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    </span>
-                  </div>
-                </button>
+                  {/* Glow behind graphic */}
+                  <div className="absolute inset-0 bg-blue-400/25 dark:bg-emerald-400/10 rounded-xl blur-xl -z-10 animate-pulse" />
+                  
+                  <svg className="w-full h-full" viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Card outline with draw-in animation */}
+                    <motion.rect 
+                      x="10" y="10" width="180" height="110" rx="16" 
+                      fill="white" fillOpacity="0.12" stroke="white" strokeWidth="1.5" 
+                      className="backdrop-blur-md"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                    
+                    {/* Concentric dials/rings */}
+                    <motion.circle 
+                      cx="55" cy="65" r="30" 
+                      stroke="white" strokeWidth="1.5" strokeOpacity="0.5" strokeDasharray="3 3"
+                      initial={{ rotate: 0 }}
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                    />
+                    <motion.circle 
+                      cx="55" cy="65" r="22" 
+                      stroke="white" strokeWidth="2" strokeOpacity="0.85"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 0.75 }}
+                      transition={{ delay: 0.3, duration: 1 }}
+                    />
+                    
+                    {/* Settings Sliders */}
+                    {/* Slider 1 */}
+                    <motion.line 
+                      x1="110" y1="45" x2="165" y2="45" stroke="white" strokeWidth="2" strokeOpacity="0.4"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                    />
+                    <motion.circle 
+                      cx="145" cy="45" r="4.5" fill="white"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+                    />
+                    
+                    {/* Slider 2 */}
+                    <motion.line 
+                      x1="110" y1="65" x2="165" y2="65" stroke="white" strokeWidth="2" strokeOpacity="0.4"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.5, duration: 0.5 }}
+                    />
+                    <motion.circle 
+                      cx="125" cy="65" r="4.5" fill="white"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.7, type: "spring", stiffness: 200 }}
+                    />
 
-                {/* HUD Chip 3: AI Status */}
-                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200/40 dark:border-slate-800/40 px-3.5 py-2.5 rounded-2xl flex items-center gap-3 shadow-sm hover:bg-white/60 dark:hover:bg-slate-900/60 hover:scale-102 transition-all duration-300">
-                  <div className="p-1.5 rounded-lg bg-purple-500/10 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 shrink-0">
-                    <Sparkles className="w-4 h-4 animate-pulse" />
-                  </div>
-                  <div className="text-left leading-none">
-                    <span className="block text-[8px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">AI Engine</span>
-                    <span className="block text-[11px] font-extrabold text-purple-600 dark:text-purple-400 flex items-center gap-1 mt-1">
-                      Online <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
-                    </span>
-                  </div>
-                </div>
-
-                {/* HUD Chip 4: Data Protection */}
-                <div className="bg-white/40 dark:bg-slate-900/40 border border-slate-200/40 dark:border-slate-800/40 px-3.5 py-2.5 rounded-2xl flex items-center gap-3 shadow-sm hover:bg-white/60 dark:hover:bg-slate-900/60 hover:scale-102 transition-all duration-300">
-                  <div className="p-1.5 rounded-lg bg-blue-500/10 dark:bg-blue-500/15 text-blue-550 dark:text-blue-400 shrink-0">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="text-left leading-none">
-                    <span className="block text-[8px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">Security</span>
-                    <span className="block text-[11px] font-extrabold text-blue-600 dark:text-blue-450 flex items-center gap-1.5 mt-1">
-                      Secure <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    </span>
-                  </div>
-                </div>
-
+                    {/* Slider 3 */}
+                    <motion.line 
+                      x1="110" y1="85" x2="165" y2="85" stroke="white" strokeWidth="2" strokeOpacity="0.4"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.6, duration: 0.5 }}
+                    />
+                    <motion.circle 
+                      cx="155" cy="85" r="4.5" fill="white"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
+                    />
+                    
+                    {/* Inner Center dot */}
+                    <circle cx="55" cy="65" r="4" fill="white" />
+                  </svg>
+                </motion.div>
               </div>
             </div>
 
@@ -806,7 +831,7 @@ export const Settings: React.FC = () => {
               <div className="lg:col-span-4 flex flex-col gap-6">
                 
                 {/* Top User Profile Card */}
-                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 rounded-3xl border border-slate-250 dark:border-slate-850 shadow-md backdrop-blur-md hover:shadow-lg transition-all duration-300 text-left">
+                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 rounded-3xl border border-slate-200/30 dark:border-slate-800/30 shadow-md backdrop-blur-md hover:shadow-lg transition-all duration-300 text-left">
                   
                   {/* User Profile Avatar with dynamic ring */}
                   <div className="flex items-center gap-4.5">
@@ -865,7 +890,7 @@ export const Settings: React.FC = () => {
                 </div>
 
                 {/* Sidebar Navigation Cards Container */}
-                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-4.5 rounded-3xl border border-slate-250 dark:border-slate-855 shadow-md backdrop-blur-md flex flex-col gap-2">
+                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-4.5 rounded-3xl border border-slate-200/20 dark:border-slate-800/20 shadow-md backdrop-blur-md flex flex-col gap-2">
                   {settingsTabs.map(tab => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -877,7 +902,7 @@ export const Settings: React.FC = () => {
                         className={`w-full p-3.5 rounded-2xl text-left transition-all duration-300 ease-out group cursor-pointer relative overflow-hidden flex items-center gap-4 hover:-translate-y-2.5 hover:shadow-md hover:shadow-slate-100 dark:hover:shadow-slate-950/40 ${
                           isActive
                             ? `text-white shadow-lg bg-gradient-to-r ${accents[accentColor].gradient} ${accents[accentColor].glow}`
-                            : "bg-slate-50/30 dark:bg-slate-900/20 border border-slate-200/50 dark:border-slate-855 text-slate-600 dark:text-slate-400 hover:bg-slate-50/70 dark:hover:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
+                            : "bg-slate-50/30 dark:bg-slate-900/20 border border-slate-200/20 dark:border-slate-800/20 text-slate-600 dark:text-slate-400 hover:bg-slate-50/70 dark:hover:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
                         }`}
                       >
                         {isActive && (
@@ -906,7 +931,7 @@ export const Settings: React.FC = () => {
               </div>
 
               {/* Right Configuration Details Content Area card pane */}
-              <div className="lg:col-span-8 bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 sm:p-7 rounded-3xl border border-slate-250 dark:border-slate-855 shadow-md backdrop-blur-md lg:max-h-[585px] lg:overflow-y-auto pr-3">
+              <div className="lg:col-span-8 bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 sm:p-7 rounded-3xl border border-slate-200/30 dark:border-slate-800/30 shadow-md backdrop-blur-md lg:max-h-[585px] lg:overflow-y-auto pr-3">
                 <AnimatePresence>
                   {success && (
                     <motion.div 
@@ -1165,19 +1190,21 @@ export const Settings: React.FC = () => {
 
                         {/* Slabs Row */}
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 py-5 text-left items-start">
-                          <div className="md:col-span-5 space-y-1 pt-1">
-                            <span className="block text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Regional Slab Rates</span>
-                            <span className="block text-[11px] text-slate-500 leading-relaxed">Visual structure of escalating slab parameters.</span>
-                            
-                            <button
-                              type="button"
-                              onClick={() => setShowAdminEditor(true)}
-                              className={`mt-4 inline-flex items-center gap-2 px-4.5 py-3 border text-[10.5px] font-black uppercase tracking-wider rounded-2xl cursor-pointer bg-slate-100/60 hover:bg-slate-200/60 dark:bg-slate-850/50 dark:hover:bg-slate-800/80 border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-95 ${accents[accentColor].text}`}
-                            >
-                              <ShieldCheck className="w-4 h-4" /> Configure Tariff Slabs
-                            </button>
-                          </div>
-                          <div className="md:col-span-7">
+                          {isAdmin && (
+                            <div className="md:col-span-5 space-y-1 pt-1">
+                              <span className="block text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Regional Slab Rates</span>
+                              <span className="block text-[11px] text-slate-500 leading-relaxed">Visual structure of escalating slab parameters.</span>
+                              
+                              <button
+                                type="button"
+                                onClick={() => setShowAdminEditor(true)}
+                                className={`mt-4 inline-flex items-center gap-2 px-4.5 py-3 border text-[10.5px] font-black uppercase tracking-wider rounded-2xl cursor-pointer bg-slate-100/60 hover:bg-slate-200/60 dark:bg-slate-850/50 dark:hover:bg-slate-800/80 border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-95 ${accents[accentColor].text}`}
+                              >
+                                <ShieldCheck className="w-4 h-4" /> Configure Tariff Slabs
+                              </button>
+                            </div>
+                          )}
+                          <div className={isAdmin ? "md:col-span-7" : "md:col-span-12"}>
                             {tariffs[tariffState] && (
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {tariffs[tariffState].slabs.map((slab, idx) => (
@@ -1646,7 +1673,7 @@ export const Settings: React.FC = () => {
       {/* Admin Regional Database Editor Modal Backdrop */}
       {createPortal(
         <AnimatePresence>
-          {showAdminEditor && adminTariff && (
+          {showAdminEditor && adminTariff && isAdmin && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-955/65 backdrop-blur-md transition-opacity">
               <div className="absolute inset-0 cursor-pointer" onClick={() => setShowAdminEditor(false)} />
               

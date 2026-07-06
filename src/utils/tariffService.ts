@@ -183,6 +183,25 @@ function readCache(): TariffCache | null {
     if (!raw) return null;
     const cache: TariffCache = JSON.parse(raw);
     if (Date.now() - cache.fetchedAt > CACHE_TTL_MS) return null;
+
+    // Restore Infinity values which were serialized as null in JSON
+    if (cache.tariffs) {
+      Object.values(cache.tariffs).forEach((state) => {
+        if (state && Array.isArray(state.slabs)) {
+          state.slabs.forEach((s, idx) => {
+            if (
+              s.max === null ||
+              s.max === undefined ||
+              s.max === 999999 ||
+              (s.max === 0 && idx === state.slabs.length - 1)
+            ) {
+              s.max = Infinity;
+            }
+          });
+        }
+      });
+    }
+
     return cache;
   } catch {
     return null;
