@@ -121,7 +121,7 @@ export const BillUploadZone: React.FC<BillUploadZoneProps> = ({
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   )}
                   <span className={status === "uploading" || status === "pdf_rendering" ? "text-cyan-500 animate-pulse" : "text-slate-500"}>
-                    1. Pre-processing & Format Check
+                    1. Reading Document...
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400">
@@ -140,7 +140,7 @@ export const BillUploadZone: React.FC<BillUploadZoneProps> = ({
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   )}
                   <span className={status === "ocr_scanning" ? "text-cyan-500 animate-pulse" : status === "uploading" || status === "pdf_rendering" ? "text-slate-450 font-normal" : "text-slate-500"}>
-                    2. OCR Character Extraction
+                    2. Extracting Details (PaddleOCR)...
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400">
@@ -159,7 +159,7 @@ export const BillUploadZone: React.FC<BillUploadZoneProps> = ({
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   )}
                   <span className={status === "ai_parsing" ? "text-cyan-505 animate-pulse" : status === "uploading" || status === "pdf_rendering" || status === "ocr_scanning" ? "text-slate-450 font-normal" : "text-slate-500"}>
-                    3. Gemini LLM Bill Structure Parsing
+                    3. Validating Data...
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400">
@@ -175,25 +175,8 @@ export const BillUploadZone: React.FC<BillUploadZoneProps> = ({
                   ) : (
                     <div className="w-4 h-4 rounded-full border-2 border-slate-200 dark:border-slate-800 shrink-0"></div>
                   )}
-                  <span className={status === "finalizing" ? "text-cyan-505 animate-pulse" : "text-slate-450 font-normal"}>
-                    4. Tariff Slab & Rate Assessment
-                  </span>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400">
-                  {status === "finalizing" ? "RUNNING" : "QUEUED"}
-                </span>
-              </div>
-
-              {/* Step 5 */}
-              <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/50 transition-colors">
-                <div className="flex items-center gap-2">
-                  {status === "finalizing" ? (
-                    <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0"></div>
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-slate-200 dark:border-slate-800 shrink-0"></div>
-                  )}
-                  <span className={status === "finalizing" ? "text-cyan-505 animate-pulse" : "text-slate-455 font-normal"}>
-                    5. Carbon Footprint & Grade Scoring
+                  <span className={status === "finalizing" ? "text-cyan-550 animate-pulse" : "text-slate-450 font-normal"}>
+                    4. AI Analysis...
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400">

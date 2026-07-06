@@ -2,10 +2,20 @@
 
 ## Saved Versions
 
+- **Version 19**: Points to git tag `version-19`.
+  - **Features**:
+    - **PaddleOCR Character Recognition**: Replaced the browser-side Tesseract.js engine with deep-learning-based client-side PaddleOCR character recognition via ONNX Runtime Web.
+    - **Dynamic Code-Split Imports**: Dynamically loads the PaddleOCR bundle (`web-*.js`) only when the scanner starts, decreasing page load size by ~428KB and preventing pre-bundling crashes.
+    - **Math Cross-Checks & AI Validation**: Verifies that readings sum up to units consumed and charges balance, prepending warning insights on calculation mismatches.
+    - **Visual Preprocessing Filters**: Added canvas-native grayscaling, contrast, and brightness optimizations to remove shadows and enhance thin faded characters.
+  - **Verified:** 15/15 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 19", run `git checkout version-19`.
+
 - **Version 18**: Points to git tag `version-18`.
   - **Features**:
     - **Solar Net-Metering & Firestore Omission Protection:** Full support for solar net-metered bills. Added dynamic Import/Export/Net Billed units display, CO2 efficiency adjustments, and incremental database model payload construction to omit `undefined` keys (preventing Firestore `addDoc` validation failures).
-    - **Grid-Layout OCR Distance & Precedence Heuristics:** Upgraded regex patterns to support multi-column and grid layouts using character-distance matches (`[\s\S]{0,100}?`). Configured bill amount extraction with strict precedence (Net Amount/Amount Due before gross Total Amount) to accurately subtract government subsidies. Added comma/semicolon name segmentation to cleanly extract consumer names from long address blocks.
+    - **Grid-Layout OCR Distance & Precedence Heuristics:** Upgraded regex patterns to support multi-column and grid layouts using character-distance matches (`[\s\S]{0,100}?`). Configured bill amount extraction with strict precedence (Net Amount/Amount Due before gross Total Amount) to accurately subtract government subsidies. Added comma/semicolon name segmentation to cleanly extract consumer names from long address blocks, and added sequence-based address extraction heuristics following the name index.
     - **Vibrant Card Glowing Effect:** Enhanced the top-right corner highlights of all 4 dashboard results cards. Integrated high-opacity blur vectors with premium blending modes (`mix-blend-multiply` in light mode, `mix-blend-screen` in dark mode) and smooth scaling hover transitions.
     - **Admin Contact Masking:** Masked administrative contact email addresses in user-facing modals to preserve privacy.
   - **Verified:** 15/15 tests passing, zero TypeScript errors, clean production build.

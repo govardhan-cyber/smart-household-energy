@@ -30,5 +30,13 @@ service cloud.firestore {
         (resource != null && request.auth.uid == resource.data.userId)
       );
     }
+
+    match /issue_reports/{reportId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.userEmail == request.auth.token.email
+      );
+    }
   }
 }

@@ -1,16 +1,70 @@
-import { createWorker } from "tesseract.js";
+import type { PaddleOcrService } from "ppu-paddle-ocr/web";
 import * as pdfjsDist from "pdfjs-dist";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../firebase/config";
 import type { ParsedBillData } from "../pages/BillAnalyzer";
 
-export type ParserStatus = "idle" | "uploading" | "pdf_rendering" | "ocr_scanning" | "ai_parsing" | "finalizing" | "success" | "error";
+let paddleOcrInstance: PaddleOcrService | null = null;
+
+const getPaddleOcrInstance = async (): Promise<PaddleOcrService> => {
+  if (!paddleOcrInstance) {
+    const { PaddleOcrService } = await import("ppu-paddle-ocr/web");
+    paddleOcrInstance = new PaddleOcrService();
+    await paddleOcrInstance.initialize();
+  }
+  return paddleOcrInstance;
+};
+
+export type ParserStatus = "idle" | "uploading" | "pdf_rendering" | "ocr_scanning" | "ai_parsing" | "finalizing" | "reviewing" | "success" | "error";
 
 export interface ParserCallbacks {
   setStatus: (status: ParserStatus) => void;
   setOcrSteps: (step: string) => void;
   setOcrProgress: (progress: number) => void;
 }
+
+export const parsedBillSchema = {
+  type: "OBJECT",
+  properties: {
+    consumerName: { type: "STRING", description: "Clean full name of the customer, without address details or junctions" },
+    serviceNumber: { type: "STRING", description: "13-16 character service connection number (e.g. 131450J086300691) or 'Unknown'" },
+    customerID: { type: "STRING", description: "8-digit customer ID / unique service number (e.g. 30338570) or 'Unknown'" },
+    address: { type: "STRING", description: "Full billing/property address of the consumer" },
+    billDate: { type: "STRING", description: "Date of the bill (DD-MM-YYYY)" },
+    billingPeriod: { type: "STRING", description: "Billing month/period (e.g. May 2026)" },
+    dueDate: { type: "STRING", description: "Payment due date (DD-MM-YYYY)" },
+    previousReading: { type: "NUMBER", description: "Previous meter reading" },
+    currentReading: { type: "NUMBER", description: "Current meter reading" },
+    unitsConsumed: { type: "NUMBER", description: "Units consumed in kWh" },
+    energyCharge: { type: "NUMBER", description: "Calculated energy charge in INR" },
+    fixedCharge: { type: "NUMBER", description: "Fixed charges in INR" },
+    tax: { type: "NUMBER", description: "Taxes, duties, or surcharges in INR" },
+    otherCharges: { type: "NUMBER", description: "Other adjustments or surcharges in INR" },
+    totalAmount: { type: "NUMBER", description: "Net payable amount/Amount Due after subtracting subsidies and adding solar credits" },
+    tariffCategory: { type: "STRING", description: "Tariff category (e.g. LT-I Domestic)" },
+    energyInsights: {
+      type: "ARRAY",
+      items: { type: "STRING" },
+      description: "3 helpful AI insights on the bill details and tariff rates"
+    },
+    solarImportUnits: { type: "NUMBER", description: "Imported units for solar net-metered connections, or null/0" },
+    solarExportUnits: { type: "NUMBER", description: "Exported units for solar net-metered connections, or null/0" },
+    netBilledUnits: { type: "NUMBER", description: "Net billed units for solar net-metered connections, or null/0" },
+    // User requested document understanding fields
+    billMonth: { type: "STRING", description: "Month of the bill (e.g. June 2026)" },
+    billingDays: { type: "NUMBER", description: "Number of billing days in the cycle (typically 30 or 31)" },
+    governmentSubsidy: { type: "NUMBER", description: "Government subsidy amount in INR (e.g. 184)" },
+    netBill: { type: "NUMBER", description: "Net bill amount in INR after subtracting subsidy (e.g. 1305)" },
+    discom: { type: "STRING", description: "Electricity distribution company name (e.g. APSPDCL, APEPDCL, BESCOM)" },
+    tariff: { type: "STRING", description: "Tariff category type (e.g. LT-I)" }
+  },
+  required: [
+    "consumerName", "serviceNumber", "customerID", "address", "billDate", "billingPeriod", "dueDate",
+    "previousReading", "currentReading", "unitsConsumed", "energyCharge", "fixedCharge", "tax",
+    "otherCharges", "totalAmount", "tariffCategory", "energyInsights",
+    "billMonth", "billingDays", "governmentSubsidy", "netBill", "discom", "tariff"
+  ]
+};
 
 // ─── PDF.js Loader ───────────────────────────────────────────────────────────
 export const loadPdfJs = (): Promise<typeof pdfjsDist> => {
@@ -61,6 +115,28 @@ export const convertPdfToImage = async (
   throw new Error("Failed to create rendering context.");
 };
 
+// Helper to convert base64 imageSrc string to canvas
+const loadImageToCanvas = (src: string): Promise<HTMLCanvasElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Failed to get 2D context"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas);
+    };
+    img.onerror = (e) => reject(new Error("Failed to load image for PaddleOCR: " + String(e)));
+    img.src = src;
+  });
+};
+
 // ─── OCR text extraction ─────────────────────────────────────────────────────
 export const extractTextViaOcr = async (
   imageSrc: string,
@@ -68,26 +144,23 @@ export const extractTextViaOcr = async (
 ): Promise<string> => {
   callbacks.setStatus("ocr_scanning");
   callbacks.setOcrSteps("Initializing character recognition...");
-  callbacks.setOcrProgress(0);
+  callbacks.setOcrProgress(15);
 
-  const worker = await createWorker("eng");
   try {
-    interface TesseractProgressMessage {
-      status: string;
-      progress: number;
-    }
-    (worker as { logger?: (m: TesseractProgressMessage) => void }).logger = (m: TesseractProgressMessage) => {
-      if (m.status === "recognizing text") {
-        callbacks.setOcrProgress(Math.round(m.progress * 100));
-        callbacks.setOcrSteps(`Running OCR extraction: ${Math.round(m.progress * 100)}%`);
-      }
-    };
+    callbacks.setOcrSteps("Loading image onto canvas...");
+    const canvas = await loadImageToCanvas(imageSrc);
+    callbacks.setOcrProgress(40);
 
-    callbacks.setOcrSteps("Running Tesseract OCR text scanning...");
-    const { data: { text } } = await worker.recognize(imageSrc);
-    return text;
-  } finally {
-    await worker.terminate();
+    callbacks.setOcrSteps("Running PaddleOCR layout scanning...");
+    const ocrService = await getPaddleOcrInstance();
+    callbacks.setOcrProgress(60);
+
+    const result = await ocrService.recognize(canvas);
+    callbacks.setOcrProgress(100);
+    return result.text;
+  } catch (err: unknown) {
+    console.error("PaddleOCR execution failed:", err);
+    throw new Error(`PaddleOCR extraction failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 };
 
@@ -105,7 +178,7 @@ export const parseOcrWithGemini = async (
   }
 
   const prompt = `
-    You are an expert OCR parser for utility electricity bills in India.
+    You are an expert OCR parser for utility electricity bills in India (e.g. APEPDCL, APSPDCL, BESCOM, TSSPDCL).
     I will provide you with the raw text extracted from an electricity bill using OCR.
     Your task is to clean the text, identify the required metadata fields, and return them as a valid JSON object.
 
@@ -113,9 +186,26 @@ export const parseOcrWithGemini = async (
     
     Ensure numbers are extracted as numbers, and dates/addresses are clean.
     
+    CRITICAL DOMAIN RULES FOR EXTRACTION:
+    1. Consumer Name: Extract the clean full name of the customer. Do not append address details (like junctions, cantene, streets) to this field.
+    2. Address: Extract the consumer's full billing/property address (e.g. "KOTTAROAD JUNCTION, NEAR ARMY CANTENE, AKKIVARAM, SRIKAKULAM").
+    3. Service Number vs Customer ID:
+       - Labeled as "Service Number" or "Service Connection No" (typically a 13-16 character/digit string containing numbers and letters, like "131450J086300691") -> extract as "serviceNumber".
+       - Labeled as "Unique Service Number", "Customer ID", or "Customer No" (typically an 8-digit numeric string, like "30338570") -> extract as "customerID".
+    4. Bill Amount (totalAmount):
+       - Search for the Net Payable amount (labeled as "Net Bill Amount", "Net Bill", "Amount Due", or "Net Amount") first.
+       - Do not use the gross "Total Amount" (e.g. ₹1166.00) if a "Net Bill Amount" or "Amount Due" (e.g. ₹945.56) is available, as the gross amount does not subtract government subsidies or solar net credits.
+    5. Solar Net-Metering Fields:
+       - "solarImportUnits": Extract units imported from the grid (often labeled as "Import Units", "Solar Import", or "Import Reading") if present.
+       - "solarExportUnits": Extract units exported to the grid (often labeled as "Export Units", "Solar Export", or "Export Reading") if present.
+       - "netBilledUnits": Extract the net grid units billed (often labeled as "Net Billed Units", "Net Billed", or "Net Units") if present.
+       - If the bill is not a solar net-metered bill, set these three fields to null.
+    6. Due Date & Bill Date:
+       - Ignore "Disconnection Date" or "Discon Date" when extracting "dueDate".
+
     The JSON object structure MUST match this schema:
     {
-      "consumerName": "Consumer's full name, e.g. M.V. RAMANAYYA, or 'Unknown'",
+      "consumerName": "Consumer's full name or 'Unknown'",
       "serviceNumber": "Service number, unique service ID, account connection number, or 'Unknown'",
       "customerID": "Customer ID, unique customer identification code, or 'Unknown'",
       "address": "Consumer's billing/property address or 'Unknown'",
@@ -135,7 +225,10 @@ export const parseOcrWithGemini = async (
         "Provide 3 key insights. For example: Your usage is below average by 47%.",
         "Identify fixed charge rates of your DISCOM.",
         "Add recommendation matching your consumption profile."
-      ]
+      ],
+      "solarImportUnits": 529,
+      "solarExportUnits": 329,
+      "netBilledUnits": 200
     }
 
     Raw OCR extracted text:
@@ -165,7 +258,10 @@ export const parseOcrWithGemini = async (
           const callPromise = proxy({
             model,
             contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { 
+              responseMimeType: "application/json",
+              responseSchema: parsedBillSchema
+            }
           });
           const result = await Promise.race([
             callPromise,
@@ -186,9 +282,12 @@ export const parseOcrWithGemini = async (
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { 
+              responseMimeType: "application/json",
+              responseSchema: parsedBillSchema
+            }
           }),
-          signal: AbortSignal.timeout(8000) // 8-second timeout safety net
+          signal: AbortSignal.timeout(25000) // 25-second timeout safety net
         });
         if (!response.ok) throw new Error(`Status ${response.status}`);
         const resData = await response.json();
@@ -242,15 +341,34 @@ export const parseImageWithGeminiMultimodal = async (
   const base64Data = match[2];
 
   const prompt = `
-    You are an expert utility bill scanner.
+    You are an expert utility bill scanner, especially for electricity bills in India (e.g. APEPDCL, APSPDCL, BESCOM, TSSPDCL).
     I am providing you with an image of a household utility electricity bill.
     Analyze the image, read the text visually, and return the structured billing metadata as a valid JSON object.
 
     Do not include any markdown blockticks, code formatting block wrappers (\`\`\`json), or extra text. Return ONLY the raw JSON object string.
     
+    Ensure numbers are extracted as numbers, and dates/addresses are clean.
+    
+    CRITICAL DOMAIN RULES FOR EXTRACTION:
+    1. Consumer Name: Extract the clean full name of the customer. Do not append address details (like junctions, cantene, streets) to this field.
+    2. Address: Extract the consumer's full billing/property address (e.g. "KOTTAROAD JUNCTION, NEAR ARMY CANTENE, AKKIVARAM, SRIKAKULAM").
+    3. Service Number vs Customer ID:
+       - Labeled as "Service Number" or "Service Connection No" (typically a 13-16 character/digit string containing numbers and letters, like "131450J086300691") -> extract as "serviceNumber".
+       - Labeled as "Unique Service Number", "Customer ID", or "Customer No" (typically an 8-digit numeric string, like "30338570") -> extract as "customerID".
+    4. Bill Amount (totalAmount):
+       - Search for the Net Payable amount (labeled as "Net Bill Amount", "Net Bill", "Amount Due", or "Net Amount") first.
+       - Do not use the gross "Total Amount" (e.g. ₹1166.00) if a "Net Bill Amount" or "Amount Due" (e.g. ₹945.56) is available, as the gross amount does not subtract government subsidies or solar net credits.
+    5. Solar Net-Metering Fields:
+       - "solarImportUnits": Extract units imported from the grid (often labeled as "Import Units", "Solar Import", or "Import Reading") if present.
+       - "solarExportUnits": Extract units exported to the grid (often labeled as "Export Units", "Solar Export", or "Export Reading") if present.
+       - "netBilledUnits": Extract the net grid units billed (often labeled as "Net Billed Units", "Net Billed", or "Net Units") if present.
+       - If the bill is not a solar net-metered bill, set these three fields to null.
+    6. Due Date & Bill Date:
+       - Ignore "Disconnection Date" or "Discon Date" when extracting "dueDate".
+
     The JSON object structure MUST match this schema:
     {
-      "consumerName": "Consumer's full name, or 'Unknown'",
+      "consumerName": "Consumer's full name or 'Unknown'",
       "serviceNumber": "Service number, unique service ID, account connection number, or 'Unknown'",
       "customerID": "Customer ID, unique customer identification code, or 'Unknown'",
       "address": "Consumer's billing/property address or 'Unknown'",
@@ -270,7 +388,10 @@ export const parseImageWithGeminiMultimodal = async (
         "Provide 3 key insights based on consumption.",
         "Check grid efficiency and billing tier.",
         "Add specific cost-saving recommendation."
-      ]
+      ],
+      "solarImportUnits": 529,
+      "solarExportUnits": 329,
+      "netBilledUnits": 200
     }
   `;
 
@@ -302,7 +423,10 @@ export const parseImageWithGeminiMultimodal = async (
           const callPromise = proxy({
             model,
             contents,
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { 
+              responseMimeType: "application/json",
+              responseSchema: parsedBillSchema
+            }
           });
           const result = await Promise.race([
             callPromise,
@@ -321,8 +445,14 @@ export const parseImageWithGeminiMultimodal = async (
         const response = await fetch(chatUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents, generationConfig: { responseMimeType: "application/json" } }),
-          signal: AbortSignal.timeout(10000) // 10-second timeout safety net (images can take longer)
+          body: JSON.stringify({ 
+            contents, 
+            generationConfig: { 
+              responseMimeType: "application/json",
+              responseSchema: parsedBillSchema
+            } 
+          }),
+          signal: AbortSignal.timeout(30000) // 30-second timeout safety net (images can take longer)
         });
         if (!response.ok) throw new Error(`Status ${response.status}`);
         const resData = await response.json();
@@ -554,11 +684,40 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   energyInsights.push("Gemini AI was rate-limited (429). Used client-side smart regex fallback.");
   energyInsights.push("To run full AI optimization insights, try uploading at off-peak times.");
 
+  // 10. Address Heuristic (Extract lines following the consumer name)
+  let address = "Extracted locally from document text via smart heuristics (AI Offline)";
+  if (consumerName !== "Unknown Consumer") {
+    const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const nameLineIndex = lines.findIndex(l => l.includes(consumerName) || consumerName.includes(l));
+    if (nameLineIndex !== -1) {
+      const addressParts = [];
+      const exclusions = ["ELECTRICITY", "BILL", "POWER", "DISCOM", "METER", "SERVICE", "DATE", "NUMBER", "UNIQUE", "CONNECTED", "LOAD", "CONTRACTED"];
+      
+      for (let i = nameLineIndex + 1; i < Math.min(lines.length, nameLineIndex + 5); i++) {
+        const line = lines[i];
+        const lowerLine = line.toLowerCase();
+        
+        if (exclusions.some(ex => line.toUpperCase().includes(ex)) || 
+            lowerLine.includes("section") || 
+            lowerLine.includes("readings") || 
+            lowerLine.includes("charge") ||
+            /^\d{4,}/.test(line)) {
+          break;
+        }
+        addressParts.push(line);
+      }
+      
+      if (addressParts.length > 0) {
+        address = addressParts.join(", ").replace(/,+/g, ",").trim();
+      }
+    }
+  }
+
   const result: ParsedBillData = {
     consumerName,
     serviceNumber,
     customerID,
-    address: "Extracted locally from document text via smart heuristics (AI Offline)",
+    address,
     billDate,
     billingPeriod: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     dueDate,
@@ -571,7 +730,14 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     otherCharges: Math.max(0, totalAmount - (energyCharge + fixedCharge + tax)),
     totalAmount,
     tariffCategory,
-    energyInsights
+    energyInsights,
+    // Add user requested document understanding fields with safe local fallbacks
+    billMonth: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    billingDays: 30,
+    governmentSubsidy: 0,
+    netBill: totalAmount,
+    discom: tariffCategory.includes("AP") ? "APEPDCL" : "Electricity Board",
+    tariff: "LT-I"
   };
 
   if (solarImportUnits !== undefined) result.solarImportUnits = solarImportUnits;

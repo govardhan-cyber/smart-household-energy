@@ -6,9 +6,9 @@ import {
   Zap, Smartphone, HelpCircle, FileText
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { functions, storage, IS_FIREBASE_CONFIGURED } from "../firebase/config";
-import { httpsCallable } from "firebase/functions";
+import { storage, db, IS_FIREBASE_CONFIGURED } from "../firebase/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 
 interface ReportIssueModalProps {
   isOpen: boolean;
@@ -191,16 +191,71 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
       const email = user?.email || "anonymous@example.com";
       const name = user?.fullName || "Anonymous User";
 
-      // 2. Call cloud function or fallback
-      if (IS_FIREBASE_CONFIGURED && functions) {
-        const sendIssueReportFn = httpsCallable(functions, "sendIssueReport");
-        await sendIssueReportFn({
-          issueType,
-          description,
-          screenshotUrl,
-          userEmail: email,
-          userName: name
-        });
+      // 2. Call EmailJS or Cloud Function or fallback
+      let emailjsSent = false;
+      const emailjsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
+      const emailjsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
+      const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+
+      if (emailjsServiceId && emailjsTemplateId && emailjsPublicKey) {
+        try {
+          const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              service_id: emailjsServiceId,
+              template_id: emailjsTemplateId,
+              user_id: emailjsPublicKey,
+              template_params: {
+                issue_type: issueType,
+                description: description,
+                screenshot_url: screenshotUrl || "No screenshot uploaded",
+                user_email: email,
+                user_name: name,
+                // Default standard EmailJS template keys for fallback compatibility
+                from_name: name,
+                reply_to: email,
+                message: `Issue Type: ${issueType}\n\nDescription: ${description}\n\nScreenshot URL: ${screenshotUrl || "No screenshot uploaded"}`
+              }
+            })
+          });
+          if (response.ok) {
+            emailjsSent = true;
+            console.log("EmailJS notification sent successfully.");
+          } else {
+            const errText = await response.text();
+            console.error("EmailJS API Error Response:", errText);
+            console.warn("Check F12 Developer Tools Console. Ensure service_ump4a8e and template_30qkzl9 are fully connected, authenticated via OAuth, and active in your dashboard at emailjs.com.");
+          }
+        } catch (mailErr) {
+          console.error("Failed to send EmailJS notification:", mailErr);
+        }
+      }
+
+      if (IS_FIREBASE_CONFIGURED) {
+        // Direct database logging fallback
+        if (db) {
+          if (user?.uid) {
+            const userDocRef = doc(db, "users", user.uid);
+            await updateDoc(userDocRef, {
+              issueReports: arrayUnion({
+                issueType,
+                description,
+                screenshotUrl,
+                userEmail: email,
+                userName: name,
+                createdAt: new Date().toISOString(),
+                status: "open",
+                id: "issue_" + Math.random().toString(36).substr(2, 9),
+                emailjsNotificationSent: emailjsSent
+              })
+            });
+          } else {
+            throw new Error("You must be signed in to submit support tickets on the live site.");
+          }
+        } else {
+          throw new Error("Database service offline.");
+        }
       } else {
         // Simulated API call latency in mock mode
         await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -209,7 +264,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
           description,
           screenshotUrl,
           userEmail: email,
-          userName: name
+          userName: name,
+          emailjsNotificationSent: emailjsSent
         });
       }
 
