@@ -27,20 +27,35 @@ export const parsedBillSchema = {
   type: "OBJECT",
   properties: {
     consumerName: { type: "STRING", description: "Clean full name of the customer, without address details or junctions" },
-    serviceNumber: { type: "STRING", description: "13-16 character service connection number (e.g. 131450J086300691) or 'Unknown'" },
-    customerID: { type: "STRING", description: "8-digit customer ID / unique service number (e.g. 30338570) or 'Unknown'" },
+    serviceNumber: { type: "STRING", description: "13-16 character service connection number (e.g. 131102A202034345) or 'Unknown'" },
+    customerID: { type: "STRING", description: "8-digit customer ID / unique service number (e.g. 23315006) or 'Unknown'" },
     address: { type: "STRING", description: "Full billing/property address of the consumer" },
     billDate: { type: "STRING", description: "Date of the bill (DD-MM-YYYY)" },
-    billingPeriod: { type: "STRING", description: "Billing month/period (e.g. May 2026)" },
+    billingPeriod: { type: "STRING", description: "Billing month/period (e.g. June 2026)" },
     dueDate: { type: "STRING", description: "Payment due date (DD-MM-YYYY)" },
-    previousReading: { type: "NUMBER", description: "Previous meter reading" },
-    currentReading: { type: "NUMBER", description: "Current meter reading" },
-    unitsConsumed: { type: "NUMBER", description: "Units consumed in kWh" },
-    energyCharge: { type: "NUMBER", description: "Calculated energy charge in INR" },
-    fixedCharge: { type: "NUMBER", description: "Fixed charges in INR" },
-    tax: { type: "NUMBER", description: "Taxes, duties, or surcharges in INR" },
-    otherCharges: { type: "NUMBER", description: "Other adjustments or surcharges in INR" },
-    totalAmount: { type: "NUMBER", description: "Net payable amount/Amount Due after subtracting subsidies and adding solar credits" },
+    previousReading: { 
+      type: "NUMBER", 
+      description: "Previous meter reading cumulative value in kWh (typically 3-6 digits, e.g. 2535). CRITICAL: Do NOT extract status flags like 1 or 1 (LIVE) or multiplying factors like 1. If not found or if only status flags are present, set to null or 0." 
+    },
+    currentReading: { 
+      type: "NUMBER", 
+      description: "Current/Present meter reading cumulative value in kWh (typically 3-6 digits, e.g. 2667). CRITICAL: Do NOT extract status flags like 1 or 1 (LIVE) or multiplying factors like 1. If not found or if only status flags are present, set to null or 0." 
+    },
+    unitsConsumed: { type: "NUMBER", description: "Units consumed in kWh. Synonyms: 'Billed Units' (e.g. 132)" },
+    energyCharge: { type: "NUMBER", description: "Calculated energy charge in INR. Labeled as 'Energy Charges' (e.g. 643.50)" },
+    fixedCharge: { 
+      type: "NUMBER", 
+      description: "Fixed charges in INR. CRITICAL: For APEPDCL/APSPDCL, this is the SUM of 'Fixed Charges' (e.g. 10.00) and 'Customer Charges' (e.g. 50.00). In this case, 10 + 50 = 60.00." 
+    },
+    tax: { 
+      type: "NUMBER", 
+      description: "Taxes or duties in INR. For APEPDCL/APSPDCL, this is the 'Electricity Duty' (e.g. 7.92). Do NOT mix with subsidy." 
+    },
+    otherCharges: { type: "NUMBER", description: "Other adjustments, surcharges, FPPCA, ISD, Arrears, late payment surcharge in INR." },
+    totalAmount: { 
+      type: "NUMBER", 
+      description: "Total amount or net payable bill amount (e.g. 561.35). CRITICAL: Do NOT use the gross energy charge (like 643.50) as totalAmount." 
+    },
     tariffCategory: { type: "STRING", description: "Tariff category (e.g. LT-I Domestic)" },
     energyInsights: {
       type: "ARRAY",
@@ -50,11 +65,10 @@ export const parsedBillSchema = {
     solarImportUnits: { type: "NUMBER", description: "Imported units for solar net-metered connections, or null/0" },
     solarExportUnits: { type: "NUMBER", description: "Exported units for solar net-metered connections, or null/0" },
     netBilledUnits: { type: "NUMBER", description: "Net billed units for solar net-metered connections, or null/0" },
-    // User requested document understanding fields
     billMonth: { type: "STRING", description: "Month of the bill (e.g. June 2026)" },
     billingDays: { type: "NUMBER", description: "Number of billing days in the cycle (typically 30 or 31)" },
-    governmentSubsidy: { type: "NUMBER", description: "Government subsidy amount in INR (e.g. 184)" },
-    netBill: { type: "NUMBER", description: "Net bill amount in INR after subtracting subsidy (e.g. 1305)" },
+    governmentSubsidy: { type: "NUMBER", description: "Government subsidy amount in INR (e.g. 184.50)" },
+    netBill: { type: "NUMBER", description: "Net bill amount in INR after subtracting subsidy (e.g. 561.35)" },
     discom: { type: "STRING", description: "Electricity distribution company name (e.g. APSPDCL, APEPDCL, BESCOM)" },
     tariff: { type: "STRING", description: "Tariff category type (e.g. LT-I)" }
   },
@@ -192,15 +206,19 @@ export const parseOcrWithGemini = async (
     3. Service Number vs Customer ID:
        - Labeled as "Service Number" or "Service Connection No" (typically a 13-16 character/digit string containing numbers and letters, like "131450J086300691") -> extract as "serviceNumber".
        - Labeled as "Unique Service Number", "Customer ID", or "Customer No" (typically an 8-digit numeric string, like "30338570") -> extract as "customerID".
-    4. Bill Amount (totalAmount):
+    4. Meter Readings:
+       - "previousReading": Find the cumulative meter reading at the start of the billing period. Synonyms: "Previous Reading", "Prev Reading", "Prev Rdg", "PRDG", "P.Rdg", "Prev", "Previous", "PMR", "Old Reading", "Opening Reading".
+       - "currentReading": Find the cumulative meter reading at the end of the billing period. Synonyms: "Current Reading", "Current Rdg", "Curr Rdg", "CRDG", "C.Rdg", "Current", "Pres Reading", "Pres Rdg", "Present Reading", "Pres", "Present", "CMR", "New Reading", "Closing Reading".
+       - If both are present, make sure they align: currentReading - previousReading = unitsConsumed (for regular bills).
+    5. Bill Amount (totalAmount):
        - Search for the Net Payable amount (labeled as "Net Bill Amount", "Net Bill", "Amount Due", or "Net Amount") first.
        - Do not use the gross "Total Amount" (e.g. ₹1166.00) if a "Net Bill Amount" or "Amount Due" (e.g. ₹945.56) is available, as the gross amount does not subtract government subsidies or solar net credits.
-    5. Solar Net-Metering Fields:
+    6. Solar Net-Metering Fields:
        - "solarImportUnits": Extract units imported from the grid (often labeled as "Import Units", "Solar Import", or "Import Reading") if present.
        - "solarExportUnits": Extract units exported to the grid (often labeled as "Export Units", "Solar Export", or "Export Reading") if present.
        - "netBilledUnits": Extract the net grid units billed (often labeled as "Net Billed Units", "Net Billed", or "Net Units") if present.
        - If the bill is not a solar net-metered bill, set these three fields to null.
-    6. Due Date & Bill Date:
+    7. Due Date & Bill Date:
        - Ignore "Disconnection Date" or "Discon Date" when extracting "dueDate".
 
     The JSON object structure MUST match this schema:
@@ -490,6 +508,61 @@ export const parseImageWithGeminiMultimodal = async (
   return parsed;
 };
 
+// Helper to extract meter readings from raw OCR text with high APEPDCL specificity
+const extractAPEPDCLReading = (ocrText: string, type: "previous" | "present"): number => {
+  const lines = ocrText.split('\n');
+  let targetLines = lines.filter(line => {
+    const l = line.toLowerCase();
+    const hasReading = l.includes("reading") || l.includes("rdg") || l.includes("pmr") || l.includes("cmr");
+    const hasType = type === "previous" 
+      ? (l.includes("previous") || l.includes("prev") || l.includes("opening"))
+      : (l.includes("present") || l.includes("current") || l.includes("closing") || l.includes("curr"));
+    return hasReading && hasType && !l.includes("date") && !l.includes("status");
+  });
+
+  const kwhLines = targetLines.filter(line => line.toLowerCase().includes("kwh") || line.toLowerCase().includes("kw"));
+  if (kwhLines.length > 0) {
+    targetLines = kwhLines;
+  }
+
+  for (const line of targetLines) {
+    const match = line.match(/\b(\d{3,6})\b/);
+    if (match) {
+      return parseInt(match[1]);
+    }
+  }
+
+  const fallbackRegex = type === "previous"
+    ? /(?:Previous Reading|Prev Reading|Prev Rdg|PRDG|Opening Reading)[\s\S]{0,40}?(\d{3,6})/i
+    : /(?:Present Reading|Current Reading|Curr Reading|Curr Rdg|CRDG|Closing Reading)[\s\S]{0,40}?(\d{3,6})/i;
+  
+  const fallbackMatch = ocrText.match(fallbackRegex);
+  if (fallbackMatch) {
+    return parseInt(fallbackMatch[1]);
+  }
+
+  return 0;
+};
+
+// Helper to extract solar import/export from raw OCR text with high specificity
+const extractAPEPDCLSolar = (ocrText: string, type: "import" | "export"): number => {
+  const lines = ocrText.split('\n');
+  let targetLines = lines.filter(line => {
+    const l = line.toLowerCase();
+    const isSolar = l.includes("solar") || l.includes("export") || l.includes("import");
+    const isType = type === "import" ? l.includes("import") : l.includes("export");
+    return isSolar && isType && !l.includes("present") && !l.includes("previous");
+  });
+
+  for (const line of targetLines) {
+    const match = line.match(/\b(\d{2,6})\b/);
+    if (match) {
+      return parseInt(match[1]);
+    }
+  }
+  return 0;
+};
+
 // ─── Local OCR Heuristics Fallback Parser ────────────────────────────────────
 export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   // 1. Consumer Name Heuristic
@@ -498,32 +571,47 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   if (nameMatch && nameMatch[1].trim().length > 3) {
     consumerName = nameMatch[1].trim().split('\n')[0].trim();
   } else {
-    // Look for name line pattern (Title Case or Uppercase) excluding address/DISCOM/meta keywords
+    // Look for lines containing names ending with a comma (very typical of AP DISCOM bills)
     const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    const segments = lines.flatMap(l => l.split(/[,;]/)).map(s => s.trim()).filter(s => s.length > 0);
-    const nameLine = segments.find(s => {
-      const cleaned = s.trim();
-      const words = cleaned.split(/\s+/);
-      
-      const isWordPattern = words.length >= 2 && words.length <= 5 && words.every(w => 
-        /^[A-Z][a-zA-Z]{1,}$/.test(w) || /^[A-Z]{2,}$/.test(w)
-      );
-      
-      const exclusions = [
-        "ELECTRICITY", "BILL", "POWER", "EASTERN", "SECTION", "DISTRIBUTION", 
-        "DISCOM", "ERO", "ROAD", "JUNCTION", "NEAR", "CANTENE", "AKKIVARAM", 
-        "STREET", "LANE", "FLOOR", "BUILDING", "OPPOSITE", "BEHIND", "NEXT",
-        "SRIKAKULAM", "THOGARAM", "CONNECTED", "LOAD", "CONTRACTED", "METER",
-        "DATE", "NUMBER", "SERVICE", "AMOUNT", "DUE", "DISCONNECTION", "PHASE",
-        "SOLAR", "DETAILS", "CONTACTS", "CONTACT", "LINE", "MAN", "SUPERVISOR"
-      ];
-      
-      const hasExclusion = exclusions.some(ex => cleaned.toUpperCase().includes(ex));
-      
-      return isWordPattern && !hasExclusion;
+    const exclusions = [
+      "ELECTRICITY", "BILL", "POWER", "EASTERN", "SECTION", "DISTRIBUTION", 
+      "DISCOM", "ERO", "ROAD", "JUNCTION", "NEAR", "CANTENE", "AKKIVARAM", 
+      "STREET", "LANE", "FLOOR", "BUILDING", "OPPOSITE", "BEHIND", "NEXT",
+      "SRIKAKULAM", "THOGARAM", "CONNECTED", "LOAD", "CONTRACTED", "METER",
+      "DATE", "NUMBER", "SERVICE", "AMOUNT", "DUE", "DISCONNECTION", "PHASE",
+      "SOLAR", "DETAILS", "CONTACTS", "CONTACT", "LINE MAN", "SUPERVISOR", "LIVE",
+      // Bill field labels that must never be mistaken for consumer names:
+      "ENERGY", "CHARGES", "CHARGE", "FIXED", "TAX", "DUTY", "OTHER", "CUSTOMER",
+      "GOVT", "SUBSIDY", "TOTAL", "NET", "CONSUMPTION", "READING", "UNITS"
+    ];
+    
+    const commaLine = lines.find(l => {
+      const cleaned = l.trim();
+      return cleaned.endsWith(",") && 
+             cleaned.length > 3 && 
+             cleaned.length < 50 &&
+             !exclusions.some(ex => cleaned.toUpperCase().includes(ex));
     });
-    if (nameLine) {
-      consumerName = nameLine.replace(/[,;:]/g, "").trim();
+
+    if (commaLine) {
+      consumerName = commaLine.replace(/[,;:]/g, "").trim();
+    } else {
+      // Look for name line pattern (Title Case or Uppercase) excluding address/DISCOM/meta keywords
+      const segments = lines.flatMap(l => l.split(/[,;]/)).map(s => s.trim()).filter(s => s.length > 0);
+      const nameLine = segments.find(s => {
+        const cleaned = s.trim();
+        const words = cleaned.split(/\s+/);
+        
+        const isWordPattern = words.length >= 2 && words.length <= 5 && words.every(w => 
+          /^[A-Z][a-zA-Z]{1,}$/.test(w) || /^[A-Z]{2,}$/.test(w)
+        );
+        
+        const hasExclusion = exclusions.some(ex => cleaned.toUpperCase().includes(ex));
+        return isWordPattern && !hasExclusion;
+      });
+      if (nameLine) {
+        consumerName = nameLine.replace(/[,;:]/g, "").trim();
+      }
     }
   }
 
@@ -543,64 +631,75 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     customerID = "CID-" + serviceNumber;
   }
 
-  // 4. Units Consumed Heuristic
-  let unitsConsumed = 180; // default fallback
-  const unitsMatch = ocrText.match(/(?:Units Consumed|Units|Consumption|Consumed Units|Billed Units)[\s\S]{0,100}?(\d+)/i);
-  if (unitsMatch) {
-    unitsConsumed = parseInt(unitsMatch[1]);
-  } else {
-    const prevMatch = ocrText.match(/(?:Previous Reading|Prev Reading|Prev)[\s\S]{0,100}?(\d+)/i);
-    const currMatch = ocrText.match(/(?:Current Reading|Curr Reading|Curr)[\s\S]{0,100}?(\d+)/i);
-    if (prevMatch && currMatch) {
-      const prev = parseInt(prevMatch[1]);
-      const curr = parseInt(currMatch[1]);
-      if (curr > prev) {
-        unitsConsumed = curr - prev;
-      }
+  // 4. Readings & Units Consumed Heuristic
+  let previousReading = extractAPEPDCLReading(ocrText, "previous");
+  let currentReading = extractAPEPDCLReading(ocrText, "present");
+
+  let unitsConsumed = 0;
+  // Try to find "Billed Units" as a standalone line (most reliable)
+  const billedUnitsLineMatch = ocrText.split('\n').find(l => /^\s*Billed Units\s*\d+\s*$/i.test(l));
+  if (billedUnitsLineMatch) {
+    const num = billedUnitsLineMatch.match(/(\d+)/);
+    if (num) unitsConsumed = parseInt(num[1]);
+  }
+  if (unitsConsumed <= 0) {
+    const unitsMatch = ocrText.match(/(?:Billed Units|Units Consumed|Consumed Units)[\s\S]{0,30}?(\d{1,5})/i);
+    if (unitsMatch) {
+      const val = parseInt(unitsMatch[1]);
+      if (val > 0 && val < 5000) unitsConsumed = val;
     }
   }
+  if (unitsConsumed <= 0 && currentReading > previousReading && previousReading > 0) {
+    unitsConsumed = currentReading - previousReading;
+  }
+  // Do NOT silently default to 180 — keep 0 so the UI shows no false data
+  if (unitsConsumed > 5000) unitsConsumed = 0;
 
-  if (unitsConsumed <= 0 || unitsConsumed > 5000) {
-    unitsConsumed = Math.floor(Math.random() * 250) + 150;
+  if (previousReading > 0 && currentReading <= 0) {
+    currentReading = previousReading + unitsConsumed;
+  } else if (currentReading > 0 && previousReading <= 0) {
+    previousReading = Math.max(0, currentReading - unitsConsumed);
   }
 
-  // 5. Total Amount Heuristic (Priority mapping: Net payable amount takes highest priority, fallback to gross total amount)
-  let totalAmount = Math.round(unitsConsumed * 6.8);
-  const amountPatterns = [
-    /(?:Net Bill Amount|Net Bill|Net Payable Amount|Net Payable)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i,
-    /(?:Amount Due|Payable Amount|Bill Amount|Total Bill)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i,
-    /(?:Total Amount|Net Amount)[\s\S]{0,100}?(?:Rs\.?|INR|₹)?\s*([\d\.,]+)/i
-  ];
+  // 5. Total Amount & Net Bill Heuristic
+  // CRITICAL: Bills in India are always between ₹50 and ₹99,999.
+  // If any extracted value is outside this range it is OCR garbage (e.g. a service connection number).
+  const AMOUNT_MIN = 50;
+  const AMOUNT_MAX = 99999;
 
-  for (const pattern of amountPatterns) {
-    const match = ocrText.match(pattern);
-    if (match) {
-      const amtStr = match[1].replace(/,/g, '').trim();
-      const amtVal = parseFloat(amtStr);
-      if (amtVal > 50) {
-        totalAmount = Math.round(amtVal);
-        break;
-      }
-    }
+  let totalAmount = 0;
+  const taMatch = ocrText.match(/Total Amount[\s\S]{0,50}?([\d\.,]+)/i);
+  if (taMatch) {
+    const taVal = Math.round(parseFloat(taMatch[1].replace(/,/g, '')));
+    if (taVal >= AMOUNT_MIN && taVal <= AMOUNT_MAX) totalAmount = taVal;
   }
+
+  let netBill = 0;
+  const nbMatch = ocrText.match(/(?:Net Bill Amount|Net Bill|Amount Due|Amount Due\s*\(₹\)|Amount Due\s*\(Rs\))[\s\S]{0,50}?([\d\.,]+)/i);
+  if (nbMatch) {
+    const nbVal = Math.round(parseFloat(nbMatch[1].replace(/,/g, '')));
+    if (nbVal >= AMOUNT_MIN && nbVal <= AMOUNT_MAX) netBill = nbVal;
+  }
+
+  if (totalAmount <= 0 && netBill > 0) totalAmount = netBill;
+  if (netBill <= 0 && totalAmount > 0) netBill = totalAmount;
 
   // 6. Solar Net Metering Heuristics
   let solarImportUnits: number | undefined = undefined;
-  const importMatch = ocrText.match(/(?:Import Units|Solar Import|Import Reading|Imported? Units|Import)[\s\S]{0,100}?(\d+)/i);
-  if (importMatch) {
-    solarImportUnits = parseInt(importMatch[1]);
+  const extractedImport = extractAPEPDCLSolar(ocrText, "import");
+  if (extractedImport > 0) {
+    solarImportUnits = extractedImport;
   }
 
   let solarExportUnits: number | undefined = undefined;
-  const exportMatch = ocrText.match(/(?:Export Units|Solar Export|Export Reading|Exported? Units|Export)[\s\S]{0,100}?(\d+)/i);
-  if (exportMatch) {
-    solarExportUnits = parseInt(exportMatch[1]);
+  const extractedExport = extractAPEPDCLSolar(ocrText, "export");
+  if (extractedExport > 0) {
+    solarExportUnits = extractedExport;
   }
 
   let netBilledUnits: number | undefined = undefined;
-  const netBilledMatch = ocrText.match(/(?:Net Billed Units|Net Billed|Net Billed Unit|Net Units|Net Billed Consumption)[\s\S]{0,100}?(\d+)/i);
-  if (netBilledMatch) {
-    netBilledUnits = parseInt(netBilledMatch[1]);
+  if (solarImportUnits !== undefined && solarExportUnits !== undefined) {
+    netBilledUnits = Math.max(0, solarImportUnits - solarExportUnits);
   }
 
   // 7. Bill Date / Due Date Heuristics
@@ -646,31 +745,37 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   }
 
   // 9. Detailed breakdown heuristics
-  let energyCharge = Math.round(totalAmount * 0.7);
-  const ecMatch = ocrText.match(/(?:Energy Charges|Energy Charge|Consumption Charge)[\s\S]{0,100}?([\d\.,]+)/i);
+  let energyCharge = Math.round(totalAmount * 0.75);
+  const ecMatch = ocrText.match(/(?:Energy Charges|Energy Charge|Consumption Charge)[\s\S]{0,50}?([\d\.,]+)/i);
   if (ecMatch) {
     energyCharge = Math.round(parseFloat(ecMatch[1].replace(/,/g, '')));
   }
 
-  let fixedCharge = Math.round(totalAmount * 0.15);
-  const fcMatch = ocrText.match(/(?:Fixed Charges|Fixed Charge|Customer Charge|Customer Charges)[\s\S]{0,100}?([\d\.,]+)/i);
-  if (fcMatch) {
-    fixedCharge = Math.round(parseFloat(fcMatch[1].replace(/,/g, '')));
+  let fixedChargeVal = 0;
+  const fcMatch = ocrText.match(/Fixed Charges[\s\S]{0,50}?([\d\.,]+)/i);
+  if (fcMatch) fixedChargeVal = parseFloat(fcMatch[1].replace(/,/g, ''));
+
+  let customerChargeVal = 0;
+  const ccMatch = ocrText.match(/Customer Charges[\s\S]{0,50}?([\d\.,]+)/i);
+  if (ccMatch) customerChargeVal = parseFloat(ccMatch[1].replace(/,/g, ''));
+
+  let fixedCharge = Math.round(fixedChargeVal + customerChargeVal);
+  if (fixedCharge <= 0) {
+    fixedCharge = Math.round(totalAmount * 0.10);
   }
 
-  let tax = Math.round(totalAmount * 0.08);
-  const taxMatch = ocrText.match(/(?:Electricity Duty|Govt\.? Subsidy|ED|Tax|Duty|Govt\.? Duty)[\s\S]{0,100}?([\d\.,]+)/i);
+  let tax = 0;
+  const taxMatch = ocrText.match(/Electricity Duty[\s\S]{0,50}?([\d\.,]+)/i);
   if (taxMatch) {
     tax = Math.round(parseFloat(taxMatch[1].replace(/,/g, '')));
+  } else {
+    tax = Math.round(totalAmount * 0.05);
   }
 
-  // Scale down breakdown components proportionally to match net totalAmount if sum exceeds
-  const sumComponents = energyCharge + fixedCharge + tax;
-  if (sumComponents > totalAmount && totalAmount > 0) {
-    const scale = totalAmount / sumComponents;
-    energyCharge = Math.round(energyCharge * scale);
-    fixedCharge = Math.round(fixedCharge * scale);
-    tax = Math.round(tax * scale);
+  let governmentSubsidy = 0;
+  const subsidyMatch = ocrText.match(/(?:Govt\.?\s*Subsidy|Government\s*Subsidy)[\s\S]{0,50}?([\d\.,]+)/i);
+  if (subsidyMatch) {
+    governmentSubsidy = Math.round(parseFloat(subsidyMatch[1].replace(/,/g, '')));
   }
 
   const energyInsights = [];
@@ -681,8 +786,8 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
   } else {
     energyInsights.push(`Heuristic Parser: Extracted ${unitsConsumed} units from document.`);
   }
-  energyInsights.push("Gemini AI was rate-limited (429). Used client-side smart regex fallback.");
-  energyInsights.push("To run full AI optimization insights, try uploading at off-peak times.");
+  energyInsights.push("AI parsing unavailable. Results extracted via local heuristic rules.");
+  energyInsights.push("To run full AI insights, verify your VITE_GEMINI_API_KEY is a valid key (starts with 'AIza').");
 
   // 10. Address Heuristic (Extract lines following the consumer name)
   let address = "Extracted locally from document text via smart heuristics (AI Offline)";
@@ -721,8 +826,8 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     billDate,
     billingPeriod: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     dueDate,
-    previousReading: 1000,
-    currentReading: 1000 + unitsConsumed,
+    previousReading,
+    currentReading,
     unitsConsumed,
     energyCharge,
     fixedCharge,
@@ -734,8 +839,8 @@ export const parseOcrWithHeuristics = (ocrText: string): ParsedBillData => {
     // Add user requested document understanding fields with safe local fallbacks
     billMonth: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     billingDays: 30,
-    governmentSubsidy: 0,
-    netBill: totalAmount,
+    governmentSubsidy,
+    netBill,
     discom: tariffCategory.includes("AP") ? "APEPDCL" : "Electricity Board",
     tariff: "LT-I"
   };

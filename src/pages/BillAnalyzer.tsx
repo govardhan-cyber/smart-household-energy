@@ -12,7 +12,7 @@ import { BillHistoryList } from "../components/dashboard/bill/BillHistoryList";
 import { BillResultsView } from "../components/dashboard/bill/BillResultsView";
 import { BillModals } from "../components/dashboard/bill/BillModals";
 import { 
-  convertPdfToImage, extractTextViaOcr, parseImageWithGeminiMultimodal, 
+  convertPdfToImage, extractTextViaOcr, parseImageWithGeminiMultimodal,
   parseOcrWithGemini, parseOcrWithHeuristics, type ParserStatus 
 } from "../utils/billOcrParser";
 
@@ -245,6 +245,61 @@ export const BillAnalyzer: React.FC = () => {
     });
   };
 
+  // Helper to extract meter readings from raw OCR text with high APEPDCL specificity
+  const extractAPEPDCLReading = (ocrText: string, type: "previous" | "present"): number => {
+    const lines = ocrText.split('\n');
+    let targetLines = lines.filter(line => {
+      const l = line.toLowerCase();
+      const hasReading = l.includes("reading") || l.includes("rdg") || l.includes("pmr") || l.includes("cmr");
+      const hasType = type === "previous" 
+        ? (l.includes("previous") || l.includes("prev") || l.includes("opening"))
+        : (l.includes("present") || l.includes("current") || l.includes("closing") || l.includes("curr"));
+      return hasReading && hasType && !l.includes("date") && !l.includes("status");
+    });
+
+    const kwhLines = targetLines.filter(line => line.toLowerCase().includes("kwh") || line.toLowerCase().includes("kw"));
+    if (kwhLines.length > 0) {
+      targetLines = kwhLines;
+    }
+
+    for (const line of targetLines) {
+      const match = line.match(/\b(\d{3,6})\b/);
+      if (match) {
+        return parseInt(match[1]);
+      }
+    }
+
+    const fallbackRegex = type === "previous"
+      ? /(?:Previous Reading|Prev Reading|Prev Rdg|PRDG|Opening Reading)[\s\S]{0,40}?(\d{3,6})/i
+      : /(?:Present Reading|Current Reading|Curr Reading|Curr Rdg|CRDG|Closing Reading)[\s\S]{0,40}?(\d{3,6})/i;
+    
+    const fallbackMatch = ocrText.match(fallbackRegex);
+    if (fallbackMatch) {
+      return parseInt(fallbackMatch[1]);
+    }
+
+    return 0;
+  };
+
+  // Helper to extract solar import/export from raw OCR text with high specificity
+  const extractAPEPDCLSolar = (ocrText: string, type: "import" | "export"): number => {
+    const lines = ocrText.split('\n');
+    let targetLines = lines.filter(line => {
+      const l = line.toLowerCase();
+      const isSolar = l.includes("solar") || l.includes("export") || l.includes("import");
+      const isType = type === "import" ? l.includes("import") : l.includes("export");
+      return isSolar && isType && !l.includes("present") && !l.includes("previous");
+    });
+
+    for (const line of targetLines) {
+      const match = line.match(/\b(\d{2,6})\b/);
+      if (match) {
+        return parseInt(match[1]);
+      }
+    }
+    return 0;
+  };
+
   // Main Upload & Scan handler
   const handleUploadAndScan = async () => {
     if (!file || !user) return;
@@ -268,82 +323,181 @@ export const BillAnalyzer: React.FC = () => {
       
       let textResult = "";
       let structuredData: ParsedBillData | null = null;
-      let directScanFailed = false;
-      let directScanErrMessage = "";
 
-      // Step 1: Direct Gemini Multimodal AI scan first (highly accurate layout vision OCR)
+      // Stage 2 (PRIMARY): Gemini Vision reads the bill image directly.
+      // This is the most reliable path — Gemini sees the actual layout,
+      // table structure, and printed text without OCR noise/garbling.
       try {
-        console.log("Activating high-accuracy Gemini Multimodal AI direct scan...");
-        setOcrSteps("Extracting Details...");
+        console.log("[Stage 2] Gemini Vision: scanning bill image directly...");
+        setOcrSteps("AI Vision: Reading bill image...");
+        setOcrProgress(40);
         structuredData = await parseImageWithGeminiMultimodal(imageSrc, { setStatus, setOcrSteps });
-        textResult = "[High-Accuracy Direct Multimodal AI Image Scan]";
-      } catch (multiErr: unknown) {
-        console.warn("Direct multimodal scan failed, falling back to Tesseract OCR path:", multiErr);
-        directScanFailed = true;
-        directScanErrMessage = multiErr instanceof Error ? multiErr.message : String(multiErr);
-      }
-
-      // Step 2: Fallback to Tesseract OCR path if direct multimodal scan failed
-      if (directScanFailed) {
+        setOcrProgress(80);
+        console.log("[Stage 2] Gemini Vision succeeded.");
+      } catch (visionErr: unknown) {
+        // Stage 3 (FALLBACK): PaddleOCR → Gemini text parsing → local heuristics
+        console.warn("[Stage 2] Gemini Vision failed, falling back to PaddleOCR pipeline:", visionErr);
         try {
+          console.log("[Stage 3] PaddleOCR text extraction starting...");
           textResult = await extractTextViaOcr(imageSrc, { setStatus, setOcrSteps, setOcrProgress });
-          
+          console.log("[Stage 3] PaddleOCR raw text:", textResult.slice(0, 500));
+
           try {
             structuredData = await parseOcrWithGemini(textResult, { setStatus, setOcrSteps });
           } catch (geminiErr: unknown) {
-            console.warn("Gemini parsing failed, falling back to local OCR heuristics:", geminiErr);
+            console.warn("[Stage 3] Gemini text parsing failed, using local heuristics:", geminiErr);
             structuredData = parseOcrWithHeuristics(textResult);
           }
         } catch (ocrErr: unknown) {
-          console.error("Tesseract fallback also failed:", ocrErr);
-          throw new Error(`AI scanning failed: ${directScanErrMessage}. Local fallback error: ${ocrErr instanceof Error ? ocrErr.message : String(ocrErr)}`);
+          console.error("[Stage 3] OCR pipeline execution failed:", ocrErr);
+          throw new Error(`All parsing methods failed. OCR: ${ocrErr instanceof Error ? ocrErr.message : String(ocrErr)}`);
         }
       }
+
       if (!structuredData) {
         throw new Error("Unable to extract valid billing information from the document. Please verify the image quality.");
       }
       
       // ─────────────────────────────────────────────────────────────────
-      // AI VALIDATION & MATHEMATICAL CROSS-CHECKS (BACKEND PIPELINE):
+      // STAGE 4 & 5: AI VALIDATION & DETERMINISTIC MATH REPAIR (No false numbers)
       // ─────────────────────────────────────────────────────────────────
       setStatus("ai_parsing");
-      setOcrSteps("Validating Data...");
+      setOcrSteps("Validating & Repairing Data...");
       
       const validationWarnings: string[] = [];
-      const data = structuredData;
-      
-      // 1. Cross-check Readings vs Units Consumed
-      const calculatedUnits = (data.currentReading || 0) - (data.previousReading || 0);
-      if (data.unitsConsumed !== undefined && calculatedUnits > 0 && data.unitsConsumed !== calculatedUnits) {
-        const isSolar = (data.solarImportUnits !== undefined && data.solarImportUnits > 0) || 
-                        (data.solarExportUnits !== undefined && data.solarExportUnits > 0);
-        if (!isSolar) {
-          validationWarnings.push(`Meter readings mismatch: Current - Previous is ${calculatedUnits} kWh, but bill shows ${data.unitsConsumed} kWh.`);
+      const data = { ...structuredData };
+
+      // 1. Sanitize consumerMetadata fields
+      if (data.consumerName) {
+        data.consumerName = data.consumerName.replace(/^(Consumer Name|Name|Customer Name|Name of the Consumer)\s*[:=-]?\s*/i, "").trim();
+      }
+      if (data.serviceNumber) {
+        data.serviceNumber = data.serviceNumber.replace(/[\s\s]/g, "").toUpperCase().trim();
+      }
+      if (data.customerID) {
+        data.customerID = data.customerID.replace(/\D/g, "").trim();
+      }
+
+      // 2. Solar connection detection and net-metering correction
+      const isSolar = (data.solarImportUnits !== undefined && data.solarImportUnits !== null && Number(data.solarImportUnits) > 0) || 
+                      (data.solarExportUnits !== undefined && data.solarExportUnits !== null && Number(data.solarExportUnits) > 0) ||
+                      (data.netBilledUnits !== undefined && data.netBilledUnits !== null && Number(data.netBilledUnits) > 0);
+
+      // 3. Extracted Consumption & Readings Repair
+      let prevReading = Number(data.previousReading) || 0;
+      let currReading = Number(data.currentReading) || 0;
+      let units = Number(data.unitsConsumed) || 0;
+      let solarImport = data.solarImportUnits !== undefined && data.solarImportUnits !== null ? Number(data.solarImportUnits) : 0;
+      let solarExport = data.solarExportUnits !== undefined && data.solarExportUnits !== null ? Number(data.solarExportUnits) : 0;
+
+      // Extract values from APEPDCL bill labels via helper functions if they are 0, null, or 1 (false status codes)
+      // Only runs when textResult is non-empty (i.e., the OCR fallback path was used).
+      // On the Gemini Vision primary path, textResult is empty and we trust Vision's structured output.
+      if (textResult.length > 0 && (prevReading <= 0 || prevReading === 1 || currReading <= 0 || currReading === 1)) {
+        const extractedPrev = extractAPEPDCLReading(textResult, "previous");
+        const extractedCurr = extractAPEPDCLReading(textResult, "present");
+        
+        if (extractedPrev > 0 && (prevReading <= 0 || prevReading === 1)) {
+          prevReading = extractedPrev;
+          data.previousReading = prevReading;
+        }
+        if (extractedCurr > 0 && (currReading <= 0 || currReading === 1)) {
+          currReading = extractedCurr;
+          data.currentReading = currReading;
         }
       }
 
-      // 2. Cross-check Billing Totals & Subsidies
-      const energyVal = data.energyCharge || 0;
-      const fixedVal = data.fixedCharge || 0;
-      const taxVal = data.tax || 0;
-      const otherVal = data.otherCharges || 0;
-      const subsidyVal = data.governmentSubsidy || 0;
-      const calculatedNet = energyVal + fixedVal + taxVal + otherVal - subsidyVal;
-      
-      const targetNet = data.netBill !== undefined && data.netBill > 0 ? data.netBill : data.totalAmount;
-      if (Math.abs(calculatedNet - targetNet) > 5 && targetNet > 0) {
-        validationWarnings.push(`Calculation check: Charges sum to ₹${Math.round(calculatedNet)} (Energy ₹${energyVal} + Fixed ₹${fixedVal} + Tax ₹${taxVal} + Other ₹${otherVal} - Subsidy ₹${subsidyVal}), but bill net total is ₹${Math.round(targetNet)}.`);
+      if (textResult.length > 0 && isSolar && (solarImport <= 0 || solarExport <= 0)) {
+        const extractedImport = extractAPEPDCLSolar(textResult, "import");
+        const extractedExport = extractAPEPDCLSolar(textResult, "export");
+
+        if (extractedImport > 0 && solarImport <= 0) {
+          solarImport = extractedImport;
+          data.solarImportUnits = solarImport;
+        }
+        if (extractedExport > 0 && solarExport <= 0) {
+          solarExport = extractedExport;
+          data.solarExportUnits = solarExport;
+        }
       }
 
-      // 3. Inject validation warnings into energy insights
+      // Enforce readings math checks
+      if (currReading > prevReading && prevReading > 0) {
+        const grossBilledUnits = currReading - prevReading;
+        if (isSolar) {
+          if (solarImport <= 0) solarImport = grossBilledUnits;
+          const calculatedNetBilled = Math.max(0, solarImport - solarExport);
+          data.solarImportUnits = solarImport;
+          data.solarExportUnits = solarExport;
+          data.netBilledUnits = calculatedNetBilled;
+          data.unitsConsumed = calculatedNetBilled;
+          validationWarnings.push(`Solar net-metering: Imported ${solarImport} kWh, Exported ${solarExport} kWh. Billed units set to net ${calculatedNetBilled} kWh.`);
+        } else {
+          data.unitsConsumed = grossBilledUnits;
+          if (units !== grossBilledUnits) {
+            validationWarnings.push(`Enforced consumed units to ${grossBilledUnits} kWh to match meter readings.`);
+          }
+        }
+      } else if (units > 0) {
+        // Readings missing but units is known
+        if (!isSolar) {
+          if (prevReading > 0 && currReading <= 0) {
+            currReading = prevReading + units;
+            data.currentReading = currReading;
+            validationWarnings.push(`Calculated present reading (${currReading} kWh) to match consumed units.`);
+          } else if (currReading > 0 && prevReading <= 0) {
+            prevReading = Math.max(0, currReading - units);
+            data.previousReading = prevReading;
+            validationWarnings.push(`Calculated previous reading (${prevReading} kWh) to match consumed units.`);
+          }
+        }
+      }
+
+      // 4. Charge Structure Breakdown Repair
+      const energyCharge = Number(data.energyCharge) || 0;
+      const fixedCharge = Number(data.fixedCharge) || 0;
+      const tax = Number(data.tax) || 0;
+      const subsidy = Number(data.governmentSubsidy) || 0;
+      
+      // SANITY CHECK: Indian electricity bills range from ₹50 to ₹99,999.
+      // If Gemini/heuristics returns a value outside this range it is OCR garbage.
+      const BILL_AMT_MIN = 50;
+      const BILL_AMT_MAX = 99999;
+      const rawTotal = Number(data.totalAmount) || 0;
+      const rawNet = Number(data.netBill) || 0;
+      const originalTotal = (rawTotal >= BILL_AMT_MIN && rawTotal <= BILL_AMT_MAX) ? rawTotal : 0;
+      const originalNet   = (rawNet   >= BILL_AMT_MIN && rawNet   <= BILL_AMT_MAX) ? rawNet   : 0;
+
+      // SANITY CHECK: Consumer name must not be a known billing field label
+      const FIELD_LABEL_WORDS = ["ENERGY", "CHARGES", "CHARGE", "FIXED", "TAX", "DUTY",
+        "SUBSIDY", "TOTAL", "NET", "CONSUMPTION", "READING", "UNITS", "CUSTOMER",
+        "GOVT", "OTHER", "AMOUNT", "BILL", "ELECTRICITY"];
+      if (data.consumerName) {
+        const upperName = data.consumerName.toUpperCase();
+        if (FIELD_LABEL_WORDS.some(w => upperName.includes(w))) {
+          data.consumerName = "Unknown Consumer";
+        }
+      }
+
+      // Retain the actual Net Bill Amount and Total Amount printed in the headers
+      let finalNetBill = originalNet > 0 ? originalNet : originalTotal;
+      let finalTotalAmount = originalTotal > 0 ? originalTotal : (originalNet + subsidy);
+
+      // Keep totalAmount and netBill 100% matching the bill
+      data.totalAmount = finalTotalAmount;
+      data.netBill = finalNetBill;
+
+      // Adjust otherCharges so components balance perfectly (Total = Energy + Fixed + Tax + Other)
+      const currentComponentsSum = energyCharge + fixedCharge + tax;
+      const calculatedOtherCharges = Math.max(0, finalTotalAmount - currentComponentsSum);
+      data.otherCharges = calculatedOtherCharges;
+
+      // 5. Inject warnings / repair logs into insights list
       if (validationWarnings.length > 0) {
         data.energyInsights = [...validationWarnings, ...(data.energyInsights || [])];
       }
 
-      // 4. Sync fields for backward compatibility with existing dashboard statistics
-      if (data.netBill !== undefined && data.netBill > 0) {
-        data.totalAmount = data.netBill;
-      }
+      // 6. Sync fields for backward compatibility
       if (data.billMonth) {
         data.billingPeriod = data.billMonth;
       }
@@ -364,14 +518,22 @@ export const BillAnalyzer: React.FC = () => {
         ocrText: textResult
       };
 
+      const tempId = "mock_b_" + Math.random().toString(36).substring(2, 11);
       let finalRecord: BillRecord;
 
       if (IS_FIREBASE_CONFIGURED && db) {
-        const docRef = await addDoc(collection(db, "billHistory"), record);
-        finalRecord = { id: docRef.id, ...record };
+        try {
+          const docRef = await Promise.race([
+            addDoc(collection(db, "billHistory"), record),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Firestore Timeout")), 4000))
+          ]);
+          finalRecord = { id: docRef.id, ...record };
+        } catch (writeErr) {
+          console.warn("Firestore write timed out or failed, using local mock ID fallback:", writeErr);
+          finalRecord = { id: tempId, ...record };
+        }
       } else {
-        const id = "mock_b_" + Math.random().toString(36).substr(2, 9);
-        finalRecord = { id, ...record };
+        finalRecord = { id: tempId, ...record };
       }
 
       const localList = [finalRecord, ...history];

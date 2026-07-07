@@ -2,6 +2,16 @@
 
 ## Saved Versions
 
+- **Version 20**: Points to git tag `version-20`.
+  - **Features**:
+    - **Multimodal Gemini Vision Primary Pipeline**: Configured the bill scanner to use direct image multimodal Gemini Vision as the primary parsing layer, bypassing OCR text-scrambling on complex table structures.
+    - **Multi-layered Fallback Scan Deck**: Maintains PaddleOCR character recognition → Gemini JSON parsing → Local Heuristics as consecutive cascading fallbacks in case of API rate limits or offline state.
+    - **Sanity Bounds & Exclusions Hardening**: Added specific ₹50 to ₹99,999 limits on bill amount extractions to prevent Service Connection numbers from leaking as billing totals. Broadened consumer name exclusions to prevent billing headers (e.g. Energy Charges) from leaking as the customer name.
+    - **APEPDCL Fallback Heuristics Unit Tests**: Created `billOcrParser.test.ts` to verify local regex extraction against raw OCR text templates for five real-world bills (both normal and solar).
+  - **Verified:** 20/20 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 20", run `git checkout version-20`.
+
 - **Version 19**: Points to git tag `version-19`.
   - **Features**:
     - **PaddleOCR Character Recognition**: Replaced the browser-side Tesseract.js engine with deep-learning-based client-side PaddleOCR character recognition via ONNX Runtime Web.
