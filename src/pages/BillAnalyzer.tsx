@@ -11,6 +11,7 @@ import { BillUploadZone } from "../components/dashboard/bill/BillUploadZone";
 import { BillHistoryList } from "../components/dashboard/bill/BillHistoryList";
 import { BillResultsView } from "../components/dashboard/bill/BillResultsView";
 import { BillModals } from "../components/dashboard/bill/BillModals";
+import { PrintReport } from "../components/dashboard/PrintReport";
 import { 
   convertPdfToImage, extractTextViaOcr, parseImageWithGeminiMultimodal,
   parseOcrWithGemini, parseOcrWithHeuristics, type ParserStatus 
@@ -851,7 +852,8 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
       animate="visible"
       className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen print:p-0 print:bg-white print:text-black"
     >
-      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="print:hidden w-full space-y-8">
+        {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
       <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left print-background-content">
         <div className="flex justify-between items-end">
           <div>
@@ -1003,6 +1005,16 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
         </aside>
 
       </div>
+      </div>
+
+      {activeBill && (
+        <PrintReport
+          mode="bill"
+          user={user}
+          activeBill={activeBill}
+          billCalcs={calcs}
+        />
+      )}
     </motion.div>
   );
 };

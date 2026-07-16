@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Household Energy – User Manual</title>
+  <meta name="description" content="Official documentation and user guide for Smart Household Energy – AI-powered home energy management platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB;
+      --blue-light: #3B82F6;
+      --green: #10B981;
+      --cyan: #38BDF8;
+      --orange: #F59E0B;
+      --red: #EF4444;
+      --purple: #8B5CF6;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface2: #F1F5F9;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --text2: #475569;
+      --text3: #94A3B8;
+      --sidebar-w: 280px;
+      --header-h: 64px;
+      --shadow: 0 4px 24px rgba(15,23,42,0.08);
+      --shadow-lg: 0 8px 40px rgba(15,23,42,0.14);
+      --glow: 0 0 0 3px rgba(37,99,235,0.18);
+    }
+    [data-theme="dark"] {
+      --bg: #0B0F1A;
+      --surface: #131928;
+      --surface2: #1A2236;
+      --border: #1E2D4A;
+      --text: #F1F5F9;
+      --text2: #94A3B8;
+      --text3: #475569;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.7;
+      transition: background 0.3s, color 0.3s; overflow-x: hidden;
+    }
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      z-index: 9999; transition: width 0.1s linear; border-radius: 0 2px 2px 0;
+    }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: var(--sidebar-w); min-height: 100vh; position: fixed; top: 0; left: 0;
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; z-index: 100;
+      transition: transform 0.3s ease, background 0.3s; overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 24px 20px 16px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border); text-decoration: none; cursor: pointer;
+    }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    }
+    .logo-text { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.25; }
+    .logo-sub { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .sidebar-search { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .search-input-wrap { position: relative; display: flex; align-items: center; }
+    .search-icon { position: absolute; left: 10px; color: var(--text3); font-size: 14px; pointer-events: none; }
+    #sidebar-search {
+      width: 100%; padding: 8px 36px 8px 32px; border: 1.5px solid var(--border);
+      border-radius: 10px; background: var(--bg); color: var(--text);
+      font-size: 13px; font-family: inherit; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; cursor: pointer;
+    }
+    #sidebar-search:focus { border-color: var(--blue); box-shadow: var(--glow); }
+    #sidebar-search::placeholder { color: var(--text3); }
+    .search-kbd {
+      position: absolute; right: 8px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px;
+      font-size: 10px; color: var(--text3); font-family: inherit;
+    }
+    .sidebar-nav { flex: 1; padding: 12px 12px 20px; }
+    .nav-section-label {
+      font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text3); padding: 14px 8px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 9px 12px;
+      border-radius: 10px; cursor: pointer; font-size: 13.5px; font-weight: 500;
+      color: var(--text2); transition: all 0.18s ease; text-decoration: none;
+      border: none; background: none; width: 100%; text-align: left; margin-bottom: 1px;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(56,189,248,0.1));
+      color: var(--blue); font-weight: 600;
+      box-shadow: 0 0 0 1.5px rgba(37,99,235,0.2), 0 2px 8px rgba(37,99,235,0.12);
+    }
+    .nav-item .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: var(--blue); color: #fff;
+      border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 6px;
+    }
+    .sidebar-footer {
+      padding: 14px 16px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .footer-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 8px 10px; border-radius: 9px; border: 1.5px solid var(--border);
+      background: var(--surface2); color: var(--text2); font-size: 12px;
+      font-weight: 500; cursor: pointer; transition: all 0.18s; font-family: inherit;
+    }
+    .footer-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .mobile-menu-btn {
+      display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 8px 10px; cursor: pointer;
+      font-size: 18px; color: var(--text); transition: all 0.18s;
+    }
+    .main-content { margin-left: var(--sidebar-w); min-height: 100vh; width: calc(100% - var(--sidebar-w)); padding: 0 0 80px; }
+    .topbar {
+      position: sticky; top: 0; z-index: 90;
+      background: rgba(248,250,252,0.85);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border); height: var(--header-h);
+      display: flex; align-items: center; padding: 0 40px; gap: 16px;
+    }
+    [data-theme="dark"] .topbar { background: rgba(11,15,26,0.85); }
+    .topbar-breadcrumb { margin-right: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text3); }
+    .topbar-breadcrumb span { color: var(--text2); font-weight: 500; }
+    .topbar-actions { display: flex; gap: 8px; align-items: center; }
+    .topbar-btn {
+      display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+      border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface);
+      color: var(--text2); font-size: 12.5px; font-weight: 500; cursor: pointer;
+      transition: all 0.18s; font-family: inherit;
+    }
+    .topbar-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .theme-toggle {
+      padding: 8px; border-radius: 9px; border: 1.5px solid var(--border);
+      background: var(--surface); cursor: pointer; font-size: 15px;
+      transition: all 0.18s; line-height: 1;
+    }
+    .version-badge {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: white; border-radius: 20px; font-size: 11px; font-weight: 700; padding: 3px 10px;
+    }
+    .section { display: none; padding: 48px 60px 40px; animation: fadeSlide 0.4s ease; }
+    .section.active { display: block; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero {
+      border-radius: 28px; padding: 64px 56px;
+      background: linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 40%, #F0F9FF 100%);
+      border: 1.5px solid var(--border); position: relative; overflow: hidden; margin-bottom: 52px;
+    }
+    [data-theme="dark"] .hero { background: linear-gradient(135deg, #0D1F3E 0%, #0B2430 40%, #0E1F30 100%); }
+    .hero-orb { position: absolute; border-radius: 50%; pointer-events: none; }
+    .hero-orb-1 { width:300px; height:300px; right:-60px; top:-80px; background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%); }
+    .hero-orb-2 { width:200px; height:200px; right:200px; bottom:-40px; background: radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 70%); }
+    .hero-orb-3 { width:150px; height:150px; left:-30px; bottom:-30px; background: radial-gradient(circle, rgba(56,189,248,0.10) 0%, transparent 70%); }
+    .hero-inner { position: relative; z-index: 1; max-width: 680px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(37,99,235,0.09); border: 1px solid rgba(37,99,235,0.2);
+      color: var(--blue); border-radius: 20px; padding: 4px 13px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; margin-bottom: 20px;
+    }
+    .hero h1 { font-size: clamp(28px,4vw,44px); font-weight: 800; line-height: 1.18; letter-spacing: -0.03em; color: var(--text); margin-bottom: 16px; }
+    .hero h1 .highlight { background: linear-gradient(135deg, var(--blue), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 540px; line-height: 1.7; margin-bottom: 28px; }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      color: white; border: none; border-radius: 12px; padding: 13px 24px;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+      text-decoration: none; transition: all 0.22s;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); color: var(--text2);
+      border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 22px;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+      text-decoration: none; transition: all 0.22s;
+    }
+    .btn-secondary:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-1px); }
+    .hero-illustration { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); width: 280px; height: 220px; }
+    .hero-stats { display: flex; gap: 32px; margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--border); }
+    .hero-stat-value { font-size: 22px; font-weight: 800; color: var(--text); }
+    .hero-stat-label { font-size: 12px; color: var(--text3); font-weight: 500; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 20px; }
+    .card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 28px; transition: all 0.22s; position: relative; overflow: hidden;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(37,99,235,0.2); }
+    .card-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; flex-shrink:0; }
+    .card-icon.blue { background: rgba(37,99,235,0.1); }
+    .card-icon.green { background: rgba(16,185,129,0.1); }
+    .card-icon.cyan { background: rgba(56,189,248,0.1); }
+    .card-icon.orange { background: rgba(245,158,11,0.1); }
+    .card-icon.purple { background: rgba(139,92,246,0.1); }
+    .card h3 { font-size: 15.5px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .card p { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+    .card-link { display:inline-flex; align-items:center; gap:5px; color:var(--blue); font-size:13px; font-weight:600; margin-top:14px; text-decoration:none; transition: gap 0.18s; }
+    .card-link:hover { gap: 8px; }
+    .steps-list { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; gap: 20px; position: relative; padding-bottom: 36px; }
+    .step-item:last-child { padding-bottom: 0; }
+    .step-left { display: flex; flex-direction: column; align-items: center; }
+    .step-num {
+      width:40px; height:40px; border-radius:50%; flex-shrink:0;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color:white; font-size:14px; font-weight:800;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 12px rgba(37,99,235,0.3); position:relative; z-index:1;
+    }
+    .step-line { flex:1; width:2px; background: linear-gradient(to bottom, rgba(37,99,235,0.3), transparent); margin-top:6px; border-radius:2px; }
+    .step-item:last-child .step-line { display: none; }
+    .step-body { flex:1; padding-top:8px; }
+    .step-body h4 { font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .step-body p { font-size:14px; color:var(--text2); line-height:1.65; margin-bottom:12px; }
+    .step-img {
+      width:100%; border-radius:14px; background:linear-gradient(135deg, var(--surface2), var(--bg));
+      border:1.5px solid var(--border); height:140px; display:flex;
+      align-items:center; justify-content:center; color:var(--text3);
+      font-size:13px; gap:8px; margin-bottom:4px; position:relative; overflow:hidden;
+    }
+    .screenshot { width:100%; border-radius:18px; border:1.5px solid var(--border); background:linear-gradient(135deg,#EFF6FF,#F0FDF4); overflow:hidden; position:relative; margin:24px 0; }
+    [data-theme="dark"] .screenshot { background: linear-gradient(135deg,#0D1F3E,#0B2430); }
+    .screenshot-bar { background:var(--surface2); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; gap:8px; }
+    .screen-dot { width:11px; height:11px; border-radius:50%; }
+    .screen-dot.r { background:#FF5F57; }
+    .screen-dot.y { background:#FEBC2E; }
+    .screen-dot.g { background:#28C840; }
+    .screenshot-body { min-height:220px; display:flex; align-items:center; justify-content:center; padding:32px; }
+    .dash-mock { width:100%; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; padding:24px; }
+    .dash-card { border-radius:12px; padding:16px; background:var(--surface); border:1px solid var(--border); text-align:center; }
+    .dash-card-value { font-size:20px; font-weight:800; color:var(--text); }
+    .dash-card-label { font-size:11px; color:var(--text3); margin-top:2px; }
+    .section-header { margin-bottom: 40px; }
+    .section-eyebrow { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--blue); margin-bottom:10px; }
+    .section-header h2 { font-size:clamp(24px,3vw,34px); font-weight:800; letter-spacing:-0.025em; color:var(--text); margin-bottom:10px; }
+    .section-header p { font-size:15px; color:var(--text2); max-width:540px; }
+    .callout-box { border-radius:14px; padding:18px 22px; margin:20px 0; display:flex; align-items:flex-start; gap:14px; border:1.5px solid; }
+    .callout-box.info { background:rgba(37,99,235,0.06); border-color:rgba(37,99,235,0.2); }
+    .callout-box.tip { background:rgba(16,185,129,0.06); border-color:rgba(16,185,129,0.2); }
+    .callout-box.warning { background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.2); }
+    .callout-box.danger { background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.2); }
+    .callout-box-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+    .callout-box-body h5 { font-size:14px; font-weight:700; margin-bottom:3px; }
+    .callout-box.info .callout-box-body h5 { color:var(--blue); }
+    .callout-box.tip .callout-box-body h5 { color:var(--green); }
+    .callout-box.warning .callout-box-body h5 { color:var(--orange); }
+    .callout-box.danger .callout-box-body h5 { color:var(--red); }
+    .callout-box-body p { font-size:13.5px; color:var(--text2); margin:0; }
+    .accordion { border-radius:16px; border:1.5px solid var(--border); overflow:hidden; margin-bottom:10px; }
+    .accordion-header { padding:18px 22px; display:flex; align-items:center; gap:14px; cursor:pointer; background:var(--surface); transition:background 0.18s; user-select:none; }
+    .accordion-header:hover { background:var(--surface2); }
+    .accordion-icon { font-size:18px; flex-shrink:0; }
+    .accordion-title { flex:1; font-size:15px; font-weight:600; color:var(--text); }
+    .accordion-chevron { font-size:12px; color:var(--text3); transition:transform 0.25s; }
+    .accordion.open .accordion-chevron { transform:rotate(180deg); }
+    .accordion-body { max-height:0; overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
+    .accordion.open .accordion-body { max-height:600px; }
+    .accordion-content { padding:18px 22px 22px; font-size:14px; color:var(--text2); line-height:1.7; border-top:1px solid var(--border); }
+    .tabs { display:flex; gap:4px; background:var(--surface2); border-radius:12px; padding:4px; margin-bottom:24px; }
+    .tab-btn { flex:1; padding:9px 16px; border-radius:9px; border:none; background:none; color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.18s; font-family:inherit; }
+    .tab-btn.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; animation:fadeSlide 0.3s ease; }
+    .flow { display:flex; align-items:center; gap:0; flex-wrap:wrap; margin:24px 0; }
+    .flow-node { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:12px 18px; font-size:13px; font-weight:600; color:var(--text); text-align:center; flex-shrink:0; transition:all 0.22s; }
+    .flow-node:hover { border-color:var(--blue); color:var(--blue); box-shadow:var(--shadow); }
+    .flow-node.primary { background:linear-gradient(135deg,var(--blue),var(--blue-light)); color:white; border-color:transparent; box-shadow:0 4px 12px rgba(37,99,235,0.3); }
+    .flow-arrow { color:var(--text3); font-size:18px; padding:0 8px; flex-shrink:0; }
+    .progress-steps { display:flex; flex-direction:column; gap:12px; margin:20px 0; }
+    .progress-step { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+    .progress-bar-wrap { flex:1; height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+    .progress-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--blue),var(--cyan)); animation:progressFill 1.5s ease forwards; }
+    @keyframes progressFill { from{transform:scaleX(0);transform-origin:left;} to{transform:scaleX(1);transform-origin:left;} }
+    .progress-step-label { font-size:13px; font-weight:600; color:var(--text); min-width:160px; }
+    .progress-step-pct { font-size:12px; color:var(--text3); font-weight:600; min-width:50px; text-align:right; }
+    .kbd-table { width:100%; border-collapse:collapse; margin:20px 0; }
+    .kbd-table th { background:var(--surface2); padding:12px 18px; text-align:left; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text3); border-bottom:1px solid var(--border); }
+    .kbd-table td { padding:13px 18px; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text2); }
+    .kbd-table tr:last-child td { border-bottom:none; }
+    .kbd-table tr:hover td { background:var(--surface2); }
+    kbd { background:var(--surface2); border:1.5px solid var(--border); border-bottom-width:3px; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:700; color:var(--text); font-family:'Inter',monospace; }
+    .tips-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin:24px 0; }
+    .tip-card { border-radius:16px; padding:22px; border:1.5px solid var(--border); background:var(--surface); transition:all 0.22s; }
+    .tip-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+    .tip-card-emoji { font-size:28px; margin-bottom:10px; }
+    .tip-card h5 { font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .tip-card p { font-size:12.5px; color:var(--text2); line-height:1.6; }
+    .trouble-card { display:flex; align-items:stretch; border-radius:16px; border:1.5px solid var(--border); overflow:hidden; margin-bottom:14px; background:var(--surface); transition:all 0.22s; }
+    .trouble-card:hover { box-shadow:var(--shadow-lg); }
+    .trouble-issue { background:rgba(239,68,68,0.06); padding:20px 24px; border-right:1.5px solid var(--border); min-width:200px; flex-shrink:0; }
+    .trouble-issue h4 { font-size:14px; font-weight:700; color:var(--red); margin-bottom:4px; }
+    .trouble-issue p { font-size:12.5px; color:var(--text2); }
+    .trouble-arrow { display:flex; align-items:center; justify-content:center; padding:0 18px; color:var(--text3); font-size:18px; }
+    .trouble-solution { padding:20px 24px; flex:1; }
+    .trouble-solution h4 { font-size:14px; font-weight:700; color:var(--green); margin-bottom:4px; }
+    .trouble-solution p { font-size:12.5px; color:var(--text2); }
+    .support-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin:24px 0; }
+    .support-card { border-radius:18px; padding:28px 22px; text-align:center; border:1.5px solid var(--border); background:var(--surface); cursor:pointer; transition:all 0.22s; }
+    .support-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:var(--blue); }
+    .support-card-icon { font-size:32px; margin-bottom:12px; }
+    .support-card h4 { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .support-card p { font-size:12.5px; color:var(--text2); line-height:1.55; }
+    .support-card .btn-primary { margin-top:14px; justify-content:center; width:100%; font-size:13px; padding:10px; }
+    .feedback-bar { display:flex; align-items:center; gap:14px; background:var(--surface2); border-radius:14px; padding:16px 22px; margin-top:48px; border:1.5px solid var(--border); }
+    .feedback-bar p { font-size:13.5px; font-weight:600; color:var(--text); }
+    .feedback-btns { display:flex; gap:8px; margin-left:auto; }
+    .feedback-btn { padding:7px 16px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.18s; font-family:inherit; }
+    .feedback-btn.yes:hover { border-color:var(--green); color:var(--green); }
+    .feedback-btn.no:hover { border-color:var(--red); color:var(--red); }
+    .page-nav { display:flex; justify-content:space-between; align-items:center; padding-top:32px; border-top:1.5px solid var(--border); margin-top:40px; }
+    .page-nav-btn { display:flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:12px 20px; cursor:pointer; transition:all 0.22s; font-family:inherit; }
+    .page-nav-btn:hover { border-color:var(--blue); box-shadow:var(--shadow); }
+    .page-nav-btn .dir { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; }
+    .page-nav-btn .title { font-size:14px; font-weight:700; color:var(--text); }
+    .badge { display:inline-flex; align-items:center; gap:4px; border-radius:20px; padding:3px 10px; font-size:11.5px; font-weight:700; }
+    .badge.blue { background:rgba(37,99,235,0.1); color:var(--blue); }
+    .badge.green { background:rgba(16,185,129,0.1); color:var(--green); }
+    .badge.orange { background:rgba(245,158,11,0.1); color:var(--orange); }
+    .badge.red { background:rgba(239,68,68,0.1); color:var(--red); }
+    .badge.purple { background:rgba(139,92,246,0.1); color:var(--purple); }
+    .settings-table { width:100%; margin:16px 0; }
+    .settings-row { display:flex; align-items:flex-start; gap:20px; padding:16px 0; border-bottom:1px solid var(--border); }
+    .settings-row:last-child { border-bottom:none; }
+    .settings-label { min-width:160px; flex-shrink:0; }
+    .settings-label strong { display:block; font-size:14px; font-weight:700; color:var(--text); }
+    .settings-label span { font-size:12px; color:var(--text3); }
+    .settings-desc { flex:1; font-size:13.5px; color:var(--text2); line-height:1.6; }
+    .roi-output { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; margin:20px 0; }
+    .roi-metric { background:var(--surface); border:1.5px solid var(--border); border-radius:14px; padding:18px; text-align:center; }
+    .roi-metric-value { font-size:24px; font-weight:800; color:var(--blue); }
+    .roi-metric-label { font-size:11.5px; color:var(--text3); font-weight:600; margin-top:4px; }
+    #search-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); display:none; align-items:flex-start; justify-content:center; padding-top:15vh; backdrop-filter:blur(4px); }
+    #search-overlay.open { display:flex; }
+    .search-modal { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); width:600px; max-width:90vw; overflow:hidden; box-shadow:var(--shadow-lg); animation:scaleIn 0.2s ease; }
+    @keyframes scaleIn { from{opacity:0;transform:scale(0.95);} to{opacity:1;transform:scale(1);} }
+    .search-modal-input { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1.5px solid var(--border); }
+    .search-modal-input input { flex:1; border:none; background:none; color:var(--text); font-size:16px; font-family:inherit; outline:none; }
+    .search-results { padding:8px; max-height:360px; overflow-y:auto; }
+    .search-result-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s; }
+    .search-result-item:hover { background:var(--surface2); }
+    .search-result-icon { font-size:16px; }
+    .search-result-title { font-size:14px; font-weight:600; color:var(--text); }
+    .search-result-section { font-size:12px; color:var(--text3); margin-left:auto; }
+    .search-empty { padding:32px; text-align:center; color:var(--text3); font-size:14px; }
+    .doc-footer { background:var(--surface); border-top:1.5px solid var(--border); padding:24px 60px; display:flex; align-items:center; gap:20px; font-size:12.5px; color:var(--text3); flex-wrap:wrap; }
+    .doc-footer a { color:var(--text3); text-decoration:none; transition:color 0.18s; }
+    .doc-footer a:hover { color:var(--blue); }
+    .doc-footer .sep { color:var(--border); }
+    .divider { border:none; border-top:1.5px solid var(--border); margin:32px 0; }
+    h3 { font-size:18px; font-weight:700; color:var(--text); margin:28px 0 12px; }
+    h4 { font-size:15px; font-weight:700; color:var(--text); margin:20px 0 8px; }
+    ul, ol { padding-left:20px; margin:10px 0; }
+    li { font-size:13.5px; color:var(--text2); margin-bottom:6px; line-height:1.65; }
+    strong { color:var(--text); }
+    #toast { position:fixed; bottom:32px; right:32px; z-index:999; background:var(--text); color:var(--bg); border-radius:12px; padding:13px 20px; font-size:14px; font-weight:600; box-shadow:var(--shadow-lg); opacity:0; transform:translateY(12px); transition:all 0.25s; pointer-events:none; }
+    #toast.show { opacity:1; transform:translateY(0); }
+    @media(max-width:900px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main-content { margin-left:0; width:100%; }
+      .mobile-menu-btn { display:flex; }
+      .section { padding:60px 24px 40px; }
+      .hero { padding:40px 28px; }
+      .hero-illustration { display:none; }
+      .dash-mock { grid-template-columns:1fr 1fr; }
+      .doc-footer { padding:20px 24px; }
+      .topbar { padding:0 20px; }
+    }
+    @media(max-width:560px) {
+      .cards-grid { grid-template-columns:1fr; }
+      .tips-grid { grid-template-columns:1fr; }
+      .support-grid { grid-template-columns:1fr; }
+      .roi-output { grid-template-columns:1fr 1fr; }
+      .trouble-card { flex-direction:column; }
+    }
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
+      }
+      .sidebar, .topbar, .mobile-menu-btn, .feedback-bar, .page-nav, #search-overlay, #progress-bar, #toast {
+        display: none !important;
+      }
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+      .section {
+        display: block !important;
+        opacity: 1 !important;
+        transform: none !important;
+        padding: 24px 0 !important;
+        page-break-after: always;
+        break-after: page;
+      }
+      .section:last-of-type {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      /* Expand all tab panels for a full guide overview */
+      .tab-panel {
+        display: block !important;
+        opacity: 1 !important;
+      }
+      .tabs {
+        display: none !important;
+      }
+      /* Prevent elements from breaking mid-page */
+      .card, .step-item, .trouble-card, .tip-card, .callout-box, .roi-metric, .accordion, .screenshot, .kbd-table, .settings-row {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        opacity: 1 !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        margin-bottom: 12px !important;
+      }
+      /* Expand accordions in print mode */
+      .accordion-body {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      .accordion-content {
+        border-top: 1px solid var(--border) !important;
+      }
+      .accordion-chevron {
+        display: none !important;
+      }
+      .hero {
+        padding: 40px !important;
+        margin-bottom: 30px !important;
+        background: #EFF6FF !important;
+        border: 1.5px solid #BFDBFE !important;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .hero-orb, .hero-illustration, .btn-primary, .btn-secondary {
+        display: none !important;
+      }
+      h1, h2, h3, h4 {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      svg {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<div id="toast"></div>
+<div id="search-overlay" role="dialog" aria-modal="true">
+  <div class="search-modal">
+    <div class="search-modal-input">
+      <span>🔍</span>
+      <input id="search-global" type="text" placeholder="Search the documentation…" autocomplete="off" />
+      <kbd>Esc</kbd>
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="search-empty" id="search-empty">Start typing to search…</div>
+    </div>
+  </div>
+</div>
+<button class="mobile-menu-btn" id="mobile-menu">☰</button>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo" onclick="navigate('getting-started')">
+      <div class="logo-icon">⚡</div>
+      <div><div class="logo-text">Smart Household Energy</div><div class="logo-sub">User Manual · v1.0</div></div>
+    </div>
+    <div class="sidebar-search">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input id="sidebar-search" type="text" placeholder="Search the manual…" readonly />
+        <kbd class="search-kbd">⌘K</kbd>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <button class="nav-item active" data-section="getting-started" onclick="navigate('getting-started')"><span class="nav-icon">🚀</span> Getting Started</button>
+      <button class="nav-item" data-section="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+      <div class="nav-section-label">Core Features</div>
+      <button class="nav-item" data-section="energy-audit" onclick="navigate('energy-audit')"><span class="nav-icon">🏠</span> Home Energy Audit</button>
+      <button class="nav-item" data-section="bill-analyzer" onclick="navigate('bill-analyzer')"><span class="nav-icon">🧾</span> Bill Analyzer</button>
+      <button class="nav-item" data-section="ai-recommendations" onclick="navigate('ai-recommendations')"><span class="nav-icon">🤖</span> AI Recommendations</button>
+      <button class="nav-item" data-section="solar-calculator" onclick="navigate('solar-calculator')"><span class="nav-icon">☀️</span> Solar ROI Calculator</button>
+      <button class="nav-item" data-section="history" onclick="navigate('history')"><span class="nav-icon">📅</span> My History</button>
+      <div class="nav-section-label">Account</div>
+      <button class="nav-item" data-section="settings" onclick="navigate('settings')"><span class="nav-icon">⚙️</span> Settings</button>
+      <button class="nav-item" data-section="profile" onclick="navigate('profile')"><span class="nav-icon">👤</span> Profile</button>
+      <div class="nav-section-label">Support</div>
+      <button class="nav-item" data-section="faq" onclick="navigate('faq')"><span class="nav-icon">❓</span> FAQ <span class="nav-badge">8</span></button>
+      <button class="nav-item" data-section="troubleshooting" onclick="navigate('troubleshooting')"><span class="nav-icon">🔧</span> Troubleshooting</button>
+      <button class="nav-item" data-section="contact" onclick="navigate('contact')"><span class="nav-icon">💬</span> Contact Support</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="footer-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+      <button class="footer-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-breadcrumb"><span>📚 Docs</span><span style="color:var(--text3)">›</span><span id="breadcrumb-current">Getting Started</span></div>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+        <button class="topbar-btn" onclick="openSearch()">🔍 Search</button>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </header>
+
+    <!-- GETTING STARTED -->
+    <section class="section active" id="sec-getting-started">
+      <div class="hero">
+        <div class="hero-orb hero-orb-1"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-inner">
+          <div class="hero-eyebrow">⚡ Official Documentation</div>
+          <h1>Smart Household Energy<br/><span class="highlight">User Manual</span></h1>
+          <p>Learn how to analyze electricity bills, monitor energy usage, discover savings, and optimize your home's energy consumption using AI-powered insights.</p>
+          <div class="hero-btns">
+            <button class="btn-primary" onclick="navigate('dashboard')">📘 Read Full Guide</button>
+            <button class="btn-secondary">▶ Watch Tutorial</button>
+          </div>
+          <div class="hero-stats">
+            <div><div class="hero-stat-value">30%</div><div class="hero-stat-label">Avg. Energy Savings</div></div>
+            <div><div class="hero-stat-value">98%</div><div class="hero-stat-label">AI Accuracy</div></div>
+            <div><div class="hero-stat-value">50k+</div><div class="hero-stat-label">Homes Optimized</div></div>
+            <div><div class="hero-stat-value">4.9★</div><div class="hero-stat-label">User Rating</div></div>
+          </div>
+        </div>
+        <div class="hero-illustration">
+          <svg viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="60" y="100" width="160" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5"/>
+            <path d="M45 110 L140 50 L235 110Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="110" y="155" width="40" height="55" rx="6" fill="#93C5FD" stroke="#2563EB" stroke-width="1.5"/>
+            <circle cx="145" cy="182" r="3" fill="#2563EB"/>
+            <rect x="75" y="120" width="35" height="30" rx="5" fill="#BFDBFE" stroke="#60A5FA" stroke-width="1.5"/>
+            <rect x="170" y="120" width="35" height="30" rx="5" fill="#BFDBFE" stroke="#60A5FA" stroke-width="1.5"/>
+            <rect x="90" y="72" width="25" height="16" rx="3" fill="#0EA5E9" stroke="#0284C7" stroke-width="1"/>
+            <rect x="118" y="65" width="25" height="16" rx="3" fill="#0EA5E9" stroke="#0284C7" stroke-width="1"/>
+            <rect x="146" y="72" width="25" height="16" rx="3" fill="#0EA5E9" stroke="#0284C7" stroke-width="1"/>
+            <circle cx="230" cy="38" r="18" fill="#FEF08A" stroke="#FDE047" stroke-width="1.5"/>
+            <line x1="230" y1="14" x2="230" y2="8" stroke="#FDE047" stroke-width="2" stroke-linecap="round"/>
+            <line x1="230" y1="62" x2="230" y2="68" stroke="#FDE047" stroke-width="2" stroke-linecap="round"/>
+            <line x1="210" y1="38" x2="204" y2="38" stroke="#FDE047" stroke-width="2" stroke-linecap="round"/>
+            <line x1="250" y1="38" x2="256" y2="38" stroke="#FDE047" stroke-width="2" stroke-linecap="round"/>
+            <path d="M165 80 Q200 60 225 48" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/>
+            <circle cx="40" cy="160" r="22" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="1.5"/>
+            <text x="40" y="166" text-anchor="middle" font-size="16">🤖</text>
+            <path d="M62 160 L80 160" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <path d="M140 38 L132 55 L138 55 L130 75 L148 54 L141 54Z" fill="#F59E0B" stroke="#D97706" stroke-width="0.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="section-header">
+        <div class="section-eyebrow">📚 Documentation</div>
+        <h2>Quick Start Guides</h2>
+        <p>Jump to the section you need, or follow the complete onboarding flow below.</p>
+      </div>
+      <div class="cards-grid">
+        <div class="card" onclick="navigate('dashboard')" style="cursor:pointer">
+          <div class="card-icon blue">📊</div>
+          <h3>Dashboard Overview</h3>
+          <p>Understand your energy score, live stats, and quick action buttons from the central command center.</p>
+          <a class="card-link" href="#">Explore →</a>
+        </div>
+        <div class="card" onclick="navigate('bill-analyzer')" style="cursor:pointer">
+          <div class="card-icon green">🧾</div>
+          <h3>Bill Analyzer</h3>
+          <p>Upload and scan your electricity bill with AI-powered OCR and Gemini Vision recognition.</p>
+          <a class="card-link" href="#">Explore →</a>
+        </div>
+        <div class="card" onclick="navigate('ai-recommendations')" style="cursor:pointer">
+          <div class="card-icon purple">🤖</div>
+          <h3>AI Recommendations</h3>
+          <p>Get personalized energy-saving tips ranked by impact and potential monthly savings.</p>
+          <a class="card-link" href="#">Explore →</a>
+        </div>
+        <div class="card" onclick="navigate('solar-calculator')" style="cursor:pointer">
+          <div class="card-icon orange">☀️</div>
+          <h3>Solar ROI Calculator</h3>
+          <p>Model your solar investment payback period and 25-year cumulative savings projection.</p>
+          <a class="card-link" href="#">Explore →</a>
+        </div>
+      </div>
+      <hr class="divider" />
+      <div class="section-header" style="margin-top:40px">
+        <div class="section-eyebrow">🚀 Onboarding</div>
+        <h2>Getting Started in 5 Steps</h2>
+        <p>From account creation to your first AI-powered energy report — follow these steps to get up and running.</p>
+      </div>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4>Create Your Account</h4>
+            <p>Visit <strong>app.smartenergyai.com</strong> and sign up with your email address or Google account. Verify your email to activate your profile.</p>
+            <div class="step-img"><span>🖥️</span> Account Creation Screen</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4>Complete Your Profile</h4>
+            <p>Enter your household details: home size, number of occupants, location, and your electricity provider (DISCOM). This helps the AI calibrate accurate predictions.</p>
+            <div class="callout-box tip"><div class="callout-box-icon">💡</div><div class="callout-box-body"><h5>Pro Tip</h5><p>A complete profile improves AI recommendation accuracy by up to <strong>40%</strong>. Don't skip the appliance list!</p></div></div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4>Upload Your Electricity Bill</h4>
+            <p>Go to the <strong>Bill Analyzer</strong> tab and upload your latest electricity bill as a PDF, JPG, or PNG. Our AI will extract key information automatically.</p>
+            <div class="step-img"><span>📄</span> Bill Upload Interface</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4>Run the AI Energy Audit</h4>
+            <p>Navigate to <strong>Home Energy Audit</strong> and list your household appliances with daily usage hours to generate a real-time consumption breakdown.</p>
+            <div class="step-img"><span>🏠</span> Energy Audit Interface</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">5</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <h4>View AI Recommendations</h4>
+            <p>Check the <strong>AI Recommendations</strong> tab for personalized energy-saving tips, ranked by potential savings and confidence score.</p>
+            <div class="callout-box info"><div class="callout-box-icon">ℹ️</div><div class="callout-box-body"><h5>First Results in Minutes</h5><p>Once you complete Steps 3 and 4, your first personalized energy report is ready within 60 seconds.</p></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks for your feedback! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will work on improving this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><div></div><button class="page-nav-btn" onclick="navigate('dashboard')"><div><div class="dir">Next →</div><div class="title">Dashboard Overview</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="section" id="sec-dashboard">
+      <div class="section-header"><div class="section-eyebrow">📊 Core Feature</div><h2>Dashboard Guide</h2><p>Your central command center for all energy insights, bills, and AI recommendations.</p></div>
+      <div class="screenshot">
+        <div class="screenshot-bar"><div class="screen-dot r"></div><div class="screen-dot y"></div><div class="screen-dot g"></div><span style="margin-left:8px;font-size:12px;color:var(--text3)">app.smartenergyai.com/dashboard</span></div>
+        <div>
+          <div class="dash-mock">
+            <div class="dash-card"><div class="dash-card-value" style="color:var(--blue)">82</div><div class="dash-card-label">⚡ Energy Score</div></div>
+            <div class="dash-card"><div class="dash-card-value" style="color:var(--green)">₹1,240</div><div class="dash-card-label">💰 Est. Monthly Bill</div></div>
+            <div class="dash-card"><div class="dash-card-value" style="color:var(--orange)">₹380</div><div class="dash-card-label">📉 Potential Savings</div></div>
+            <div class="dash-card"><div class="dash-card-value" style="color:var(--purple)">340 kWh</div><div class="dash-card-label">🔋 Monthly Usage</div></div>
+          </div>
+          <div style="background:rgba(37,99,235,0.1);border:1.5px solid rgba(37,99,235,0.3);border-radius:8px;padding:8px 16px;margin:0 24px 16px;display:flex;gap:24px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:600;color:var(--blue)">① Energy Score</span>
+            <span style="font-size:12px;font-weight:600;color:var(--green)">② Estimated Bill</span>
+            <span style="font-size:12px;font-weight:600;color:var(--orange)">③ Potential Savings</span>
+            <span style="font-size:12px;font-weight:600;color:var(--purple)">④ Monthly Usage</span>
+          </div>
+        </div>
+      </div>
+      <h3>① Energy Score</h3><p style="font-size:14px;color:var(--text2)">A 0–100 composite score representing your household's energy efficiency. Above 80 is excellent; below 50 indicates significant optimization opportunities. The score updates each time you add new data or run an audit.</p>
+      <h3>② Estimated Monthly Bill</h3><p style="font-size:14px;color:var(--text2)">AI-predicted bill based on your current usage patterns and your DISCOM's slab tariff rates. Updated in real-time as you add or modify appliances.</p>
+      <h3>③ Potential Savings</h3><p style="font-size:14px;color:var(--text2)">The total monetary savings achievable if you implement the top AI recommendations. Click this card to jump directly to the Recommendations tab.</p>
+      <h3>④ Quick Actions</h3>
+      <div class="cards-grid" style="margin-top:16px">
+        <div class="card"><div class="card-icon blue">➕</div><h3>Add New Bill</h3><p>Quickly upload a new electricity bill without navigating to the Bill Analyzer.</p></div>
+        <div class="card"><div class="card-icon green">🏃</div><h3>Run New Audit</h3><p>Start a fresh energy audit with updated appliance usage data.</p></div>
+        <div class="card"><div class="card-icon purple">🤖</div><h3>Ask AI Assistant</h3><p>Open the AI chatbot for instant energy queries and personalized advice.</p></div>
+      </div>
+      <div class="callout-box warning"><div class="callout-box-icon">⚠️</div><div class="callout-box-body"><h5>Data Freshness</h5><p>For most accurate predictions, upload a bill at least once a month. Stale data (older than 60 days) is shown with a ⚠️ indicator.</p></div></div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this page. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('getting-started')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Getting Started</div></div></button><button class="page-nav-btn" onclick="navigate('energy-audit')"><div><div class="dir">Next →</div><div class="title">Home Energy Audit</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- ENERGY AUDIT -->
+    <section class="section" id="sec-energy-audit">
+      <div class="section-header"><div class="section-eyebrow">🏠 Core Feature</div><h2>Home Energy Audit</h2><p>Perform a comprehensive audit of all household appliances to get a precise consumption breakdown and AI-powered report.</p></div>
+      <div class="tabs" id="audit-tabs">
+        <button class="tab-btn active" onclick="switchTab(event,'audit','tab-audit-overview')">Overview</button>
+        <button class="tab-btn" onclick="switchTab(event,'audit','tab-audit-steps')">Step-by-Step</button>
+        <button class="tab-btn" onclick="switchTab(event,'audit','tab-audit-tips')">Tips</button>
+      </div>
+      <div class="tab-panel active" id="tab-audit-overview">
+        <div class="cards-grid">
+          <div class="card"><div class="card-icon blue">📋</div><h3>Appliance Selection</h3><p>Choose from 50+ pre-loaded appliances or add custom devices with custom wattage values.</p></div>
+          <div class="card"><div class="card-icon orange">⏱️</div><h3>Usage Input</h3><p>Enter average daily usage hours for each appliance. Weekly and monthly views available.</p></div>
+          <div class="card"><div class="card-icon green">🧮</div><h3>Budget Setting</h3><p>Set a monthly bill target. The AI will prioritize recommendations to help you hit it.</p></div>
+          <div class="card"><div class="card-icon purple">📈</div><h3>AI Simulation</h3><p>Run real-time simulator models for upgraded LED light combinations or inverter-type appliance configurations.</p></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-audit-steps">
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+            <div class="step-body">
+              <h4>Add Household Appliances</h4>
+              <p>Categorized by Lighting, Cooling, Kitchen, Laundry, Entertainment, and Custom. Click to append appliances to your list.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+            <div class="step-body">
+              <h4>Enter Power Specs &amp; Runtimes</h4>
+              <p>Slide active sliders or write daily usage hours. Enter custom wattages for unusual electronics or older appliances.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-left"><div class="step-num">3</div></div>
+            <div class="step-body">
+              <h4>View instant interactive pie-charts</h4>
+              <p>Visualize consumption by device category (Cooling, Lighting, Cooking) and click to view target savings models.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-audit-tips">
+        <div class="tips-grid">
+          <div class="tip-card"><div class="tip-card-emoji">💡</div><h5>Lighting upgrades</h5><p>Dual simulation for LED Bulbs and Tube Lights allows you to see concurrent savings models for upgraded light structures.</p></div>
+          <div class="tip-card"><div class="tip-card-emoji">🌡️</div><h5>Cooling optimization</h5><p>Setting your AC thermostat to 24°C rather than 18°C saves 6% energy per degree, easily modeled in our simulator.</p></div>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('dashboard')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Dashboard</div></div></button><button class="page-nav-btn" onclick="navigate('bill-analyzer')"><div><div class="dir">Next →</div><div class="title">Bill Analyzer</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- BILL ANALYZER -->
+    <section class="section" id="sec-bill-analyzer">
+      <div class="section-header"><div class="section-eyebrow">🧾 Core Feature</div><h2>Bill Analyzer</h2><p>Learn how the AI scan extracts metrics from any scanned electricity bill image or PDF.</p></div>
+      <h3>Multi-layered AI OCR Pipeline</h3>
+      <p>Our platform handles scans with a sequential fallback deck:</p>
+      <div class="flow">
+        <div class="flow-node primary">1. Gemini Vision API</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">2. PaddleOCR ONNX</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">3. Heuristic RegEx fallback</div>
+      </div>
+      <div class="callout-box info">
+        <div class="callout-box-icon">💡</div>
+        <div class="callout-box-body">
+          <h5>Sanity limits &amp; exclusion filters</h5>
+          <p>Extracts amounts strictly between ₹50 and ₹99,999 to avoid capturing customer numbers. Exclusions clean out names matching headers (like "Energy Charges").</p>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('energy-audit')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Home Energy Audit</div></div></button><button class="page-nav-btn" onclick="navigate('ai-recommendations')"><div><div class="dir">Next →</div><div class="title">AI Recommendations</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- AI RECOMMENDATIONS -->
+    <section class="section" id="sec-ai-recommendations">
+      <div class="section-header"><div class="section-eyebrow">🤖 AI Insights</div><h2>AI Recommendations</h2><p>Personalized saving tips curated specifically for your home size, DISCOM tariff, and climate zone.</p></div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon purple">💡</div>
+          <h3>Lighting Upgrades</h3>
+          <p>Replacing standard tube lights with T5 LEDs yields high ROI, tracked separately by our engine.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">🌡️</div>
+          <h3>Smart Cooling</h3>
+          <p>Learn how shifting AC cooling times reduces bills during peak tariff hours.</p>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('bill-analyzer')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Bill Analyzer</div></div></button><button class="page-nav-btn" onclick="navigate('solar-calculator')"><div><div class="dir">Next →</div><div class="title">Solar ROI Calculator</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- SOLAR CALCULATOR -->
+    <section class="section" id="sec-solar-calculator">
+      <div class="section-header"><div class="section-eyebrow">☀️ Solar Energy</div><h2>Solar ROI Calculator</h2><p>Simulate net-metered installations and estimate your 25-year compounding return on investment.</p></div>
+      <div class="roi-output">
+        <div class="roi-metric">
+          <div class="roi-metric-value">6.4 yrs</div>
+          <div class="roi-metric-label">Estimated Payback Period</div>
+        </div>
+        <div class="roi-metric">
+          <div class="roi-metric-value">₹4.2L</div>
+          <div class="roi-metric-label">25-Year Cumulative Savings</div>
+        </div>
+      </div>
+      <h3>25-Year Balance SVG Projection</h3>
+      <div class="screenshot">
+        <div class="screenshot-bar"><div class="screen-dot r"></div><div class="screen-dot y"></div><div class="screen-dot g"></div><span style="margin-left:8px;font-size:12px;color:var(--text3)">Projection Chart</span></div>
+        <div class="screenshot-body">
+          <svg viewBox="0 0 480 160" style="width:100%;max-width:480px;height:auto;">
+            <line x1="40" y1="10" x2="40" y2="140" stroke="var(--border)" stroke-width="1"/>
+            <line x1="40" y1="140" x2="480" y2="140" stroke="var(--border)" stroke-width="1"/>
+            <line x1="40" y1="90" x2="480" y2="90" stroke="var(--border)" stroke-width="1" stroke-dasharray="4 3"/>
+            <polyline points="40,140 80,128 120,116 160,100 200,90 240,76 280,60 320,42 360,26 400,14 440,6 480,2" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="40,30 80,38 120,48 160,60 200,76 240,90 280,102 320,110 360,115 400,118 440,120 480,122" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 3"/>
+            <line x1="200" y1="10" x2="200" y2="140" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="204" y="22" font-size="10" fill="#F59E0B" font-weight="700">Payback Yr 6</text>
+            <text x="12" y="12" font-size="9" fill="#94A3B8">₹4L</text>
+            <text x="12" y="92" font-size="9" fill="#94A3B8">₹0</text>
+            <text x="4" y="142" font-size="9" fill="#94A3B8">Yr0</text>
+            <text x="450" y="142" font-size="9" fill="#94A3B8">Yr25</text>
+          </svg>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('ai-recommendations')"><span>←</span><div><div class="dir">← Previous</div><div class="title">AI Recommendations</div></div></button><button class="page-nav-btn" onclick="navigate('history')"><div><div class="dir">Next →</div><div class="title">My History</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- MY HISTORY -->
+    <section class="section" id="sec-history">
+      <div class="section-header"><div class="section-eyebrow">📅 Audit History</div><h2>My History</h2><p>View uploaded bills, past audits, and dynamic historical savings profiles.</p></div>
+      <div class="callout-box info">
+        <div class="callout-box-icon">ℹ️</div>
+        <div class="callout-box-body">
+          <h5>Historical sync and edit mode</h5>
+          <p>Adjust scanned bill data or override values anytime to correct OCR errors. Database changes cascade and update history charts instantly.</p>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('solar-calculator')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Solar Calculator</div></div></button><button class="page-nav-btn" onclick="navigate('settings')"><div><div class="dir">Next →</div><div class="title">Settings</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="sec-settings">
+      <div class="section-header"><div class="section-eyebrow">⚙️ App Settings</div><h2>Settings</h2><p>Configure interface options, units, DISCOM providers, and alert parameters.</p></div>
+      <div class="tabs" id="settings-tabs">
+        <button class="tab-btn active" onclick="switchTab(event,'settings','tab-settings-visual')">Visuals</button>
+        <button class="tab-btn" onclick="switchTab(event,'settings','tab-settings-rates')">DISCOM Rates</button>
+      </div>
+      <div class="tab-panel active" id="tab-settings-visual">
+        <div class="settings-table">
+          <div class="settings-row">
+            <div class="settings-label"><strong>Theme Preference</strong><span>Visual layout style</span></div>
+            <div class="settings-desc">Choose between Light and Dark mode. Toggle dynamically using keyboard shortcuts.</div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-settings-rates">
+        <div class="settings-table">
+          <div class="settings-row">
+            <div class="settings-label"><strong>DISCOM Tariff slab</strong><span>Provider settings</span></div>
+            <div class="settings-desc">Select your current DISCOM (e.g. APEPDCL) to calibrate the bill analyzer matching algorithm. Custom rates can also be entered.</div>
+          </div>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('history')"><span>←</span><div><div class="dir">← Previous</div><div class="title">My History</div></div></button><button class="page-nav-btn" onclick="navigate('profile')"><div><div class="dir">Next →</div><div class="title">Profile</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="section" id="sec-profile">
+      <div class="section-header"><div class="section-eyebrow">👤 Profile Center</div><h2>Profile</h2><p>Your user details, completion ring, and savings metrics overview.</p></div>
+      <div class="card" style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:32px;border-color:rgba(37,99,235,0.2);background:linear-gradient(135deg,rgba(37,99,235,0.03),rgba(56,189,248,0.03))">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 8px 20px rgba(37,99,235,0.25)">👤</div>
+        <div style="flex:1">
+          <h3 style="margin:0 0 4px">Rahul Sharma</h3>
+          <p style="font-size:13px;color:var(--text3);margin:0">rahul.sharma@email.com · Hyderabad, Telangana</p>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <span class="badge blue">APEPDCL Provider</span>
+            <span class="badge green">Solar Connected</span>
+            <span class="badge orange">85% Complete</span>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="6"/>
+            <circle cx="32" cy="32" r="26" fill="none" stroke="var(--blue)" stroke-width="6" stroke-dasharray="138" stroke-dashoffset="21" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+            <text x="32" y="37" text-anchor="middle" font-size="13" font-weight="800" fill="var(--blue)">85%</text>
+          </svg>
+          <div style="font-size:10px;color:var(--text3);font-weight:600;margin-top:2px">Completion</div>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('settings')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Settings</div></div></button><button class="page-nav-btn" onclick="navigate('faq')"><div><div class="dir">Next →</div><div class="title">FAQ</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="sec-faq">
+      <div class="section-header"><div class="section-eyebrow">❓ FAQ</div><h2>Frequently Asked Questions</h2><p>Find answers to common questions about Smart Household Energy.</p></div>
+      <div id="faq-list">
+        <div class="accordion open">
+          <div class="accordion-header" onclick="toggleAcc(this)">
+            <span class="accordion-icon">📊</span>
+            <span class="accordion-title">How accurate is the AI bill prediction?</span>
+            <span class="accordion-chevron">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">Our AI bill prediction achieves an average accuracy of 94-98% when your profile is complete. It factors in historic seasonal adjustments and your DISCOM's specific slab tariff structure.</div>
+          </div>
+        </div>
+        <div class="accordion">
+          <div class="accordion-header" onclick="toggleAcc(this)">
+            <span class="accordion-icon">✏️</span>
+            <span class="accordion-title">Can I edit data imported from a scanned bill?</span>
+            <span class="accordion-chevron">▼</span>
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-content">Yes! Navigate to My History, click any entry, and select "Edit Extracted Fields" to override scan results. All calculations refresh immediately.</div>
+          </div>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('profile')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Profile</div></div></button><button class="page-nav-btn" onclick="navigate('troubleshooting')"><div><div class="dir">Next →</div><div class="title">Troubleshooting</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- TROUBLESHOOTING -->
+    <section class="section" id="sec-troubleshooting">
+      <div class="section-header"><div class="section-eyebrow">🔧 Support</div><h2>Troubleshooting</h2><p>Resolve standard app and scanner errors instantly with this checklist.</p></div>
+      <div class="trouble-card">
+        <div class="trouble-issue">
+          <h4>❌ OCR Scan Failed</h4>
+          <p>Bill text not extracted correctly</p>
+        </div>
+        <div class="trouble-arrow">→</div>
+        <div class="trouble-solution">
+          <h4>✅ Solution</h4>
+          <p>Ensure the upload image is clear (at least 150 DPI) and has sufficient contrast. Avoid uploading crumpled bills or pages with severe shadows.</p>
+        </div>
+      </div>
+      <h3>⌨️ Keyboard Shortcuts</h3>
+      <table class="kbd-table">
+        <thead>
+          <tr>
+            <th>Shortcut</th>
+            <th>Action</th>
+            <th>Availability</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+            <td>Open global search overlay</td>
+            <td>All sections</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+            <td>Toggle Dark / Light visual theme</td>
+            <td>All sections</td>
+          </tr>
+          <tr>
+            <td><kbd>Esc</kbd></td>
+            <td>Close open modal or overlay dialogs</td>
+            <td>All pages</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('faq')"><span>←</span><div><div class="dir">← Previous</div><div class="title">FAQ</div></div></button><button class="page-nav-btn" onclick="navigate('contact')"><div><div class="dir">Next →</div><div class="title">Contact Support</div></div><span>→</span></button></div>
+    </section>
+
+    <!-- CONTACT SUPPORT -->
+    <section class="section" id="sec-contact">
+      <div class="section-header"><div class="section-eyebrow">💬 Get Help</div><h2>Contact Support</h2><p>Get in touch with our team for questions about your profile or tariff database issues.</p></div>
+      <div class="support-grid">
+        <div class="support-card">
+          <div class="support-card-icon">📧</div>
+          <h4>Email Support</h4>
+          <p>Receive responses from developer support staff within one business day.</p>
+          <button class="btn-primary" onclick="showToast('Email client requested!')">Send Email</button>
+        </div>
+        <div class="support-card">
+          <div class="support-card-icon">💬</div>
+          <h4>Community Forum</h4>
+          <p>Ask questions and discuss efficiency guidelines with other solar adopters.</p>
+          <button class="btn-primary" onclick="showToast('Opening community forum!')">Open Forum</button>
+        </div>
+      </div>
+      <div class="feedback-bar"><p>Was this page helpful?</p><div class="feedback-btns"><button class="feedback-btn yes" onclick="showToast('Thanks! 🎉')">👍 Yes</button><button class="feedback-btn no" onclick="showToast('We will improve this. 🙏')">👎 No</button></div></div>
+      <div class="page-nav"><button class="page-nav-btn" onclick="navigate('troubleshooting')"><span>←</span><div><div class="dir">← Previous</div><div class="title">Troubleshooting</div></div></button><div></div></div>
+    </section>
+
+    <footer class="doc-footer">
+      <span>⚡ Built with ❤️ for sustainable energy</span>
+      <span class="sep">|</span>
+      <a href="#" onclick="navigate('getting-started')">Documentation Home</a>
+      <span class="sep">|</span>
+      <a href="#" onclick="toggleTheme()">Toggle Theme</a>
+      <span style="margin-left: auto;">User Manual v1.0</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+const sectionsMap = {
+  'getting-started': 'Getting Started',
+  'dashboard': 'Dashboard',
+  'energy-audit': 'Home Energy Audit',
+  'bill-analyzer': 'Bill Analyzer',
+  'ai-recommendations': 'AI Recommendations',
+  'solar-calculator': 'Solar ROI Calculator',
+  'history': 'My History',
+  'settings': 'Settings',
+  'profile': 'Profile',
+  'faq': 'FAQ',
+  'troubleshooting': 'Troubleshooting',
+  'contact': 'Contact Support'
+};
+
+function navigate(id) {
+  if (!sectionsMap[id]) return;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('sec-' + id);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-section') === id);
+  });
+
+  const breadcrumb = document.getElementById('breadcrumb-current');
+  if (breadcrumb) breadcrumb.textContent = sectionsMap[id];
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('sidebar').classList.remove('open');
+  history.pushState(null, '', '#' + id);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = location.hash.slice(1);
+  if (hash && sectionsMap[hash]) {
+    navigate(hash);
+  } else {
+    navigate('getting-started');
+  }
+});
+
+function toggleAcc(header) {
+  const accordion = header.closest('.accordion');
+  const isOpen = accordion.classList.contains('open');
+  const list = accordion.closest('#faq-list');
+  if (list) {
+    list.querySelectorAll('.accordion').forEach(x => x.classList.remove('open'));
+  }
+  if (!isOpen) {
+    accordion.classList.add('open');
+  }
+}
+
+function switchTab(event, group, panelId) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  panel.parentElement.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+  panel.classList.add('active');
+
+  const tabsElement = document.getElementById(group + '-tabs');
+  if (tabsElement) {
+    tabsElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (event && event.target) {
+      event.target.classList.add('active');
+    }
+  }
+}
+
+let darkTheme = false;
+function toggleTheme() {
+  darkTheme = !darkTheme;
+  document.documentElement.setAttribute('data-theme', darkTheme ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = darkTheme ? '☀️ Light' : '🌙 Dark';
+}
+
+document.getElementById('mobile-menu').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+window.addEventListener('scroll', () => {
+  const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const percentage = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
+  document.getElementById('progress-bar').style.width = percentage + '%';
+});
+
+const searchData = [
+  { title: 'Getting Started', section: 'Overview', id: 'getting-started' },
+  { title: 'Dashboard Guide', section: 'Core Features', id: 'dashboard' },
+  { title: 'Home Energy Audit', section: 'Core Features', id: 'energy-audit' },
+  { title: 'Bill Analyzer OCR', section: 'Core Features', id: 'bill-analyzer' },
+  { title: 'AI Recommendations', section: 'Core Features', id: 'ai-recommendations' },
+  { title: 'Solar ROI Calculator', section: 'Core Features', id: 'solar-calculator' },
+  { title: 'My History Records', section: 'Overview', id: 'history' },
+  { title: 'Settings Panel', section: 'Account', id: 'settings' },
+  { title: 'Profile Status', section: 'Account', id: 'profile' },
+  { title: 'FAQ & Tips', section: 'Support', id: 'faq' },
+  { title: 'Troubleshooting Guides', section: 'Support', id: 'troubleshooting' },
+  { title: 'Contact Support Channels', section: 'Support', id: 'contact' }
+];
+
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  document.getElementById('search-global').focus();
+  renderSearchResults('');
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-global').value = '';
+}
+
+function renderSearchResults(query) {
+  const resultsContainer = document.getElementById('search-results');
+  if (!query) {
+    resultsContainer.innerHTML = '<div class="search-empty">Start typing to search…</div>';
+    return;
+  }
+  const filtered = searchData.filter(i => 
+    i.title.toLowerCase().includes(query.toLowerCase()) || 
+    i.section.toLowerCase().includes(query.toLowerCase())
+  );
+  if (filtered.length) {
+    resultsContainer.innerHTML = filtered.map(x => `
+      <div class="search-result-item" onclick="navigate('${x.id}'); closeSearch()">
+        <span class="search-result-icon">📄</span>
+        <span class="search-result-title">${x.title}</span>
+        <span class="search-result-section">${x.section}</span>
+      </div>
+    `).join('');
+  } else {
+    resultsContainer.innerHTML = `<div class="search-empty">No results found for "${query}"</div>`;
+  }
+}
+
+document.getElementById('search-global').addEventListener('input', e => renderSearchResults(e.target.value));
+document.getElementById('search-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('search-overlay')) {
+    closeSearch();
+  }
+});
+document.getElementById('sidebar-search').addEventListener('click', openSearch);
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    openSearch();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+    e.preventDefault();
+    navigate('troubleshooting');
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+    e.preventDefault();
+    toggleTheme();
+  }
+  if (e.key === 'Escape') {
+    closeSearch();
+    document.getElementById('sidebar').classList.remove('open');
+  }
+});
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Fade-in animation via IntersectionObserver
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.05 });
+
+document.querySelectorAll('.card, .step-item, .trouble-card, .tip-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(16px)';
+  el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

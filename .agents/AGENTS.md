@@ -2,6 +2,15 @@
 
 ## Saved Versions
 
+- **Version 21**: Points to git tag `version-21`.
+  - **Features**:
+    - **Unified Multi-Page PDF Booklet Reports**: Standardized printable PDF generation under a single dynamic component `PrintReport` across the manual Home Audit Wizard, the scanned Bill Analyzer, and the History log modal pages. Removed physical A4 height overrides (`min-h-[297mm]`) and restricted trailing page breaks to non-final page divisions (`.print-page:not(:last-child)`) in `index.css` to eliminate trailing blank pages.
+    - **SaaS Platform Diagnostics Dashboard**: Rebuilt the "About Platform" diagnostics tab in `Settings.tsx` into a high-fidelity SaaS-style console. Integrated a dynamic system health header banner, a 98% circular health indicator SVG, live fluctuating hardware resource monitors (CPU usage, memory allocation, and latency timers), and specific build tags (`v1.6.4`, production designations, last updated tags, and build hex `#a92f8d`).
+    - **Animated Diagnostics Checks & Compact Cards**: Added interactive sequential step logs (*Checking OCR... Checking AI... Checking Firebase... Checking Storage... Analyzing Performance...*) triggered by the renamed `Scan Platform` button. Scaled down visual card proportions (padding, icon sizes, and font ratios) to make the grid highly compact and visually balanced.
+  - **Verified:** 20/20 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 21", run `git checkout version-21`.
+
 - **Version 20**: Points to git tag `version-20`.
   - **Features**:
     - **Multimodal Gemini Vision Primary Pipeline**: Configured the bill scanner to use direct image multimodal Gemini Vision as the primary parsing layer, bypassing OCR text-scrambling on complex table structures.

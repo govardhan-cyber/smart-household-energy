@@ -14,6 +14,7 @@ import { DashboardStepProgress } from "../components/dashboard/DashboardStepProg
 import { DashboardSidebarSummary } from "../components/dashboard/DashboardSidebarSummary";
 import { DashboardSlabBreakdown } from "../components/dashboard/DashboardSlabBreakdown";
 import { useDashboardState } from "../hooks/useDashboardState.tsx";
+import { PrintReport } from "../components/dashboard/PrintReport";
 
 const tabVariants = {
   hidden: { opacity: 0 },
@@ -109,7 +110,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 pt-4 pb-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-4">
-      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="print:hidden w-full space-y-4">
+        {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
       <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left">
         <div className="flex justify-between items-end">
           <div>
@@ -429,7 +431,18 @@ export const Dashboard: React.FC = () => {
             )}
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
+
+      {analysisResult && (
+        <PrintReport
+          user={user}
+          activeAppliances={activeAppliances}
+          analysisResult={analysisResult}
+          recommendedKw={recommendedKw}
+          solarOffsetPercent={solarOffsetPercent}
+        />
+      )}
 
       {/* Toast Notification */}
       <AnimatePresence>

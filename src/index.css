@@ -400,6 +400,43 @@ textarea:focus-visible {
     height: auto !important;
     flex: none !important;
   }
+
+  /* Custom print report page rules */
+  .print-report-root {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-page {
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+    border: none !important;
+  }
+
+  .print-page:not(:last-child) {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Avoid page breaks inside tables and summary grids */
+  .print-page table, 
+  .print-page tbody, 
+  .print-page tr, 
+  .print-page p, 
+  .print-page div.grid, 
+  .print-page div.bg-emerald-50 {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
 }
 
 /* Custom premium range slider */

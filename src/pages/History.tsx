@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateBill, getSlabsForState } from "../utils/tariffCalculator";
 import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
+import { PrintReport } from "../components/dashboard/PrintReport";
 
 /* ── count-up hook ───────────────────────────────────────────────── */
 function useCountUp(target: number, duration = 1.2, delay = 0) {
@@ -358,7 +359,8 @@ export const History: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen">
-      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      <div className="print:hidden w-full space-y-8">
+        {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
       <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left print-background-content">
         <div className="flex justify-between items-end">
           <div>
@@ -591,7 +593,7 @@ export const History: React.FC = () => {
             ref={detailsModalRef}
             onKeyDown={handleDetailsModalKeyDown}
             tabIndex={-1}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 print-modal-parent outline-none"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 print:hidden outline-none"
             role="dialog"
             aria-modal="true"
             aria-labelledby="history-details-title"
@@ -1026,6 +1028,47 @@ export const History: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      </div>
+
+      {selectedReport && (
+        <PrintReport
+          mode="history"
+          user={user}
+          activeAppliances={selectedReport.appliances.map((app, idx) => ({
+            id: app.name.toLowerCase().includes("ac") ? "ac" : app.name.toLowerCase().includes("fan") ? "fan" : app.name.toLowerCase().includes("light") ? "light" : `app_${idx}`,
+            name: app.name,
+            category: "general",
+            watts: app.watts,
+            quantity: app.quantity,
+            hours: app.hours,
+            icon: "Zap",
+            hint: ""
+          }))}
+          analysisResult={{
+            totalUnits: selectedReport.totalUnits,
+            billing: {
+              totalUnits: selectedReport.totalUnits,
+              grossEnergyCharge: selectedReport.estimatedBill + selectedReport.savingsPotential,
+              subsidy: selectedReport.savingsPotential > 0 ? selectedReport.savingsPotential * 0.15 : 0,
+              netEnergyCharge: selectedReport.estimatedBill,
+              stateName: selectedReport.tariffState || "ap"
+            },
+            highestConsumer: selectedReport.highestConsumer,
+            savingsPotential: selectedReport.savingsPotential,
+            usageAfter: selectedReport.usageAfter || selectedReport.totalUnits,
+            billAfter: selectedReport.billAfter || selectedReport.estimatedBill,
+            recommendations: [],
+            beforeCo2: selectedReport.beforeCo2 || Math.round(selectedReport.totalUnits * 0.82),
+            beforeTrees: Math.round((selectedReport.beforeCo2 || (selectedReport.totalUnits * 0.82)) / 1.83),
+            afterCo2: selectedReport.afterCo2 || Math.round((selectedReport.usageAfter || selectedReport.totalUnits) * 0.82),
+            afterTrees: Math.round((selectedReport.afterCo2 || ((selectedReport.usageAfter || selectedReport.totalUnits) * 0.82)) / 1.83),
+            savedCo2: selectedReport.savedCo2 || 0,
+            savedTrees: selectedReport.savedTrees || 0
+          }}
+          recommendedKw={Math.max(1, Math.round((selectedReport.totalUnits / 120) * 10) / 10)}
+          solarOffsetPercent={selectedReport.totalUnits > 0 ? Math.min(100, Math.round(((Math.max(1, Math.round((selectedReport.totalUnits / 120) * 10) / 10) * 120) / selectedReport.totalUnits) * 100)) : 0}
+        />
+      )}
     </div>
   );
 };
