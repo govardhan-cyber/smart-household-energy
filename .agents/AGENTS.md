@@ -2,6 +2,14 @@
 
 ## Saved Versions
 
+- **Version 22**: Points to git tag `version-22`.
+  - **Features**:
+    - **Dual Web3Forms + EmailJS Pipeline**: Implemented a concurrent AJAX pipeline in `ReportIssueModal.tsx`. Submits fast, reliable admin notification tickets to Web3Forms and dispatches confirmation auto-replies to users via EmailJS. Fully mapped template parameters (`name`, `user_email`, `title`, `description`, `screenshot_url`) to align with dashboard configurations.
+    - **Clean Footer Layout**: Removed the bottom copyright text bar, Designed credit lines, and all social link icons (GitHub, Twitter, LinkedIn, Discord/MessageSquare) from the bottom row of `Footer.tsx` for a cleaner interface.
+  - **Verified:** 20/20 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 22", run `git checkout version-22`.
+
 - **Version 21**: Points to git tag `version-21`.
   - **Features**:
     - **Unified Multi-Page PDF Booklet Reports**: Standardized printable PDF generation under a single dynamic component `PrintReport` across the manual Home Audit Wizard, the scanned Bill Analyzer, and the History log modal pages. Removed physical A4 height overrides (`min-h-[297mm]`) and restricted trailing page breaks to non-final page divisions (`.print-page:not(:last-child)`) in `index.css` to eliminate trailing blank pages.

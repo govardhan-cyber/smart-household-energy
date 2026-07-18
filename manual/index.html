@@ -64,6 +64,19 @@
           <div class="sidebar-progress-bar" id="sidebar-progress-bar"></div>
         </div>
 
+        <!-- Accent Color Picker -->
+        <div class="accent-picker">
+          <span class="accent-picker-label">Accent</span>
+          <div class="accent-options">
+            <button class="accent-option active" data-accent="blue" title="Blue"></button>
+            <button class="accent-option" data-accent="purple" title="Purple"></button>
+            <button class="accent-option" data-accent="green" title="Green"></button>
+            <button class="accent-option" data-accent="orange" title="Orange"></button>
+            <button class="accent-option" data-accent="pink" title="Pink"></button>
+            <button class="accent-option" data-accent="amber" title="Amber"></button>
+          </div>
+        </div>
+
         <!-- Nav label -->
         <div class="nav-section-label">
           <i data-lucide="list"></i> Sections
@@ -622,9 +635,11 @@
             <!-- Student 1 -->
             <div class="roster-card">
               <div class="roster-card-glow roster-glow--1"></div>
-              <div class="roster-avatar roster-avatar--1">CH</div>
+              <div class="roster-avatar roster-avatar--1">
+                <i data-lucide="sparkles"></i>
+              </div>
               <div class="roster-badge roster-badge--design">
-                <i data-lucide="pen-tool"></i> Researcher &amp; Designer
+                <i data-lucide="palette"></i> Researcher &amp; Designer
               </div>
               <h4 class="roster-name">Chukka Harika</h4>
               <div class="roster-tags">
@@ -640,9 +655,11 @@
             <!-- Student 2 -->
             <div class="roster-card">
               <div class="roster-card-glow roster-glow--2"></div>
-              <div class="roster-avatar roster-avatar--2">AL</div>
+              <div class="roster-avatar roster-avatar--2">
+                <i data-lucide="code-2"></i>
+              </div>
               <div class="roster-badge roster-badge--dev">
-                <i data-lucide="code-2"></i> Core Developer
+                <i data-lucide="braces"></i> Core Developer
               </div>
               <h4 class="roster-name">Arangi Likhitha</h4>
               <div class="roster-tags">
@@ -658,9 +675,11 @@
             <!-- Student 3 -->
             <div class="roster-card">
               <div class="roster-card-glow roster-glow--3"></div>
-              <div class="roster-avatar roster-avatar--3">IH</div>
+              <div class="roster-avatar roster-avatar--3">
+                <i data-lucide="cpu"></i>
+              </div>
               <div class="roster-badge roster-badge--dev">
-                <i data-lucide="cpu"></i> Core Developer
+                <i data-lucide="brain"></i> Core Developer
               </div>
               <h4 class="roster-name">Ijju Hemanth Kumar</h4>
               <div class="roster-tags">
@@ -676,9 +695,11 @@
             <!-- Student 4 -->
             <div class="roster-card">
               <div class="roster-card-glow roster-glow--4"></div>
-              <div class="roster-avatar roster-avatar--4">KG</div>
+              <div class="roster-avatar roster-avatar--4">
+                <i data-lucide="layers"></i>
+              </div>
               <div class="roster-badge roster-badge--lead">
-                <i data-lucide="layers"></i> Lead Architect
+                <i data-lucide="component"></i> Lead Architect
               </div>
               <h4 class="roster-name">Kuna Govardhan Rao</h4>
               <div class="roster-tags">
@@ -743,26 +764,91 @@
             <div class="launch-card-bg"></div>
             <div class="launch-card-glow"></div>
             <div class="launch-card-content">
-              <div class="section-tag" style="justify-content: center;">
-                <i data-lucide="rocket" class="launch-rocket-icon"></i> Launch Platform
-              </div>
-              <h2 class="section-title" style="font-size: 3.25rem; margin-bottom: 1.5rem; margin-left: auto; margin-right: auto;">Access the Live Application</h2>
-              <p class="section-desc" style="margin-left: auto; margin-right: auto; max-width: 600px; margin-bottom: 2.5rem;">
-                The platform is fully deployed and accessible on Firebase Hosting. Scan bill structures, calibrate home appliance default wattages, and audit energy consumption footprint.
-              </p>
-              <div class="launch-actions">
-                <a href="https://smart-household-energy.web.app/" class="btn-primary" target="_blank">
-                  <i data-lucide="external-link"></i> Launch Live Application
-                </a>
-                <a href="https://github.com/govardhan-cyber/smart-household-energy.git" class="btn-github-futuristic" target="_blank" title="Explore Source Code on GitHub" aria-label="Explore Source Code on GitHub">
-                  <span class="github-orbit-ring"></span>
-                  <span class="github-icon-wrapper">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="github-svg">
-                      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-                      <path d="M9 18c-4.51 2-5-2-7-2"/>
-                    </svg>
-                  </span>
-                </a>
+              <div class="launch-grid">
+                
+                <!-- Left Column (CTA + Status) -->
+                <div class="launch-left">
+                  <div class="section-tag" style="margin-bottom: 1.5rem;">
+                    <i data-lucide="rocket" class="launch-rocket-icon"></i> Launch Platform
+                  </div>
+                  <h2 class="section-title" style="font-size: 2.75rem; margin-bottom: 1rem; text-align: left; max-width: 100%;">Access the Live Application</h2>
+                  
+                  <p class="section-desc" style="max-width: 520px; margin-bottom: 2rem; text-align: left;">
+                    The platform is fully deployed and accessible on Firebase Hosting. Scan bill structures, calibrate home appliance default wattages, and audit energy consumption footprint.
+                  </p>
+
+                  <!-- Status Deck -->
+                  <div class="status-deck">
+                    <span class="status-indicator status-indicator--pulse">System Online</span>
+                    <span class="status-indicator"><i data-lucide="shield-check"></i> SSL Secure</span>
+                    <span class="status-indicator"><i data-lucide="network"></i> Firebase CDN</span>
+                  </div>
+
+                  <div class="launch-actions" style="margin-top: 0; justify-content: flex-start;">
+                    <a href="https://smart-household-energy.web.app/" class="btn-primary" target="_blank" rel="noopener">
+                      <i data-lucide="external-link"></i> Launch Live Application
+                    </a>
+                    <a href="https://github.com/govardhan-cyber/smart-household-energy.git" class="btn-github-futuristic" target="_blank" rel="noopener" title="Explore Source Code on GitHub" aria-label="Explore Source Code on GitHub">
+                      <span class="github-orbit-ring"></span>
+                      <span class="github-icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="github-svg">
+                          <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+                          <path d="M9 18c-4.51 2-5-2-7-2"/>
+                        </svg>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Right Column (Tech Specs capsules) -->
+                <div class="tech-specs-grid">
+                  
+                  <!-- Capsule 1: AI Model -->
+                  <div class="spec-capsule">
+                    <div class="spec-icon">
+                      <i data-lucide="brain"></i>
+                    </div>
+                    <div class="spec-info">
+                      <span class="spec-label">Primary AI Parser</span>
+                      <span class="spec-val">Gemini 1.5 Flash</span>
+                    </div>
+                  </div>
+
+                  <!-- Capsule 2: End-to-End Speed -->
+                  <div class="spec-capsule">
+                    <div class="spec-icon">
+                      <i data-lucide="clock"></i>
+                    </div>
+                    <div class="spec-info">
+                      <span class="spec-label">End-to-End Pipeline</span>
+                      <span class="spec-val">15 - 20 seconds</span>
+                    </div>
+                  </div>
+
+                  <!-- Capsule 3: Calculations -->
+                  <div class="spec-capsule">
+                    <div class="spec-icon">
+                      <i data-lucide="trending-up"></i>
+                    </div>
+                    <div class="spec-info">
+                      <span class="spec-label">Solar Math Engine</span>
+                      <span class="spec-val">25-Year Compound</span>
+                    </div>
+                  </div>
+
+                  <!-- Capsule 4: Fallback -->
+                  <div class="spec-capsule">
+                    <div class="spec-icon">
+                      <i data-lucide="shield"></i>
+                    </div>
+                    <div class="spec-info">
+                      <span class="spec-label">Offline Fallback</span>
+                      <span class="spec-val">Client-side ONNX</span>
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             </div>
           </div>

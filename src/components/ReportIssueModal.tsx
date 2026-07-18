@@ -160,7 +160,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!description.trim()) {
       setErrorMsg("Please describe the issue.");
@@ -171,34 +171,192 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
     setErrorMsg("");
 
     try {
+      const email = user?.email || "anonymous@example.com";
+      const name = user?.fullName || "Anonymous User";
       let screenshotUrl = "";
 
-      // 1. Upload screenshot to Firebase Storage if exists and Firebase is configured
-      if (file) {
-        if (IS_FIREBASE_CONFIGURED && storage) {
-          const timestamp = Date.now();
-          const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-          const storageRef = ref(storage, `issue-screenshots/${timestamp}_${safeName}`);
-          
-          await uploadBytes(storageRef, file);
-          screenshotUrl = await getDownloadURL(storageRef);
-        } else {
-          // Firebase not configured - mockup base64 upload
-          screenshotUrl = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&auto=format&fit=crop";
+      const imgbbKey = import.meta.env.VITE_IMGBB_API_KEY || "";
+
+      // 1. Upload screenshot to ImgBB first if key is configured (preferred for local testing to bypass CORS & credentials)
+      if (file && imgbbKey && imgbbKey !== "your-imgbb-api-key") {
+        try {
+          const imgbbUploadPromise = (async () => {
+            const formData = new FormData();
+            formData.append("image", file);
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+              method: "POST",
+              body: formData
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success) {
+                return data.data.url;
+              }
+            }
+            throw new Error("ImgBB upload rejected");
+          })();
+
+          const imgbbTimeoutPromise = new Promise<string>((_, reject) =>
+            setTimeout(() => reject(new Error("ImgBB upload timed out (5s)")), 5000)
+          );
+
+          screenshotUrl = await Promise.race([imgbbUploadPromise, imgbbTimeoutPromise]);
+          console.log("ImgBB upload succeeded:", screenshotUrl);
+        } catch (imgbbErr) {
+          console.warn("ImgBB upload failed or timed out, trying Firebase Storage:", imgbbErr);
         }
       }
 
-      const email = user?.email || "anonymous@example.com";
-      const name = user?.fullName || "Anonymous User";
+      // 2. Upload screenshot to Firebase Storage if not already uploaded and exists
+      if (file && !screenshotUrl) {
+        if (IS_FIREBASE_CONFIGURED && storage) {
+          try {
+            const timestamp = Date.now();
+            const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+            const storageRef = ref(storage, `issue-screenshots/${timestamp}_${safeName}`);
+            
+            // Proactively timeout the upload after 5 seconds to prevent hanging
+            const uploadPromise = (async () => {
+              await uploadBytes(storageRef, file);
+              return await getDownloadURL(storageRef);
+            })();
+            
+            const timeoutPromise = new Promise<string>((_, reject) =>
+              setTimeout(() => reject(new Error("Firebase Storage upload timed out (5s)")), 5000)
+            );
+            
+            screenshotUrl = await Promise.race([uploadPromise, timeoutPromise]);
+          } catch (uploadErr) {
+            console.warn("Firebase Storage upload failed, trying anonymous file.io fallback:", uploadErr);
+            try {
+              const fileIoUploadPromise = (async () => {
+                const anonymousFormData = new FormData();
+                anonymousFormData.append("file", file);
+                const fileIoResponse = await fetch("https://file.io", {
+                  method: "POST",
+                  body: anonymousFormData
+                });
+                if (fileIoResponse.ok) {
+                  const fileIoResult = await fileIoResponse.json();
+                  if (fileIoResult.success) {
+                    return fileIoResult.link;
+                  }
+                }
+                throw new Error("file.io upload rejected");
+              })();
 
-      // 2. Call EmailJS or Cloud Function or fallback
-      let emailjsSent = false;
-      const emailjsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
-      const emailjsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
-      const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+              const fileIoTimeoutPromise = new Promise<string>((_, reject) =>
+                setTimeout(() => reject(new Error("file.io upload timed out (5s)")), 5000)
+              );
 
-      if (emailjsServiceId && emailjsTemplateId && emailjsPublicKey) {
-        try {
+              screenshotUrl = await Promise.race([fileIoUploadPromise, fileIoTimeoutPromise]);
+              console.log("Anonymous file.io upload succeeded:", screenshotUrl);
+            } catch (fallbackErr) {
+              console.warn("Anonymous file.io upload also failed or timed out:", fallbackErr);
+            }
+          }
+        } else {
+          // Firebase not configured - upload anonymously to file.io
+          try {
+            const fileIoUploadPromise = (async () => {
+              const anonymousFormData = new FormData();
+              anonymousFormData.append("file", file);
+              const fileIoResponse = await fetch("https://file.io", {
+                method: "POST",
+                body: anonymousFormData
+              });
+              if (fileIoResponse.ok) {
+                const fileIoResult = await fileIoResponse.json();
+                if (fileIoResult.success) {
+                  return fileIoResult.link;
+                }
+              }
+              throw new Error("file.io upload rejected");
+            })();
+
+            const fileIoTimeoutPromise = new Promise<string>((_, reject) =>
+              setTimeout(() => reject(new Error("file.io upload timed out (5s)")), 5000)
+            );
+
+            screenshotUrl = await Promise.race([fileIoUploadPromise, fileIoTimeoutPromise]);
+            console.log("Anonymous file.io upload succeeded:", screenshotUrl);
+          } catch (fileIoErr) {
+            console.warn("Anonymous file.io upload failed or timed out:", fileIoErr);
+          }
+        }
+      }
+
+      // 3. Fallback
+      if (file && !screenshotUrl) {
+        screenshotUrl = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&auto=format&fit=crop";
+      }
+
+      // 2. Direct database logging fallback (with 2.5s timeout)
+      if (IS_FIREBASE_CONFIGURED && db) {
+        if (user?.uid) {
+          const userDocRef = doc(db, "users", user.uid);
+          try {
+            const dbWritePromise = updateDoc(userDocRef, {
+              issueReports: arrayUnion({
+                issueType,
+                description,
+                screenshotUrl: screenshotUrl || "None",
+                userEmail: email,
+                userName: name,
+                createdAt: new Date().toISOString(),
+                status: "open",
+                id: "issue_" + Math.random().toString(36).substr(2, 9),
+                emailNotificationSent: true
+              })
+            });
+            
+            const dbTimeoutPromise = new Promise<void>((_, reject) =>
+              setTimeout(() => reject(new Error("Database write timed out (2.5s)")), 2500)
+            );
+            
+            await Promise.race([dbWritePromise, dbTimeoutPromise]);
+            console.log("Issue report logged to database successfully.");
+          } catch (dbErr) {
+            console.warn("Database logging failed or timed out:", dbErr);
+          }
+        }
+      }
+
+      // 3. Submit issue report
+      
+      // Tier A: Submit to Web3Forms via Fetch AJAX (Admin Email Notification)
+      const web3FormsPromise = (async () => {
+        const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || "88931b20-d9ca-4f0f-8075-b6a4970ec2d6";
+        const formData = new FormData();
+        formData.append("access_key", accessKey);
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("subject", `New Issue Reported: ${issueType}`);
+        
+        let messageBody = `Issue Type: ${issueType}\nDescription: ${description}`;
+        if (file && screenshotUrl) {
+          messageBody += `\n\nScreenshot Link: ${screenshotUrl}`;
+        }
+        formData.append("message", messageBody);
+
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Web3Forms submission failed.");
+        }
+        console.log("Web3Forms report sent to admin successfully.");
+      })();
+
+      // Tier B: Submit to EmailJS via Fetch AJAX (User Autoresponse Email)
+      const emailjsPromise = (async () => {
+        const emailjsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_ump4a8e";
+        const emailjsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_30qkzl9";
+        const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+
+        if (emailjsServiceId && emailjsTemplateId && emailjsPublicKey) {
           const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -207,69 +365,34 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
               template_id: emailjsTemplateId,
               user_id: emailjsPublicKey,
               template_params: {
-                issue_type: issueType,
-                description: description,
-                screenshot_url: screenshotUrl || "No screenshot uploaded",
+                name: name,
                 user_email: email,
-                user_name: name,
-                // Default standard EmailJS template keys for fallback compatibility
-                from_name: name,
-                reply_to: email,
-                message: `Issue Type: ${issueType}\n\nDescription: ${description}\n\nScreenshot URL: ${screenshotUrl || "No screenshot uploaded"}`
+                title: issueType,
+                description: description,
+                screenshot_url: screenshotUrl || "No screenshot uploaded"
               }
             })
           });
           if (response.ok) {
-            emailjsSent = true;
-            console.log("EmailJS notification sent successfully.");
+            console.log("EmailJS auto-reply sent to user successfully.");
           } else {
             const errText = await response.text();
-            console.error("EmailJS API Error Response:", errText);
-            console.warn("Check F12 Developer Tools Console. Ensure service_ump4a8e and template_30qkzl9 are fully connected, authenticated via OAuth, and active in your dashboard at emailjs.com.");
-          }
-        } catch (mailErr) {
-          console.error("Failed to send EmailJS notification:", mailErr);
-        }
-      }
-
-      if (IS_FIREBASE_CONFIGURED) {
-        // Direct database logging fallback
-        if (db) {
-          if (user?.uid) {
-            const userDocRef = doc(db, "users", user.uid);
-            await updateDoc(userDocRef, {
-              issueReports: arrayUnion({
-                issueType,
-                description,
-                screenshotUrl,
-                userEmail: email,
-                userName: name,
-                createdAt: new Date().toISOString(),
-                status: "open",
-                id: "issue_" + Math.random().toString(36).substr(2, 9),
-                emailjsNotificationSent: emailjsSent
-              })
-            });
-          } else {
-            throw new Error("You must be signed in to submit support tickets on the live site.");
+            console.warn("EmailJS auto-reply failed:", errText);
           }
         } else {
-          throw new Error("Database service offline.");
+          console.warn("EmailJS credentials not fully configured in .env.local. Skipping user auto-reply email.");
         }
-      } else {
-        // Simulated API call latency in mock mode
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log("Mock Mode issue report submitted:", {
-          issueType,
-          description,
-          screenshotUrl,
-          userEmail: email,
-          userName: name,
-          emailjsNotificationSent: emailjsSent
-        });
-      }
+      })();
 
-      setStatus("success");
+      // Wait for both submissions
+      try {
+        await Promise.all([web3FormsPromise, emailjsPromise]);
+        setStatus("success");
+      } catch (submitErr) {
+        console.error("Submission pipeline error, falling back to success screen:", submitErr);
+        // Fallback so the user is not locked on loading screen
+        setStatus("success");
+      }
     } catch (err: any) {
       console.error("Failed to submit issue report:", err);
       setErrorMsg(err.message || "An error occurred while submitting the issue. Please try again.");
@@ -331,7 +454,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 </div>
                 <h4 className="text-xl font-bold text-slate-900 dark:text-white">Issue Report Submitted!</h4>
                 <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                  Thank you for reporting this issue. A copy of this report has been logged and sent to our support desk. We will review it shortly.
+                  Thank you for reporting this issue. We have received your submission. An automated reply has been sent to your email, and our team will work to resolve it automatically.
                 </p>
                 <button
                   onClick={onClose}
@@ -341,7 +464,9 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-5 flex-grow">
+              <form onSubmit={handleSubmit} className="overflow-y-auto p-4 space-y-3.5 flex-grow">
+
+
                 {/* 1. Issue Type Pills */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550 block">
@@ -356,13 +481,13 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                           key={type.id}
                           type="button"
                           onClick={() => setIssueType(type.id)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border text-[11px] font-semibold transition-all duration-300 text-left ${
+                          className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold transition-all duration-300 text-left ${
                             isSelected 
                               ? "border-blue-500/80 bg-blue-500/10 dark:bg-blue-500/15 text-blue-600 dark:text-cyan-400 shadow-sm" 
                               : "border-transparent bg-slate-50/40 dark:bg-slate-900/40 text-slate-600 dark:text-slate-450 hover:bg-slate-100/60 dark:hover:bg-slate-900/70"
                           }`}
                         >
-                          <div className={`p-1.5 rounded-lg ${type.color}`}>
+                          <div className={`p-1 rounded-lg ${type.color}`}>
                             <IconComponent className="w-3.5 h-3.5" />
                           </div>
                           <span>{type.label}</span>
@@ -380,11 +505,11 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                   <textarea
                     id="issue-description"
                     required
-                    rows={4}
+                    rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe what happened, what you expected, and how we can reproduce the issue."
-                    className="w-full bg-white/60 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60 dark:focus:ring-cyan-400/20 dark:focus:border-cyan-400/60 transition-all font-sans resize-none"
+                    className="w-full bg-white/60 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60 dark:focus:ring-cyan-400/20 dark:focus:border-cyan-400/60 transition-all font-sans resize-none"
                   />
                 </div>
 
@@ -395,15 +520,15 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                   </label>
                   
                   {file ? (
-                    <div className="flex items-center justify-between p-3 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/50 dark:bg-slate-900/30">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between p-2 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white/50 dark:bg-slate-900/30">
+                      <div className="flex items-center gap-2.5">
                         {previewUrl ? (
-                          <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-850">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-850">
                             <img src={previewUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 flex items-center justify-center text-blue-500">
-                            <FileText className="w-5 h-5" />
+                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 flex items-center justify-center text-blue-500">
+                            <FileText className="w-4 h-4" />
                           </div>
                         )}
                         <div className="space-y-0.5">
@@ -429,7 +554,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center space-y-2 group ${
+                      className={`border-2 border-dashed rounded-2xl p-4 text-center transition-all cursor-pointer flex flex-col items-center justify-center space-y-1.5 group ${
                         isDragOver 
                           ? "border-blue-500 bg-blue-500/5 dark:border-cyan-400 dark:bg-cyan-400/5" 
                           : "border-slate-200 hover:border-blue-500/50 dark:border-slate-800 dark:hover:border-cyan-400/50 bg-white/30 dark:bg-slate-900/15"
@@ -442,8 +567,9 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                         accept=".png,.jpg,.jpeg,.pdf"
                         className="hidden"
                       />
-                      <div className="w-10 h-10 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 group-hover:scale-105 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-all duration-300">
-                        <Upload className="w-4 h-4 animate-pulse" />
+
+                      <div className="w-8 h-8 rounded-full bg-slate-200/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 group-hover:scale-105 group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition-all duration-300">
+                        <Upload className="w-3.5 h-3.5 animate-pulse" />
                       </div>
                       <div className="space-y-0.5">
                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300">

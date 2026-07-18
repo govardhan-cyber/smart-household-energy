@@ -10,9 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTheme = localStorage.getItem('theme') || (htmlRoot.classList.contains('dark') ? 'dark' : 'light');
   applyTheme(currentTheme);
 
+  // Bind accent color picker
+  const accentOptions = document.querySelectorAll('.accent-option');
+
   // Load and apply accent on start
+  const supportedAccents = ['blue', 'purple', 'green', 'orange', 'pink', 'amber'];
   let currentAccent = localStorage.getItem('she-accent') || 'blue';
+  if (!supportedAccents.includes(currentAccent)) {
+    currentAccent = 'blue';
+  }
   applyAccent(currentAccent);
+  if (accentOptions.length > 0) {
+    accentOptions.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.accent === currentAccent);
+    });
+  }
 
   // Bind theme toggle listener
   if (themeToggle) {
@@ -41,15 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function applyAccent(accent) {
     // Remove previous accent classes
-    htmlRoot.classList.remove('accent-blue', 'accent-green', 'accent-purple', 'accent-orange', 'accent-teal');
+    htmlRoot.classList.remove(
+      'accent-blue', 'accent-green', 'accent-purple', 'accent-orange',
+      'accent-pink', 'accent-amber', 'accent-violet', 'accent-teal'
+    );
     // Add new accent class
     htmlRoot.classList.add(`accent-${accent}`);
     localStorage.setItem('she-accent', accent);
     window.dispatchEvent(new CustomEvent('she-accent-change', { detail: accent }));
   }
 
-  // Bind accent color picker
-  const accentOptions = document.querySelectorAll('.accent-option');
+  // Bind accent color picker click listener
   accentOptions.forEach(btn => {
     btn.addEventListener('click', () => {
       const accent = btn.dataset.accent;

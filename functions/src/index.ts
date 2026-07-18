@@ -531,6 +531,31 @@ export const sendIssueReport = functions.https.onCall(
         html: htmlContent,
       });
 
+      // Send automated reply confirmation to the reporting user
+      if (userEmail) {
+        const autoReplyHtml = `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
+            <h2 style="color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-top: 0;">We Received Your Issue Report</h2>
+            <p>Hi ${userName || "Valued User"},</p>
+            <p>Thank you for contacting Smart Household Energy support. We have received your report regarding <strong>${issueType}</strong>.</p>
+            <p>Our system has logged this issue with <strong>Report ID: #${reportRef.id}</strong>. Our team is already looking into it, and we will work to resolve it automatically for you as soon as possible.</p>
+            <div style="margin-top: 20px; padding: 15px; background-color: #ffffff; border-radius: 8px; border-left: 4px solid #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">Your Description:</h4>
+              <p style="margin: 0; color: #334155; line-height: 1.5; white-space: pre-wrap;">${description}</p>
+            </div>
+            <p style="margin-top: 20px; color: #64748b; font-size: 12px;">This is an automated confirmation email. Please do not reply directly to this message.</p>
+          </div>
+        `;
+
+        await transporter.sendMail({
+          from: `"Smart Household Energy Support" <${gmailUser}>`,
+          to: userEmail,
+          subject: `We received your issue report (#${reportRef.id})`,
+          text: `Hi ${userName || "Valued User"},\n\nThank you for contacting us. We have received your report regarding "${issueType}". Our team is looking into it and we will resolve it automatically for you.\n\nReport ID: #${reportRef.id}`,
+          html: autoReplyHtml,
+        });
+      }
+
       return {
         success: true,
         reportId: reportRef.id,
