@@ -389,9 +389,48 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
                 {/* Laser Line Sweep Overlay */}
                 <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500/80 to-transparent dark:via-emerald-400/85 laser-sweep-line pointer-events-none shadow-[0_0_12px_rgba(59,130,246,0.6)] dark:shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
 
-                <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
-                  <div className="absolute inset-0 bg-primary-blue/10 dark:bg-primary-green/10 rounded-full animate-ping"></div>
-                  <div className="absolute inset-3 bg-primary-blue/20 dark:bg-primary-green/20 rounded-full animate-pulse"></div>
+                <div className="relative w-36 h-36 mx-auto flex items-center justify-center select-none">
+                  {/* Outer rotating dash ring */}
+                  <motion.svg
+                    className="absolute w-32 h-32 text-primary-blue/30 dark:text-primary-green/30"
+                    viewBox="0 0 100 100"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  >
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeDasharray="6 8"
+                    />
+                  </motion.svg>
+
+                  {/* Middle counter-rotating dot ring */}
+                  <motion.svg
+                    className="absolute w-26 h-26 text-blue-400/40 dark:text-emerald-400/40"
+                    viewBox="0 0 100 100"
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                  >
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeDasharray="2 12"
+                      strokeLinecap="round"
+                    />
+                  </motion.svg>
+
+                  {/* Inner ambient pulse glow */}
+                  <div className="absolute w-20 h-20 bg-gradient-to-tr from-primary-blue/15 to-cyan-400/20 dark:from-primary-green/20 dark:to-emerald-400/25 rounded-full animate-pulse blur-sm" />
+
+                  {/* Central premium core container */}
                   <div className="relative p-5 rounded-full bg-blue-50/80 text-primary-blue dark:bg-green-950/40 dark:text-primary-green border border-blue-200 dark:border-green-800/50 shadow-md">
                     <Cpu className="w-10 h-10 animate-spin-slow" />
                   </div>
