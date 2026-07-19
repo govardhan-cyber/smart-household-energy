@@ -29,75 +29,82 @@ export interface EnergyReport {
 
 const MOCK_REPORTS_KEY = "she_mock_reports";
 
+const withTimeout = <T>(promise: Promise<T>, timeoutMs = 4000): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Database operation timed out")), timeoutMs)
+    )
+  ]);
+};
+
 export const reportsService = {
   async saveReport(reportData: Omit<EnergyReport, "createdAt">): Promise<string> {
-    const report: EnergyReport = {
+    const reportWithUser: EnergyReport = {
       ...reportData,
       createdAt: new Date().toISOString()
     };
 
-    // Instantly write to local cache so subsequent page loads can see it instantly
+    // Cache locally instantly
     const cacheKey = `she_reports_cache_${reportData.userId}`;
     const cachedData = localStorage.getItem(cacheKey);
     const cachedReports: EnergyReport[] = cachedData ? JSON.parse(cachedData) : [];
-    const tempId = "temp_" + Math.random().toString(36).substr(2, 9);
-    const cachedReportWithId = { ...report, id: tempId };
+    const tempId = "temp_report_" + Math.random().toString(36).substr(2, 9);
+    const cachedReportWithId = { ...reportWithUser, id: tempId };
     cachedReports.unshift(cachedReportWithId);
     localStorage.setItem(cacheKey, JSON.stringify(cachedReports));
 
-    if (IS_FIREBASE_CONFIGURED && functions) {
-      try {
-        const validateAndSave = httpsCallable<any, { success: boolean; reportId: string; msg: string }>(
-          functions,
-          "validateAndSaveReport"
-        );
-        const result = await validateAndSave(report);
-        const realId = result.data.reportId;
+    if (IS_FIREBASE_CONFIGURED) {
+      if (functions) {
+        try {
+          const saveReportFn = httpsCallable(functions, "saveReport");
+          const res = await withTimeout(saveReportFn(reportWithUser));
+          const docId = (res.data as any).id;
 
-        // Update cached item with real Firestore doc ID
-        const freshData = localStorage.getItem(cacheKey);
-        if (freshData) {
-          const freshList: EnergyReport[] = JSON.parse(freshData);
-          const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: realId } : r);
-          localStorage.setItem(cacheKey, JSON.stringify(updatedList));
-        }
-
-        return realId;
-      } catch (e) {
-        console.error("Cloud Functions validateAndSaveReport error, trying direct Firestore write:", e);
-        if (db) {
-          try {
-            const reportsRef = collection(db, "energy_reports");
-            const newDocRef = doc(reportsRef);
-            const reportWithId = {
-              ...report,
-              id: newDocRef.id,
-              validatedByBackend: false
-            };
-            await setDoc(newDocRef, reportWithId);
-
-            // Update cached item with real Firestore doc ID
-            const freshData = localStorage.getItem(cacheKey);
-            if (freshData) {
-              const freshList: EnergyReport[] = JSON.parse(freshData);
-              const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: newDocRef.id } : r);
-              localStorage.setItem(cacheKey, JSON.stringify(updatedList));
-            }
-            return newDocRef.id;
-          } catch (firestoreErr) {
-            console.error("Firestore direct write fallback also failed:", firestoreErr);
+          // Update cached item with real Firestore doc ID
+          const freshData = localStorage.getItem(cacheKey);
+          if (freshData) {
+            const freshList: EnergyReport[] = JSON.parse(freshData);
+            const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: docId } : r);
+            localStorage.setItem(cacheKey, JSON.stringify(updatedList));
           }
+          return docId;
+        } catch (e) {
+          console.error("Cloud function saveReport error, trying direct write fallback:", e);
         }
-
-        const localId = "report_" + Math.random().toString(36).substr(2, 9);
-        const freshData = localStorage.getItem(cacheKey);
-        if (freshData) {
-          const freshList: EnergyReport[] = JSON.parse(freshData);
-          const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: localId } : r);
-          localStorage.setItem(cacheKey, JSON.stringify(updatedList));
-        }
-        return localId;
       }
+
+      if (db) {
+        try {
+          const newDocRef = doc(collection(db, "energy_reports"));
+          const reportWithId = { 
+            ...reportWithUser, 
+            id: newDocRef.id,
+            validatedByBackend: false
+          };
+          await withTimeout(setDoc(newDocRef, reportWithId));
+
+          // Update cached item with real Firestore doc ID
+          const freshData = localStorage.getItem(cacheKey);
+          if (freshData) {
+            const freshList: EnergyReport[] = JSON.parse(freshData);
+            const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: newDocRef.id } : r);
+            localStorage.setItem(cacheKey, JSON.stringify(updatedList));
+          }
+          return newDocRef.id;
+        } catch (firestoreErr) {
+          console.error("Firestore direct write fallback also failed:", firestoreErr);
+        }
+      }
+
+      const localId = "report_" + Math.random().toString(36).substr(2, 9);
+      const freshData = localStorage.getItem(cacheKey);
+      if (freshData) {
+        const freshList: EnergyReport[] = JSON.parse(freshData);
+        const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: localId } : r);
+        localStorage.setItem(cacheKey, JSON.stringify(updatedList));
+      }
+      return localId;
     } else {
       const localId = "report_" + Math.random().toString(36).substr(2, 9);
       const freshData = localStorage.getItem(cacheKey);
@@ -106,7 +113,7 @@ export const reportsService = {
         const updatedList = freshList.map(r => r.id === tempId ? { ...r, id: localId } : r);
         localStorage.setItem(cacheKey, JSON.stringify(updatedList));
       }
-      this.saveReportLocal(report);
+      this.saveReportLocal(reportWithUser);
       return localId;
     }
   },
@@ -131,7 +138,7 @@ export const reportsService = {
           reportsRef, 
           where("userId", "==", userId)
         );
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await withTimeout(getDocs(q));
         const reports: EnergyReport[] = [];
         querySnapshot.forEach((doc) => {
           reports.push({ ...doc.data() as EnergyReport, id: doc.id });
@@ -182,7 +189,7 @@ export const reportsService = {
 
     if (IS_FIREBASE_CONFIGURED && db && !reportId.startsWith("report_") && !reportId.startsWith("temp_")) {
       try {
-        await deleteDoc(doc(db, "energy_reports", reportId));
+        await withTimeout(deleteDoc(doc(db, "energy_reports", reportId)));
         return;
       } catch (e) {
         console.error("Firestore deleteDoc error, trying localStorage:", e);

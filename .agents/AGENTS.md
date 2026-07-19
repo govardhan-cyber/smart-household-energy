@@ -2,6 +2,14 @@
 
 ## Saved Versions
 
+- **Version 23**: Points to git tag `version-23`.
+  - **Features**:
+    - **Firestore Connection Timeout Protection**: Wrapped Firestore read/write operations (`addDoc`, `getDocs`, `setDoc`, `deleteDoc`) inside a custom `withTimeout` promise racer in `auditService.ts`, `reportsService.ts`, and inline in `BillAnalyzer.tsx`. If database operations take longer than 4 seconds (due to network drops or offline states), they time out gracefully and fall back to local storage caching, preventing the audit scanning spinners from getting stuck indefinitely.
+    - **UI Startup Lag Optimizations**: Delayed the initialization of the canvas animation loop inside `ThreeBackground.tsx` by 500ms, staggered Framer Motion children entrances with `delayChildren: 0.25`, pre-bundled high-load dependencies in `vite.config.ts`, and added `.will-change-gpu` CSS rules to offload layout calculations to the GPU.
+  - **Verified:** 20/20 tests passing, zero TypeScript errors, clean production build.
+  - **Recovery Instruction**:
+    - If the user says "recover version 23", run `git checkout version-23`.
+
 - **Version 22**: Points to git tag `version-22`.
   - **Features**:
     - **Dual Web3Forms + EmailJS Pipeline**: Implemented a concurrent AJAX pipeline in `ReportIssueModal.tsx`. Submits fast, reliable admin notification tickets to Web3Forms and dispatches confirmation auto-replies to users via EmailJS. Fully mapped template parameters (`name`, `user_email`, `title`, `description`, `screenshot_url`) to align with dashboard configurations.

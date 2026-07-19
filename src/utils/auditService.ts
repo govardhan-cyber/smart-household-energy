@@ -11,6 +11,15 @@ export interface HomeAudit {
 
 const MOCK_AUDITS_KEY = "she_mock_audits";
 
+const withTimeout = <T>(promise: Promise<T>, timeoutMs = 4000): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Database operation timed out")), timeoutMs)
+    )
+  ]);
+};
+
 export const auditService = {
   async saveAudit(userId: string, result: AuditResult): Promise<string> {
     const audit: HomeAudit = {
@@ -30,7 +39,7 @@ export const auditService = {
 
     if (IS_FIREBASE_CONFIGURED && db) {
       try {
-        const docRef = await addDoc(collection(db, "home_audits"), audit);
+        const docRef = await withTimeout(addDoc(collection(db, "home_audits"), audit));
         
         // Sync local cache with Firestore ID
         const freshData = localStorage.getItem(cacheKey);
@@ -82,7 +91,7 @@ export const auditService = {
       try {
         const auditsRef = collection(db, "home_audits");
         const q = query(auditsRef, where("userId", "==", userId));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await withTimeout(getDocs(q));
         const audits: HomeAudit[] = [];
         querySnapshot.forEach((doc) => {
           audits.push({ ...doc.data() as HomeAudit, id: doc.id });
@@ -133,7 +142,7 @@ export const auditService = {
 
     if (IS_FIREBASE_CONFIGURED && db && !auditId.startsWith("audit_") && !auditId.startsWith("temp_")) {
       try {
-        await deleteDoc(doc(db, "home_audits", auditId));
+        await withTimeout(deleteDoc(doc(db, "home_audits", auditId)));
         return;
       } catch (e) {
         console.error("Firestore deleteDoc error, trying localStorage:", e);

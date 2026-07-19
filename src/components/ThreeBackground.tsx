@@ -217,9 +217,12 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
         }
       }
     };
-    animateSparks();
+    const delayTimer = setTimeout(() => {
+      animateSparks();
+    }, 500);
 
     return () => {
+      clearTimeout(delayTimer);
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
     };

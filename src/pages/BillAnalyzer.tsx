@@ -6,7 +6,6 @@ import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { 
   Printer, Download, Sparkles, CheckCircle2, AlertTriangle 
 } from "lucide-react";
-import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 import { BillUploadZone } from "../components/dashboard/bill/BillUploadZone";
 import { BillHistoryList } from "../components/dashboard/bill/BillHistoryList";
 import { BillResultsView } from "../components/dashboard/bill/BillResultsView";
@@ -149,7 +148,10 @@ export const BillAnalyzer: React.FC = () => {
           collection(db, "billHistory"),
           where("userId", "==", user.uid)
         );
-        const snap = await getDocs(q);
+        const snap = await Promise.race([
+          getDocs(q),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Firestore Timeout")), 4000))
+        ]);
         const records: BillRecord[] = [];
         snap.forEach((doc) => {
           records.push({ id: doc.id, ...doc.data() } as BillRecord);
@@ -827,7 +829,8 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08
+        staggerChildren: 0.08,
+        delayChildren: 0.25
       }
     }
   };
@@ -873,16 +876,11 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
         </div>
       </div>
 
-      {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full print-background-content">
+      {/* Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 gap-8 items-start relative w-full print-background-content">
         
-        {/* Left Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <LiveGridStatusWidget />
-        </aside>
-
         {/* Center Main Content Column */}
-        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full text-left print:p-0">
+        <main className="col-span-1 space-y-6 w-full text-left print:p-0">
       
           {/* ─── TITLE HEADER ────────────────────────────────────────────────────── */}
           <motion.div 
@@ -998,11 +996,6 @@ Please break down the charges in simple terms and provide 2-3 saving tips.`;
           />
 
         </main>
-
-        {/* Right Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <CarbonSavingsWidget />
-        </aside>
 
       </div>
       </div>

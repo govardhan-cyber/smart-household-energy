@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateBill, getSlabsForState } from "../utils/tariffCalculator";
-import { LiveGridStatusWidget, CarbonSavingsWidget } from "../components/dashboard/SidebarWidgets";
 import { PrintReport } from "../components/dashboard/PrintReport";
 
 /* ── count-up hook ───────────────────────────────────────────────── */
@@ -380,16 +379,11 @@ export const History: React.FC = () => {
         </div>
       </div>
       
-      {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-8 items-start relative w-full print-background-content">
+      {/* Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 gap-8 items-start relative w-full print-background-content">
         
-        {/* Left Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <LiveGridStatusWidget />
-        </aside>
-
         {/* Center Main Content Column */}
-        <main className="col-span-1 2xl:col-span-8 space-y-6 w-full text-left">
+        <main className="col-span-1 space-y-6 w-full text-left">
           
           {/* ── Hero header (Float Card-Style) ── */}
           <div className="relative overflow-hidden bg-gradient-to-br from-primary-blue via-blue-600 to-primary-green p-6 sm:p-8 rounded-3xl border border-white/10 shadow-lg">
@@ -578,11 +572,6 @@ export const History: React.FC = () => {
             </div>
           )}
         </main>
-
-        {/* Right Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <CarbonSavingsWidget />
-        </aside>
 
       </div>
 

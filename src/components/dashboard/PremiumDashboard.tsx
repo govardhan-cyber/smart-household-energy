@@ -9,7 +9,6 @@ import {
 import type { ApplianceItem, TariffResult } from "../../utils/tariffCalculator";
 import type { EnergyReport } from "../../utils/reportsService";
 import { KpiCard } from "./DashboardHero";
-import { LiveGridStatusWidget, CarbonSavingsWidget } from "./SidebarWidgets";
 import { PowerFlowPanel } from "./PowerFlowPanel";
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -1184,23 +1183,13 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
   const kwNeededByUsage = totalUnits / 120;
   const recommendedKw = Math.max(1, Math.round(Math.min(kwNeededByUsage, 3) * 2) / 2);
 
-  // ── Carbon Savings Widget data calculation ─────────────────────────────────
-  const estimatedSavedCo2 = Math.round((totalUnits * 0.15) * 0.82 * 10) / 10;
-  const estimatedSavedTrees = Math.round((estimatedSavedCo2 / 1.83) * 10) / 10;
-  const carbonSavingsData = { savedCo2: estimatedSavedCo2, savedTrees: estimatedSavedTrees };
-
   return (
     <div className="w-full py-0 space-y-4">
-      {/* 3-Column Widescreen Layout Grid */}
-      <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6 items-start relative w-full">
+      {/* Widescreen Layout Grid */}
+      <div className="grid grid-cols-1 gap-6 items-start relative w-full">
         
-        {/* Left Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <LiveGridStatusWidget />
-        </aside>
-
         {/* Center Main Content Column */}
-        <main className="col-span-1 2xl:col-span-8 space-y-5 w-full">
+        <main className="col-span-1 space-y-5 w-full">
           {/* Row 1: Hero + Biggest Consumer */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-stretch">
             <div className="sm:col-span-2">
@@ -1274,11 +1263,6 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
           {/* Row 4: Tip strip */}
           <TipStrip tip={tip} />
         </main>
-
-        {/* Right Sidebar Column - Sticky */}
-        <aside className="hidden 2xl:flex 2xl:col-span-2 flex-col gap-6 sticky top-24 no-print select-none">
-          <CarbonSavingsWidget analysisResult={carbonSavingsData} />
-        </aside>
 
       </div>
     </div>

@@ -1122,3 +1122,10 @@ textarea:focus-visible {
 .dark .section-ambient-glow::before {
   background: radial-gradient(ellipse at center, rgba(16,185,129,0.10) 0%, rgba(37,99,235,0.07) 50%, transparent 70%);
 }
+
+/* GPU Hardware Acceleration Utilities */
+.will-change-gpu {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
