@@ -175,16 +175,46 @@ select option {
   color: #9ca3af !important;
 }
 
-/* Disable default browser focus borders/outlines globally */
-button:focus,
+/* ── Accessible Focus Indicators ─────────────────────────────
+   Replaces the bare outline:none anti-pattern that blocked keyboard users.
+   Uses :focus-visible so the ring appears only for keyboard / assistive-tech
+   focus — mouse/touch clicks stay clean.
+
+   Ring color uses --accent-primary so it matches the user's chosen accent
+   (blue, green, purple, orange, teal) and adapts in dark mode.           */
+
+/* Visible keyboard focus ring */
 button:focus-visible,
-select:focus,
 select:focus-visible,
-input:focus,
 input:focus-visible,
-textarea:focus,
-textarea:focus-visible {
-  outline: none !important;
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible,
+details summary:focus-visible {
+  outline: 2.5px solid var(--accent-primary, #2563EB) !important;
+  outline-offset: 2px;
+}
+
+/* Dark mode: brighter ring for contrast */
+.dark button:focus-visible,
+.dark select:focus-visible,
+.dark input:focus-visible,
+.dark textarea:focus-visible,
+.dark a:focus-visible,
+.dark [tabindex]:not([tabindex="-1"]):focus-visible,
+.dark details summary:focus-visible {
+  outline-color: var(--accent-primary, #60A5FA);
+}
+
+/* Suppress outline on mouse/touch clicks — only suppresses when :focus-visible is inactive */
+button:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[tabindex]:not([tabindex="-1"]):focus:not(:focus-visible),
+details summary:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Print Styles for PDF Export */

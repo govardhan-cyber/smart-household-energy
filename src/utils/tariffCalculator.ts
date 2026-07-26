@@ -16,7 +16,7 @@ export async function reloadTariffCalculator(): Promise<void> {
 /** Sync access — returns default if not yet initialized */
 function getTariff(stateKey: string): TariffState {
   const normKey = normalizeStateKey(stateKey);
-  return tariffCache[normKey] ?? tariffCache["ap_apspdcl"] ?? tariffCache["custom"]!;
+  return tariffCache[normKey] ?? tariffCache["ap_apspdcl"] ?? tariffCache["custom"] as TariffState;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────

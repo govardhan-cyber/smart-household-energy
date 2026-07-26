@@ -342,18 +342,21 @@ export const useDashboardState = (): UseDashboardStateReturn => {
   }, [user]);
 
   // Synchronize appliance wattages when user settings update
+  // Only overwrites appliances that have explicit custom wattages in settings.
+  // Preserves manual wattage edits made in the wizard.
   useEffect(() => {
-    if (user) {
+    if (user && user.customWattages) {
+      const hasCustomWattages = Object.keys(user.customWattages).length > 0;
+      if (!hasCustomWattages) return;
       setAppliances(prev => prev.map(app => {
         const customWatt = user.customWattages?.[app.id];
         if (customWatt !== undefined && customWatt > 0) {
           return { ...app, watts: customWatt };
         }
-        const defaultApp = defaultAppliances.find(da => da.id === app.id);
-        return { ...app, watts: defaultApp ? defaultApp.watts : app.watts };
+        return app;
       }));
     }
-  }, [user]);
+  }, [user?.customWattages]);
 
   const activeAppliances = appliances.filter(app => app.quantity > 0);
   const [hasInitiated, setHasInitiated] = useState(false);
@@ -405,18 +408,18 @@ export const useDashboardState = (): UseDashboardStateReturn => {
     : 0;
 
   const liveLightApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
-  const liveLightSavedKwh = liveLightApp 
-    ? liveLightApp.quantity * (90 / 1000) * liveLightApp.hours * 30 * 0.75 
+  const liveLightSavedKwh = liveLightApp && liveLightApp.watts > 9
+    ? liveLightApp.quantity * ((liveLightApp.watts - 9) / 1000) * liveLightApp.hours * 30
     : 0;
 
   const liveTubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
-  const liveTubeSavedKwh = liveTubeApp 
-    ? liveTubeApp.quantity * (22 / 1000) * liveTubeApp.hours * 30 
+  const liveTubeSavedKwh = liveTubeApp && liveTubeApp.watts > 18
+    ? liveTubeApp.quantity * ((liveTubeApp.watts - 18) / 1000) * liveTubeApp.hours * 30
     : 0;
 
   const liveFridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-  const liveFridgeSavedKwh = liveFridgeApp 
-    ? liveFridgeApp.quantity * (200 / 1000) * liveFridgeApp.hours * 30 * 0.15 
+  const liveFridgeSavedKwh = liveFridgeApp
+    ? liveFridgeApp.quantity * (liveFridgeApp.watts / 1000) * liveFridgeApp.hours * 30 * 0.15
     : 0;
 
   const liveStandbySavedKwh = liveTotalUnits * 0.05;
@@ -465,25 +468,25 @@ export const useDashboardState = (): UseDashboardStateReturn => {
       : 0;
 
     const lightApp = appliances.find(a => a.id === "lights" && a.quantity > 0);
-    const lightSavedKwh = lightApp 
-      ? lightApp.quantity * (90 / 1000) * lightApp.hours * 30 * 0.75 
+    const lightSavedKwh = lightApp && lightApp.watts > 9
+      ? lightApp.quantity * ((lightApp.watts - 9) / 1000) * lightApp.hours * 30
       : 0;
 
     const tubeApp = appliances.find(a => a.id === "lights_tube" && a.quantity > 0);
-    const tubeSavedKwh = tubeApp 
-      ? tubeApp.quantity * (22 / 1000) * tubeApp.hours * 30 
+    const tubeSavedKwh = tubeApp && tubeApp.watts > 18
+      ? tubeApp.quantity * ((tubeApp.watts - 18) / 1000) * tubeApp.hours * 30
       : 0;
 
     const fridgeApp = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-    const fridgeSavedKwh = fridgeApp 
-      ? fridgeApp.quantity * (200 / 1000) * fridgeApp.hours * 30 * 0.15 
+    const fridgeSavedKwh = fridgeApp
+      ? fridgeApp.quantity * (fridgeApp.watts / 1000) * fridgeApp.hours * 30 * 0.15
       : 0;
 
     const standbySavedKwh = liveTotalUnits * 0.05;
 
     const fanApp = appliances.find(a => a.id === "fan" && a.quantity > 0);
-    const fanSavedKwh = fanApp 
-      ? fanApp.quantity * (35 / 1000) * fanApp.hours * 30 
+    const fanSavedKwh = fanApp && fanApp.watts > 28
+      ? fanApp.quantity * ((fanApp.watts - 28) / 1000) * fanApp.hours * 30
       : 0;
 
     const totalSavedKwh = acSavedKwh + lightSavedKwh + tubeSavedKwh + fridgeSavedKwh + standbySavedKwh + fanSavedKwh;
