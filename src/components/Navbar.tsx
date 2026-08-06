@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, Receipt, ClipboardList, Bell, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, Receipt, ClipboardList, Bell, AlertTriangle, Sparkles, FileText, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
+import type { NotificationItem } from "../services/notificationService";
+import {
+  loadStoredNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  removeNotification,
+  clearAllNotifications
+} from "../services/notificationService";
 
 const defaultIconVariants: Variants = {
   normal: { scale: 1, rotate: 0, y: 0 },
@@ -14,9 +22,9 @@ const defaultIconVariants: Variants = {
 const bellVariants: Variants = {
   normal: { rotate: 0, scale: 1 },
   hover: { 
-    rotate: [0, -18, 15, -10, 6, 0],
+    rotate: [0, -15, 15, -10, 5, 0],
     scale: 1.12,
-    transition: { duration: 0.5, ease: "easeInOut" }
+    transition: { duration: 0.4, ease: "easeInOut" }
   }
 };
 
@@ -100,74 +108,10 @@ export const Navbar: React.FC = () => {
 
   // Notification states
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Array<{
-    id: string;
-    type: "success" | "error" | "info";
-    title: string;
-    message: string;
-    time: string;
-    read: boolean;
-  }>>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   const loadNotifications = () => {
-    const notifyHigh = localStorage.getItem("she_notify_high") !== "false";
-    const solarAlerts = localStorage.getItem("she_solar_alerts") !== "false";
-    const aiTips = localStorage.getItem("she_ai_tips") === "true";
-    const monthlyReports = localStorage.getItem("she_monthly_reports") !== "false";
-
-    const list: Array<{
-      id: string;
-      type: "success" | "error" | "info";
-      title: string;
-      message: string;
-      time: string;
-      read: boolean;
-    }> = [];
-
-    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
-
-    if (notifyHigh) {
-      list.push({
-        id: "high_usage",
-        type: "error",
-        title: "Usage Alert",
-        message: "Comfort appliances (AC/Heater) are running 15% above baseline.",
-        time: "2 min ago",
-        read: !!readStates["high_usage"]
-      });
-    }
-    if (solarAlerts) {
-      list.push({
-        id: "solar_yield",
-        type: "info",
-        title: "Solar Yield Peak",
-        message: "Daily generation peaked at 14.8 kWh today (Optimal).",
-        time: "1 hour ago",
-        read: !!readStates["solar_yield"]
-      });
-    }
-    if (aiTips) {
-      list.push({
-        id: "ai_tip",
-        type: "info",
-        title: "AI Energy Tip",
-        message: "Turn down Refrigerator dial to 4°C to save 8% power.",
-        time: "3 hours ago",
-        read: !!readStates["ai_tip"]
-      });
-    }
-    if (monthlyReports) {
-      list.push({
-        id: "monthly_report",
-        type: "success",
-        title: "Monthly Report",
-        message: "Slab charge analysis is ready for view.",
-        time: "1 day ago",
-        read: !!readStates["monthly_report"]
-      });
-    }
-
-    setNotifications(list);
+    setNotifications(loadStoredNotifications());
   };
 
   useEffect(() => {
@@ -183,19 +127,21 @@ export const Navbar: React.FC = () => {
   }, [notificationOpen]);
 
   const toggleReadNotification = (id: string) => {
-    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
-    readStates[id] = true;
-    localStorage.setItem("she_read_notifications", JSON.stringify(readStates));
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setNotifications(prev => markNotificationRead(id, prev));
   };
 
   const markAllAsRead = () => {
-    const readStates = JSON.parse(localStorage.getItem("she_read_notifications") || "{}");
-    notifications.forEach(n => {
-      readStates[n.id] = true;
-    });
-    localStorage.setItem("she_read_notifications", JSON.stringify(readStates));
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => markAllNotificationsRead(prev));
+  };
+
+  const handleClearSingleNotification = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNotifications(prev => removeNotification(id, prev));
+  };
+
+  const handleClearAllNotifications = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNotifications(clearAllNotifications());
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -206,6 +152,66 @@ export const Navbar: React.FC = () => {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // User Profile Dropdown auto-close (5s) & click anywhere listener
+  useEffect(() => {
+    if (dropdownOpen) {
+      const timer = setTimeout(() => {
+        setDropdownOpen(false);
+      }, 5000);
+
+      const handleGlobalClick = (e: MouseEvent | TouchEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target && target.closest('[data-profile-toggle="true"]')) {
+          return;
+        }
+        setDropdownOpen(false);
+      };
+
+      const clickTimer = setTimeout(() => {
+        window.addEventListener("click", handleGlobalClick);
+        window.addEventListener("touchstart", handleGlobalClick);
+      }, 10);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(clickTimer);
+        window.removeEventListener("click", handleGlobalClick);
+        window.removeEventListener("touchstart", handleGlobalClick);
+      };
+    }
+    return undefined;
+  }, [dropdownOpen]);
+
+  // Notifications Dropdown auto-close (5s) & click anywhere listener
+  useEffect(() => {
+    if (notificationOpen) {
+      const timer = setTimeout(() => {
+        setNotificationOpen(false);
+      }, 5000);
+
+      const handleGlobalClick = (e: MouseEvent | TouchEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (target && target.closest('[data-notification-toggle="true"]')) {
+          return;
+        }
+        setNotificationOpen(false);
+      };
+
+      const clickTimer = setTimeout(() => {
+        window.addEventListener("click", handleGlobalClick);
+        window.addEventListener("touchstart", handleGlobalClick);
+      }, 10);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(clickTimer);
+        window.removeEventListener("click", handleGlobalClick);
+        window.removeEventListener("touchstart", handleGlobalClick);
+      };
+    }
+    return undefined;
+  }, [notificationOpen]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -365,22 +371,26 @@ export const Navbar: React.FC = () => {
               {user && (
                 <div className="relative">
                   <motion.button
+                    data-notification-toggle="true"
                     onClick={() => {
                       setNotificationOpen(prev => !prev);
                       setDropdownOpen(false);
                     }}
                     whileHover="hover"
                     whileTap={{ scale: 0.94 }}
-                    className="rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer flex items-center justify-center w-9.5 h-9.5"
+                    className="p-2.5 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer"
                     title="Notifications"
                   >
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <motion.div
                       variants={bellVariants}
+                      animate={unreadCount > 0 ? "hover" : "normal"}
+                      whileHover="hover"
                       className="relative z-10 shrink-0"
                     >
                       <Bell className="w-4 h-4" />
                     </motion.div>
+
                     {unreadCount > 0 && (
                       <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 flex items-center justify-center bg-gradient-to-r from-red-500 to-rose-600 border border-white dark:border-slate-900 shadow-[0_2px_8px_rgba(239,68,68,0.45)] text-[8px] font-black text-white leading-none rounded-full z-20 scale-90">
                         {unreadCount}
@@ -398,70 +408,119 @@ export const Navbar: React.FC = () => {
                           exit={{ opacity: 0, y: 12, scale: 0.95 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
                           style={{ zIndex: 100 }}
-                          className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-955 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+                          className="absolute right-0 mt-3 w-84 sm:w-96 rounded-3xl border border-slate-200/70 dark:border-slate-800/80 bg-white/95 dark:bg-slate-955/95 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.18)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.6)] overflow-hidden"
                         >
                           {/* Header */}
-                          <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-50/50 to-emerald-50/30 dark:from-blue-955/15 dark:to-emerald-955/10 border-b border-slate-100 dark:border-slate-900/60">
-                            <span className="text-[11px] font-black text-slate-850 dark:text-white uppercase tracking-wider">Notifications</span>
-                            {notifications.length > 0 && (
-                              <button
-                                onClick={markAllAsRead}
-                                className="text-[10px] font-black text-primary-blue dark:text-primary-green hover:underline cursor-pointer uppercase tracking-wider focus:outline-none"
-                              >
-                                Mark all read
-                              </button>
-                            )}
+                          <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-blue-50/60 via-indigo-50/30 to-emerald-50/40 dark:from-blue-955/25 dark:via-indigo-955/15 dark:to-emerald-955/20 border-b border-slate-100 dark:border-slate-900/80">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black text-slate-850 dark:text-white uppercase tracking-wider">
+                                Notifications
+                              </span>
+                              {unreadCount > 0 && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-primary-blue/15 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400 rounded-full">
+                                  {unreadCount} New
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                              {unreadCount > 0 && (
+                                <button
+                                  onClick={markAllAsRead}
+                                  className="flex items-center gap-1 text-[11px] font-bold text-primary-blue dark:text-primary-green hover:underline cursor-pointer transition-colors"
+                                  title="Mark all as read"
+                                >
+                                  <CheckCheck className="w-3.5 h-3.5" />
+                                  <span>Mark all read</span>
+                                </button>
+                              )}
+                              {notifications.length > 0 && (
+                                <button
+                                  onClick={handleClearAllNotifications}
+                                  className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
+                                  title="Clear all notifications"
+                                >
+                                  Clear all
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           {/* Notifications List */}
-                          <div className="max-h-[320px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900">
+                          <div className="max-h-[360px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900/70">
                             {notifications.length === 0 ? (
-                              <div className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-700 opacity-60" />
-                                <p className="text-[11px] font-bold">No active notifications</p>
-                                <p className="text-[10px] mt-0.5 opacity-80">Enable alert toggles in Settings.</p>
+                              <div className="px-6 py-10 text-center text-slate-400 dark:text-slate-500">
+                                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                                  <Bell className="w-6 h-6 text-slate-300 dark:text-slate-600" />
+                                </div>
+                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">All caught up!</p>
+                                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">No active notifications right now.</p>
                               </div>
                             ) : (
                               notifications.map((notif) => {
-                                const IconMap = {
-                                  error: AlertTriangle,
-                                  info: Info,
-                                  success: CheckCircle2
+                                const typeConfigs = {
+                                  alert: {
+                                    icon: AlertTriangle,
+                                    bg: "bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                                  },
+                                  solar: {
+                                    icon: Sun,
+                                    bg: "bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                  },
+                                  ai: {
+                                    icon: Sparkles,
+                                    bg: "bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                                  },
+                                  report: {
+                                    icon: FileText,
+                                    bg: "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                  }
                                 };
-                                const DynamicIcon = IconMap[notif.type] || Info;
-                                const colorStyles = {
-                                  error: "bg-red-50 text-red-500 dark:bg-red-950/20 dark:text-red-400",
-                                  info: "bg-blue-50 text-blue-500 dark:bg-blue-955/20 dark:text-blue-400",
-                                  success: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20 dark:text-emerald-400"
-                                };
+
+                                const config = typeConfigs[notif.type] || typeConfigs.alert;
+                                const DynamicIcon = config.icon;
 
                                 return (
                                   <div
                                     key={notif.id}
                                     onClick={() => toggleReadNotification(notif.id)}
-                                    className={`px-5 py-3.5 flex items-start gap-3.5 cursor-pointer transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/40 text-left relative ${
-                                      !notif.read ? "bg-blue-50/10 dark:bg-blue-955/5" : ""
+                                    className={`group/item px-4.5 py-3.5 flex items-start gap-3.5 cursor-pointer transition-all hover:bg-slate-50/80 dark:hover:bg-slate-900/60 relative ${
+                                      !notif.read ? "bg-blue-50/30 dark:bg-blue-955/10" : ""
                                     }`}
                                   >
-                                    <div className={`p-2 rounded-xl shrink-0 ${colorStyles[notif.type]}`}>
+                                    {/* Type Icon */}
+                                    <div className={`p-2.5 rounded-2xl shrink-0 ${config.bg}`}>
                                       <DynamicIcon className="w-4 h-4" />
                                     </div>
-                                    <div className="min-w-0 flex-1">
+
+                                    {/* Content */}
+                                    <div className="min-w-0 flex-1 text-left pr-2">
                                       <div className="flex items-center justify-between gap-2">
-                                        <span className="text-[10.5px] font-black text-slate-800 dark:text-white uppercase tracking-wide truncate">
-                                          {notif.title}
-                                        </span>
-                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 shrink-0">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                            {notif.title}
+                                          </span>
+                                          {!notif.read && (
+                                            <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 animate-pulse" title="Unread" />
+                                          )}
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 shrink-0">
                                           {notif.time}
                                         </span>
                                       </div>
-                                      <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                                         {notif.message}
                                       </p>
                                     </div>
-                                    {!notif.read && (
-                                      <span className="absolute top-4 right-5 w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0 animate-pulse" />
-                                    )}
+
+                                    {/* Dismiss Single Notification Button */}
+                                    <button
+                                      onClick={(e) => handleClearSingleNotification(notif.id, e)}
+                                      className="opacity-0 group-hover/item:opacity-100 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-opacity shrink-0"
+                                      title="Dismiss"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
                                   </div>
                                 );
                               })
@@ -469,13 +528,14 @@ export const Navbar: React.FC = () => {
                           </div>
 
                           {/* Footer link to Settings */}
-                          <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-900 text-center">
+                          <div className="p-3 bg-slate-50/60 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-900/60 text-center">
                             <Link
                               to="/settings?tab=notifications"
                               onClick={() => setNotificationOpen(false)}
-                              className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                              className="inline-flex items-center justify-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors py-1 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-850"
                             >
-                              Configure Notifications
+                              <Settings className="w-3.5 h-3.5" />
+                              <span>Configure Notifications</span>
                             </Link>
                           </div>
                         </motion.div>
@@ -489,6 +549,7 @@ export const Navbar: React.FC = () => {
                 /* User Dropdown */
                 <div className="relative">
                   <button
+                    data-profile-toggle="true"
                     onClick={() => setDropdownOpen(prev => !prev)}
                     className="flex items-center gap-2.5 pl-2 pr-3.5 py-1.5 rounded-full border border-slate-200/35 dark:border-slate-800/35 bg-slate-50/40 dark:bg-slate-900/30 hover:bg-slate-100/70 dark:hover:bg-slate-850/60 hover:border-slate-300/50 dark:hover:border-slate-700/50 transition-all duration-200 group"
                   >
@@ -596,18 +657,21 @@ export const Navbar: React.FC = () => {
               {user && (
                 <div className="relative">
                   <motion.button
+                    data-notification-toggle="true"
                     onClick={() => {
                       setNotificationOpen(prev => !prev);
                       setMobileMenuOpen(false); // Close mobile main menu when opening notifications
                     }}
                     whileHover="hover"
                     whileTap={{ scale: 0.94 }}
-                    className="rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer flex items-center justify-center w-9.5 h-9.5"
+                    className="p-2 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200 shadow-sm relative group overflow-hidden cursor-pointer flex items-center justify-center w-9 h-9"
                     title="Notifications"
                   >
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary-blue/5 to-primary-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <motion.div
                       variants={bellVariants}
+                      animate={unreadCount > 0 ? "hover" : "normal"}
+                      whileHover="hover"
                       className="relative z-10 shrink-0"
                     >
                       <Bell className="w-4 h-4" />
@@ -629,86 +693,114 @@ export const Navbar: React.FC = () => {
                           exit={{ opacity: 0, y: 12, scale: 0.95 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
                           style={{ zIndex: 100 }}
-                          className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-955 shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_18px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+                          className="absolute right-0 mt-3 w-80 rounded-3xl border border-slate-200/70 dark:border-slate-800/80 bg-white/95 dark:bg-slate-955/95 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.18)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.6)] overflow-hidden"
                         >
                           {/* Header */}
-                           <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-blue-50/50 to-emerald-50/30 dark:from-blue-955/15 dark:to-emerald-955/10 border-b border-slate-100 dark:border-slate-900/60">
-                             <span className="text-[11px] font-black text-slate-850 dark:text-white uppercase tracking-wider">Notifications</span>
-                             {notifications.length > 0 && (
-                               <button
-                                 onClick={markAllAsRead}
-                                 className="text-[10px] font-black text-primary-blue dark:text-primary-green hover:underline cursor-pointer uppercase tracking-wider focus:outline-none"
-                               >
-                                 Mark all read
-                               </button>
-                             )}
-                           </div>
+                          <div className="flex items-center justify-between px-4.5 py-3.5 bg-gradient-to-r from-blue-50/60 via-indigo-50/30 to-emerald-50/40 dark:from-blue-955/25 dark:via-indigo-955/15 dark:to-emerald-955/20 border-b border-slate-100 dark:border-slate-900/80">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-black text-slate-850 dark:text-white uppercase tracking-wider">Notifications</span>
+                              {unreadCount > 0 && (
+                                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-primary-blue/15 text-primary-blue dark:bg-primary-blue/20 dark:text-blue-400 rounded-full">
+                                  {unreadCount} New
+                                </span>
+                              )}
+                            </div>
+                            {unreadCount > 0 && (
+                              <button
+                                onClick={markAllAsRead}
+                                className="flex items-center gap-1 text-[10px] font-bold text-primary-blue dark:text-primary-green hover:underline cursor-pointer"
+                              >
+                                <CheckCheck className="w-3 h-3" />
+                                <span>Mark all read</span>
+                              </button>
+                            )}
+                          </div>
 
-                           {/* Notifications List */}
-                           <div className="max-h-[280px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900">
-                             {notifications.length === 0 ? (
-                               <div className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
-                                 <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-700 opacity-60" />
-                                 <p className="text-[11px] font-bold">No active notifications</p>
-                                 <p className="text-[10px] mt-0.5 opacity-80">Enable alert toggles in Settings.</p>
-                               </div>
-                             ) : (
-                               notifications.map((notif) => {
-                                 const IconMap = {
-                                   error: AlertTriangle,
-                                   info: Info,
-                                   success: CheckCircle2
-                                 };
-                                 const DynamicIcon = IconMap[notif.type] || Info;
-                                 const colorStyles = {
-                                   error: "bg-red-50 text-red-500 dark:bg-red-950/20 dark:text-red-450",
-                                   info: "bg-blue-50 text-blue-500 dark:bg-blue-955/20 dark:text-blue-400",
-                                   success: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20 dark:text-emerald-400"
-                                 };
+                          {/* Notifications List */}
+                          <div className="max-h-[280px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-900/70">
+                            {notifications.length === 0 ? (
+                              <div className="px-5 py-8 text-center text-slate-400 dark:text-slate-500">
+                                <Bell className="w-7 h-7 mx-auto mb-2 text-slate-300 dark:text-slate-700 opacity-60" />
+                                <p className="text-[11px] font-bold">No active notifications</p>
+                                <p className="text-[10px] mt-0.5 opacity-80">Enable alert toggles in Settings.</p>
+                              </div>
+                            ) : (
+                              notifications.map((notif) => {
+                                const typeConfigs = {
+                                  alert: {
+                                    icon: AlertTriangle,
+                                    bg: "bg-rose-500/10 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                                  },
+                                  solar: {
+                                    icon: Sun,
+                                    bg: "bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                  },
+                                  ai: {
+                                    icon: Sparkles,
+                                    bg: "bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                                  },
+                                  report: {
+                                    icon: FileText,
+                                    bg: "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                  }
+                                };
 
-                                 return (
-                                   <div
-                                     key={notif.id}
-                                     onClick={() => toggleReadNotification(notif.id)}
-                                     className={`px-5 py-3.5 flex items-start gap-3.5 cursor-pointer transition-all hover:bg-slate-50/50 dark:hover:bg-slate-900/40 text-left relative ${
-                                       !notif.read ? "bg-blue-50/10 dark:bg-blue-955/5" : ""
-                                     }`}
-                                   >
-                                     <div className={`p-2 rounded-xl shrink-0 ${colorStyles[notif.type]}`}>
-                                       <DynamicIcon className="w-4 h-4" />
-                                     </div>
-                                     <div className="min-w-0 flex-1">
-                                       <div className="flex items-center justify-between gap-2">
-                                         <span className="text-[10.5px] font-black text-slate-800 dark:text-white uppercase tracking-wide truncate">
-                                           {notif.title}
-                                         </span>
-                                         <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 shrink-0">
-                                           {notif.time}
-                                         </span>
-                                       </div>
-                                       <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                                         {notif.message}
-                                       </p>
-                                     </div>
-                                     {!notif.read && (
-                                       <span className="absolute top-4 right-5 w-1.5 h-1.5 bg-blue-500 rounded-full shrink-0 animate-pulse" />
-                                     )}
-                                   </div>
-                                 );
-                               })
-                             )}
-                           </div>
+                                const config = typeConfigs[notif.type] || typeConfigs.alert;
+                                const DynamicIcon = config.icon;
 
-                           {/* Footer link to Settings */}
-                           <div className="p-3 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-900 text-center">
-                             <Link
-                               to="/settings?tab=notifications"
-                               onClick={() => setNotificationOpen(false)}
-                               className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                             >
-                               Configure Notifications
-                             </Link>
-                           </div>
+                                return (
+                                  <div
+                                    key={notif.id}
+                                    onClick={() => toggleReadNotification(notif.id)}
+                                    className={`group/item px-4 py-3 flex items-start gap-3 cursor-pointer transition-all hover:bg-slate-50/80 dark:hover:bg-slate-900/60 relative ${
+                                      !notif.read ? "bg-blue-50/30 dark:bg-blue-955/10" : ""
+                                    }`}
+                                  >
+                                    <div className={`p-2 rounded-xl shrink-0 ${config.bg}`}>
+                                      <DynamicIcon className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1 text-left pr-1">
+                                      <div className="flex items-center justify-between gap-1.5">
+                                        <div className="flex items-center gap-1 min-w-0">
+                                          <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                                            {notif.title}
+                                          </span>
+                                          {!notif.read && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 animate-pulse" />
+                                          )}
+                                        </div>
+                                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 shrink-0">
+                                          {notif.time}
+                                        </span>
+                                      </div>
+                                      <p className="text-[10.5px] text-slate-600 dark:text-slate-400 mt-0.5 leading-normal">
+                                        {notif.message}
+                                      </p>
+                                    </div>
+                                    <button
+                                      onClick={(e) => handleClearSingleNotification(notif.id, e)}
+                                      className="opacity-0 group-hover/item:opacity-100 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-opacity shrink-0"
+                                      title="Dismiss"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+
+                          {/* Footer link to Settings */}
+                          <div className="p-2.5 bg-slate-50/60 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-900/60 text-center">
+                            <Link
+                              to="/settings?tab=notifications"
+                              onClick={() => setNotificationOpen(false)}
+                              className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-primary-blue dark:hover:text-primary-green transition-colors py-0.5 px-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-850"
+                            >
+                              <Settings className="w-3 h-3" />
+                              <span>Configure Notifications</span>
+                            </Link>
+                          </div>
                         </motion.div>
                       </>
                     )}

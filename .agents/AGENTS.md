@@ -4,10 +4,10 @@
 
 - **Version 24**: Points to git tag `version-24`.
   - **Features**:
-    - **Dynamic Appliance Custom Wattage Support & Extended Integration Tests**: Upgraded energy audit calculation engines (`auditEngine.ts` & `useDashboardState.tsx`) to support per-appliance custom wattage overrides. Enhanced recommendation algorithms to evaluate LED conversions, T5 tube light upgrades, BLDC fan conversions, and standby power reduction dynamically based on user-configured wattages. Expanded unit/integration testing suite (`authFlow.test.ts`, `sanitizer.test.ts`, `auditFlow.test.ts`, `auditEngine.test.ts`) to 67 total passing tests.
+    - **Enhanced Notification System & Central Backend Service**: Created `notificationService.ts` for managing persistent notifications in `localStorage`. Overhauled `Navbar.tsx` notification UI with category-specific glowing badges (`alert`, `solar`, `ai`, `report`), single-item dismissal, unread text alignment, auto-close timers, and global click-anywhere dismiss listeners.
+    - **Dynamic Appliance Custom Wattage Support & Extended Integration Tests**: Upgraded energy audit calculation engines (`auditEngine.ts` & `useDashboardState.tsx`) to support per-appliance custom wattage overrides. Added `notificationService.test.ts` expanding the unit/integration testing suite to 73 total passing tests.
     - **TS7030 Implicit Return Compliance & Strict Type Safety**: Resolved all 7 `TS7030: Not all code paths return a value` warnings across React `useEffect` hooks. Enabled `"strict": true` and `"noImplicitReturns": true` in `tsconfig.app.json`.
-    - **Input Sanitization & Centralized Settings Constants**: Created `sanitizer.ts` and `userSettings.ts`, extracting defaults and sanitizing user inputs. Hardened dynamic tariff cache lookup in `tariffCalculator.ts` and `firebaseErrors.ts`.
-  - **Verified:** 67/67 tests passing, zero TypeScript errors, clean production build.
+  - **Verified:** 73/73 tests passing, zero TypeScript errors, clean production build, deployed on Firebase Hosting (`https://smart-household-energy.web.app`).
   - **Recovery Instruction**:
     - If the user says "recover version 24", run `git checkout version-24`.
 
