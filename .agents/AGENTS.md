@@ -4,9 +4,10 @@
 
 - **Version 24**: Points to git tag `version-24`.
   - **Features**:
-    - **Dynamic Appliance Custom Wattage Support & Extended Integration Tests**: Upgraded energy audit calculation engines (`auditEngine.ts` & `useDashboardState.tsx`) to support per-appliance custom wattage overrides. Enhanced recommendation algorithms to evaluate LED conversions, T5 tube light upgrades, BLDC fan conversions, and standby power reduction dynamically based on user-configured wattages. Expanded unit/integration testing suite in `auditFlow.test.ts` and `auditEngine.test.ts` to 60 total passing tests.
-    - **Tariff Calculator Type Hardening & Null Safety**: Hardened dynamic tariff cache lookup in `tariffCalculator.ts` with explicit `TariffState` type casting, eliminating nullability type warnings and preventing runtime discom slab load errors.
-  - **Verified:** 60/60 tests passing, zero TypeScript errors, clean production build.
+    - **Dynamic Appliance Custom Wattage Support & Extended Integration Tests**: Upgraded energy audit calculation engines (`auditEngine.ts` & `useDashboardState.tsx`) to support per-appliance custom wattage overrides. Enhanced recommendation algorithms to evaluate LED conversions, T5 tube light upgrades, BLDC fan conversions, and standby power reduction dynamically based on user-configured wattages. Expanded unit/integration testing suite (`authFlow.test.ts`, `sanitizer.test.ts`, `auditFlow.test.ts`, `auditEngine.test.ts`) to 67 total passing tests.
+    - **TS7030 Implicit Return Compliance & Strict Type Safety**: Resolved all 7 `TS7030: Not all code paths return a value` warnings across React `useEffect` hooks. Enabled `"strict": true` and `"noImplicitReturns": true` in `tsconfig.app.json`.
+    - **Input Sanitization & Centralized Settings Constants**: Created `sanitizer.ts` and `userSettings.ts`, extracting defaults and sanitizing user inputs. Hardened dynamic tariff cache lookup in `tariffCalculator.ts` and `firebaseErrors.ts`.
+  - **Verified:** 67/67 tests passing, zero TypeScript errors, clean production build.
   - **Recovery Instruction**:
     - If the user says "recover version 24", run `git checkout version-24`.
 
