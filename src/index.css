@@ -1159,3 +1159,24 @@ details summary:focus:not(:focus-visible) {
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
 }
+
+/* ── Reduced Motion ────────────────────────────────────────
+   Respects users who prefsr reduced motion: quash the infinite
+   Tailwind ping/pulse keyframes and accent easing site-wide.    */
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Scrollbar Hide Utility ───────────────────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

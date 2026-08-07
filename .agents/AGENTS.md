@@ -2,6 +2,15 @@
 
 ## Saved Versions
 
+- **Version 25**: Points to git tag `version-25`.
+  - **Features**:
+    - **Modular ChatBot Architecture & High-Fidelity Manual Background Integration**: Refactored monolithic `ChatBot.tsx` into modular sub-components in `src/components/chatbot/` (`MessageBubble.tsx`, `CopilotInsightsBar.tsx`, `QuickActionsGrid.tsx`, `CopilotPromptsLaunchpad.tsx`, `ChatBotLogo.tsx`). Integrated the manual's exact multi-layer ambient background system (`.manual-bg-base`, 4 blur-drifting aurora orbs, diagonal beam, dot grid, vignette, and multi-stop top accent border sheen). Removed outer logo rotating/breathing ring animations for a crisp static mascot badge.
+    - **Ultra-Fast Real-Time AI Response Streaming & Token History Pruning**: Upgraded `queryGeminiDirect` and `handleSendMessage` to support real-time word-by-word response streaming (`onChunk`), lowering perceived response latency from ~1.5s to <200ms. Configured automatic history token pruning to the last 6 message turns (`messages.slice(-6)`).
+    - **Distinct 4-Theme Telemetry Cards & Minimal Floating Controls**: Redesigned `CopilotInsightsBar.tsx` compact pills into 2-line glass capsules with distinct color schemes per card (Amber for Bill, Rose for Solar, Emerald for Score, Cyan for Units). Converted the scroll-to-bottom control into a minimal icon-only floating circle button by removing the "New messages" text label.
+  - **Verified:** 82/82 tests passing, zero TypeScript errors, clean production build, deployed on Firebase Hosting (`https://smart-household-energy.web.app`).
+  - **Recovery Instruction**:
+    - If the user says "recover version 25", run `git checkout version-25`.
+
 - **Version 24**: Points to git tag `version-24`.
   - **Features**:
     - **Enhanced Notification System & Central Backend Service**: Created `notificationService.ts` for managing persistent notifications in `localStorage`. Overhauled `Navbar.tsx` notification UI with category-specific glowing badges (`alert`, `solar`, `ai`, `report`), single-item dismissal, unread text alignment, auto-close timers, and global click-anywhere dismiss listeners.

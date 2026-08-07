@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
-import { ChatBot } from "./components/ChatBot";
+import { ChatBot } from "./components/chatbot";
 import { initTariffCalculator } from "./utils/tariffCalculator";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 

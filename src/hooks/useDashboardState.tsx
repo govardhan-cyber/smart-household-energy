@@ -120,24 +120,60 @@ export const useDashboardState = (): UseDashboardStateReturn => {
   }, [toast]);
 
   const [appliances, setAppliances] = useState<ApplianceItem[]>(() => {
+    let savedMap: Record<string, Partial<ApplianceItem>> = {};
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('she_custom_appliances_active');
+        if (raw) savedMap = JSON.parse(raw);
+      } catch (err) {
+        console.error("Failed loading saved appliances:", err);
+      }
+    }
+
     return defaultAppliances.map(app => {
-      let qty = app.quantity;
-      let hrs = app.hours;
-      if (app.id === 'ac') { qty = 1; hrs = 6; }
-      else if (app.id === 'fridge') { qty = 1; hrs = 24; }
-      else if (app.id === 'fan') { qty = 2; hrs = 12; }
-      else if (app.id === 'lights') { qty = 4; hrs = 8; }
-      else if (app.id === 'lights_tube') { qty = 2; hrs = 6; }
+      const saved = savedMap[app.id];
+      let qty = saved?.quantity !== undefined ? saved.quantity : app.quantity;
+      let hrs = saved?.hours !== undefined ? saved.hours : app.hours;
+      let wts = saved?.watts !== undefined ? saved.watts : app.watts;
+
+      if (saved === undefined) {
+        if (app.id === 'ac') { qty = 1; hrs = 6; }
+        else if (app.id === 'fridge') { qty = 1; hrs = 24; }
+        else if (app.id === 'fan') { qty = 2; hrs = 12; }
+        else if (app.id === 'lights') { qty = 4; hrs = 8; }
+        else if (app.id === 'lights_tube') { qty = 2; hrs = 6; }
+      }
+
       return { 
         ...app, 
+        watts: wts,
         quantity: qty, 
         hours: hrs,
-        unitHours: Array(qty).fill(hrs),
-        age: 0,
-        unitAges: Array(qty).fill(0)
+        unitHours: saved?.unitHours || Array(qty).fill(hrs),
+        age: saved?.age || 0,
+        unitAges: saved?.unitAges || Array(qty).fill(0)
       };
     });
   });
+
+  // Sync custom appliance wattages & configurations to localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storageKey = user?.uid ? `she_custom_appliances_${user.uid}` : 'she_custom_appliances_guest';
+    const appMap: Record<string, Partial<ApplianceItem>> = {};
+    appliances.forEach(app => {
+      appMap[app.id] = {
+        watts: app.watts,
+        hours: app.hours,
+        quantity: app.quantity,
+        unitHours: app.unitHours,
+        age: app.age,
+        unitAges: app.unitAges
+      };
+    });
+    localStorage.setItem(storageKey, JSON.stringify(appMap));
+    localStorage.setItem('she_custom_appliances_active', JSON.stringify(appMap));
+  }, [appliances, user?.uid]);
 
   const toggleAppliance = (appId: string) => {
     setAppliances(prev => prev.map(app => {
@@ -850,6 +886,42 @@ export const useDashboardState = (): UseDashboardStateReturn => {
     trend: isAboveBenchmark ? ("up" as const) : ("down" as const),
     type: isAboveBenchmark ? ("negative" as const) : ("positive" as const)
   };
+
+  useEffect(() => {
+    const handleAddAppliance = (e: CustomEvent<AddApplianceEventDetail>) => {
+      const { applianceId, watts, hours, quantity, displayName } = e.detail;
+      const app = appliances.find(a => a.id === applianceId);
+      
+      if (app) {
+        setAppliances(prev => prev.map(a => {
+          if (a.id === applianceId) {
+            const finalQty = Math.max(1, quantity);
+            const finalHours = Math.min(24, Math.max(0.1, hours));
+            const finalWatts = Math.max(1, watts);
+            return {
+              ...a,
+              watts: finalWatts,
+              hours: finalHours,
+              quantity: finalQty,
+              unitHours: Array(finalQty).fill(finalHours)
+            };
+          }
+          return a;
+        }));
+
+        setActiveTab("wizard");
+        setCurrentStep(2);
+        setToast({ type: "success", message: `✅ ${displayName} (${watts}W) saved as your default wattage!` });
+      } else {
+        setToast({ type: "info", message: `ℹ️ ${displayName} — use the custom wattage field on a similar appliance category.` });
+      }
+    };
+
+    window.addEventListener("she_add_appliance", handleAddAppliance as EventListener);
+    return () => {
+      window.removeEventListener("she_add_appliance", handleAddAppliance as EventListener);
+    };
+  }, [appliances, setActiveTab, setCurrentStep, setToast]);
 
   return {
     user,
