@@ -112,7 +112,7 @@ export const Register: React.FC = () => {
     try {
       await register(fullName, email, password);
       navigate("/dashboard", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getFriendlyErrorMessage(err));
       setShakeTrigger(prev => !prev);
@@ -127,7 +127,7 @@ export const Register: React.FC = () => {
     try {
       await loginWithGoogle();
       navigate("/dashboard", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getFriendlyErrorMessage(err));
     } finally {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, FileText, Home, TrendingUp, Sun, Leaf } from 'lucide-react';
+import { Search, History, Home, TrendingUp, Sun, Leaf } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface QuickActionsGridProps {
@@ -21,14 +21,14 @@ const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onAction, onNavigat
       handler: onPromptFindAppliance 
     },
     { 
-      icon: <FileText className="w-5 h-5" />, 
-      label: 'Analyze Bill', 
-      desc: 'OCR & tariff slabs',
+      icon: <History className="w-5 h-5" />, 
+      label: 'Audit History', 
+      desc: 'Logs & saved reports',
       color: 'text-violet-600 dark:text-violet-300', 
       iconBg: 'bg-violet-500/10 dark:bg-violet-500/20 border border-violet-400/25 dark:border-violet-400/35 shadow-[0_0_12px_rgba(139,92,246,0.2)]',
       bg: 'from-purple-500/10 via-violet-500/5 to-white/10 dark:from-violet-500/20 dark:via-purple-600/5 dark:to-slate-900/40', 
       border: 'border-violet-200/50 dark:border-violet-500/20 hover:border-violet-400 dark:hover:border-violet-400 hover:shadow-[0_8px_30px_rgba(139,92,246,0.35)]', 
-      handler: () => onNavigate('/bill-analyzer') 
+      handler: () => onNavigate('/history') 
     },
     { 
       icon: <Home className="w-5 h-5" />, 

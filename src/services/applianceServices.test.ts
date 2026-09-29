@@ -29,6 +29,17 @@ describe('Appliance Parser', () => {
     const parsed = parseApplianceQuery('How can I save money on my electricity bill?');
     expect(isApplianceQuery(parsed)).toBe(false);
   });
+
+  it('returns false for conversational queries mentioning appliances to prevent hijacking AI chat', () => {
+    const parsedAc = parseApplianceQuery('How can I reduce my AC bill?');
+    expect(isApplianceQuery(parsedAc)).toBe(false);
+
+    const parsedFridge = parseApplianceQuery('Why is my fridge using so much power?');
+    expect(isApplianceQuery(parsedFridge)).toBe(false);
+
+    const parsedTips = parseApplianceQuery('What are the best tips to lower refrigerator electricity consumption?');
+    expect(isApplianceQuery(parsedTips)).toBe(false);
+  });
 });
 
 describe('Energy Estimator', () => {

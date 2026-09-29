@@ -66,15 +66,18 @@ export const Charts: React.FC<ChartsProps> = ({
   // Generate 6-month historical trend data
   const trendData = React.useMemo(() => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const currentMonthIdx = new Date().getMonth();
+    const now = new Date();
+    const currentMonthIdx = now.getMonth();
+    const currentYear = now.getFullYear();
     
-    // Build list of last 6 months in order
+    // Build list of last 6 months in order with correct year
     const last6Months = [];
     for (let i = 5; i >= 0; i--) {
-      const idx = (currentMonthIdx - i + 12) % 12;
+      const d = new Date(currentYear, currentMonthIdx - i, 1);
       last6Months.push({
-        monthName: months[idx],
-        monthIdx: idx,
+        monthName: months[d.getMonth()],
+        monthIdx: d.getMonth(),
+        year: d.getFullYear(),
         kwh: 0,
         isMock: true
       });
@@ -89,10 +92,10 @@ export const Charts: React.FC<ChartsProps> = ({
     });
 
     return last6Months.map(m => {
-      // Find a real report in this month
+      // Find a real report in this month and year
       const match = sortedReports.find(r => {
         const d = new Date(r.createdAt);
-        return d.getMonth() === m.monthIdx && d.getFullYear() === new Date().getFullYear();
+        return d.getMonth() === m.monthIdx && d.getFullYear() === m.year;
       });
 
       if (match) {

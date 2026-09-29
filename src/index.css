@@ -947,42 +947,83 @@ details summary:focus:not(:focus-visible) {
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
 }
 
-.card-client:hover {
-  transform: translateY(-10px) !important;
+/* Strictly scope card hover lift and glowing states to devices with real mouse hover */
+@media (hover: hover) and (pointer: fine) {
+  .card-client:hover {
+    transform: translateY(-10px) !important;
+  }
+
+  .card-client.motion-card:hover {
+    transform: translateY(-10px) !important;
+  }
+
+  /* Card Client Color Glows */
+  .card-client-red:hover {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(239, 68, 68, 0.28) !important;
+  }
+  .card-client-emerald:hover {
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(16, 185, 129, 0.28) !important;
+  }
+  .card-client-amber:hover {
+    border-color: rgba(245, 158, 11, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(245, 158, 11, 0.28) !important;
+  }
+  .card-client-blue:hover {
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(59, 130, 246, 0.28) !important;
+  }
+  .card-client-purple:hover {
+    border-color: rgba(168, 85, 247, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(168, 85, 247, 0.28) !important;
+  }
+  .card-client-cyan:hover {
+    border-color: rgba(6, 182, 212, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(6, 182, 212, 0.28) !important;
+  }
+  .card-client-slate:hover {
+    border-color: rgba(148, 163, 184, 0.4) !important;
+    box-shadow: 0 16px 36px -10px rgba(148, 163, 184, 0.28) !important;
+  }
+
+  /* Card Hover logo animations */
+  .card-client:hover .icon-cpu {
+    animation: heartbeat 0.6s ease-in-out;
+  }
+
+  .card-client:hover .icon-zap {
+    transform: rotate(-15deg) scale(1.12);
+  }
+
+  .card-client:hover .icon-sun {
+    animation: spin-slow-infinite 4s linear infinite;
+  }
+
+  .card-client:hover .icon-list {
+    animation: bounce-custom 0.5s ease-in-out;
+  }
+
+  .card-client:hover .icon-sparkles {
+    animation: wiggle-custom 0.6s ease-in-out;
+  }
+
+  .card-client:hover .icon-shield {
+    animation: heartbeat 0.6s ease-in-out;
+  }
 }
 
-.card-client.motion-card:hover {
-  transform: translateY(-10px) !important;
-}
-
-/* Card Client Color Glows */
-.card-client-red:hover {
-  border-color: rgba(239, 68, 68, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(239, 68, 68, 0.28) !important;
-}
-.card-client-emerald:hover {
-  border-color: rgba(16, 185, 129, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(16, 185, 129, 0.28) !important;
-}
-.card-client-amber:hover {
-  border-color: rgba(245, 158, 11, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(245, 158, 11, 0.28) !important;
-}
-.card-client-blue:hover {
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(59, 130, 246, 0.28) !important;
-}
-.card-client-purple:hover {
-  border-color: rgba(168, 85, 247, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(168, 85, 247, 0.28) !important;
-}
-.card-client-cyan:hover {
-  border-color: rgba(6, 182, 212, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(6, 182, 212, 0.28) !important;
-}
-.card-client-slate:hover {
-  border-color: rgba(148, 163, 184, 0.4) !important;
-  box-shadow: 0 16px 36px -10px rgba(148, 163, 184, 0.28) !important;
+/* Mobile Touch Device Overrides: Ensure clean, static card behavior without sticky tap transforms */
+@media (max-width: 767px) {
+  .card-client,
+  .card-client:hover,
+  .card-client:active,
+  .card-client.motion-card,
+  .card-client.motion-card:hover,
+  .card-client.motion-card:active {
+    transform: none !important;
+    box-shadow: none;
+  }
 }
 
 /* Logo Hover Keyframes */
@@ -1009,31 +1050,6 @@ details summary:focus:not(:focus-visible) {
 @keyframes spin-slow-infinite {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-/* Card Hover logo animations */
-.card-client:hover .icon-cpu {
-  animation: heartbeat 0.6s ease-in-out;
-}
-
-.card-client:hover .icon-zap {
-  transform: rotate(-15deg) scale(1.12);
-}
-
-.card-client:hover .icon-sun {
-  animation: spin-slow-infinite 4s linear infinite;
-}
-
-.card-client:hover .icon-list {
-  animation: bounce-custom 0.5s ease-in-out;
-}
-
-.card-client:hover .icon-sparkles {
-  animation: wiggle-custom 0.6s ease-in-out;
-}
-
-.card-client:hover .icon-shield {
-  animation: heartbeat 0.6s ease-in-out;
 }
 
 /* Base icon transitions for smooth hover states */

@@ -208,7 +208,7 @@ export const Home: React.FC = () => {
   else if (totalUnits > 30) activeSlabName = "Slab: Low-Mid (₹3.00/u)";
 
   // Dynamic Tip based on usage
-  let activeTip = "Shift AC to 26°C after 10 pm to drop a billing slab and save ₹312/month.";
+  let activeTip: string;
   if (acHours > 7) {
     activeTip = "AC runtime is high. Turn to 26°C after 10 pm to save ₹312/mo and drop a slab.";
   } else if (fanHours > 12) {
@@ -222,6 +222,9 @@ export const Home: React.FC = () => {
 
   const words = ["smarter.", "cheaper.", "greener."];
   const [wordIdx, setWordIdx] = useState(0);
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [activeTestimonialIdx, setActiveTestimonialIdx] = useState(0);
+
   useEffect(() => {
     const t = setInterval(() => setWordIdx(w => (w + 1) % words.length), 2400);
     return () => clearInterval(t);
@@ -399,7 +402,7 @@ export const Home: React.FC = () => {
         </div>
 
         {/* Right column – Hero Visual 3D Canvas and Floating Tilt Card */}
-        <div className="lg:col-span-5 relative flex flex-col items-center justify-center min-h-[500px]">
+        <div className="lg:col-span-5 relative flex flex-col items-center justify-center min-h-[360px] sm:min-h-[500px]">
           <div className="absolute -inset-6 bg-gradient-to-tr from-primary-blue/12 to-primary-green/12 dark:from-primary-blue/20 dark:to-primary-green/20 rounded-[3rem] blur-3xl -z-10" />
 
           {/* Energy Matrix Background */}
@@ -408,38 +411,41 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Dedicated card wrapper that defines the coordinate system for the card and its floating badges */}
-          <div className="relative w-full max-w-[480px] z-10 pointer-events-auto mt-6 lg:mt-0">
+          <div className="relative w-full max-w-[480px] z-10 pointer-events-auto mt-4 sm:mt-6 lg:mt-0">
             
-            {/* Floating badge top-right */}
+            {/* Floating badge top-right (Desktop/Tablet only to avoid mobile horizontal viewport overflow) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.9, type: "spring", stiffness: 260 }}
-              className="absolute -top-5 -right-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
+              className="hidden sm:flex absolute -top-5 -right-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 items-center gap-2 z-20"
             >
               <IndianRupee className="w-4 h-4 text-primary-green" />
               <span className="text-xs font-bold text-slate-850 dark:text-slate-200">₹{Math.round(estimatedBill)} estimated</span>
             </motion.div>
  
-            {/* Floating badge bottom-left */}
+            {/* Floating badge bottom-left (Desktop/Tablet only) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.0, type: "spring", stiffness: 260 }}
-              className="absolute -bottom-5 -left-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 flex items-center gap-2 z-20"
+              className="hidden sm:flex absolute -bottom-5 -left-4 bg-white/90 dark:bg-slate-850 border border-slate-200/50 dark:border-slate-700 shadow-xl rounded-2xl px-3.5 py-2 items-center gap-2 z-20"
             >
               <CheckCircle2 className="w-4 h-4 text-primary-green animate-pulse" />
               <span className="text-xs font-bold text-slate-850 dark:text-slate-200">{activeSlabName}</span>
             </motion.div>
  
             <ThreeDCard maxTilt={6} className="shadow-2xl shadow-slate-900/10 dark:shadow-slate-950/50">
-              <div className="bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl py-12 px-9 rounded-[2.2rem] border border-slate-200/50 dark:border-slate-850/60 select-none">
-                <div className="flex items-center justify-between mb-9">
+              <div className="bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl py-7 px-5 sm:py-12 sm:px-9 rounded-[2rem] sm:rounded-[2.2rem] border border-slate-200/50 dark:border-slate-800/60 select-none">
+                <div className="flex items-center justify-between mb-6 sm:mb-9">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Interactive Simulator</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Interactive Simulator</p>
+                      <span className="sm:hidden text-[10px] font-bold text-emerald-600 dark:text-emerald-400">· {activeSlabName}</span>
+                    </div>
                     <div className="flex items-baseline gap-1 mt-2">
-                      <span className="text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight">{totalUnits}</span>
-                      <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">kWh</span>
+                      <span className="text-3xl sm:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight">{totalUnits}</span>
+                      <span className="text-xs sm:text-sm font-semibold text-slate-400 dark:text-slate-500">kWh</span>
                     </div>
                     <p className="text-xs font-semibold text-slate-550 dark:text-slate-400 mt-1">
                       Estimated bill <span className="font-extrabold text-slate-900 dark:text-white font-display">₹{Math.round(estimatedBill)}</span>
@@ -583,9 +589,24 @@ export const Home: React.FC = () => {
             <FeatureCard icon={Cpu} title="Slab Alert System" description="Get alerted before crossing tariff boundaries. Tracks APSPDCL / TSSPDCL domestic slab boundaries." color="bg-red-500/10 dark:bg-red-500/20 text-red-500" gradient="bg-gradient-to-br from-red-500/4 to-transparent" delay={0} />
             <FeatureCard icon={Zap} title="Appliance Profiling" description="Audit AC, refrigerator, lights, and water pumps. Understand decay factors and BEE efficiency savings." color="bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500" gradient="bg-gradient-to-br from-emerald-500/4 to-transparent" delay={0.1} />
             <FeatureCard icon={Sun} title="Solar Net Metering" description="Simulate rooftop solar setup size, calculate amortization paybacks, and evaluate grid net export yields." color="bg-amber-500/10 dark:bg-amber-500/20 text-amber-500" gradient="bg-gradient-to-br from-amber-500/4 to-transparent" delay={0.2} />
-            <FeatureCard icon={LayoutList} title="Bill OCR Scans" description="Upload pdf/image bills. Auto-detect units, slab category charges, electricity taxes, and fuel adjustments." color="bg-blue-500/10 dark:bg-blue-500/20 text-blue-500" gradient="bg-gradient-to-br from-blue-500/4 to-transparent" delay={0.3} />
-            <FeatureCard icon={Sparkles} title="AI Energy Coach" description="Chat with your AI coach. Evaluates household load profiles, flags standby power loss, and ranks savings steps." color="bg-purple-500/10 dark:bg-purple-500/20 text-purple-500" gradient="bg-gradient-to-br from-purple-500/4 to-transparent" delay={0.4} />
-            <FeatureCard icon={ShieldCheck} title="Private By Default" description="Your appliance loads remain secure. No tracking, ads, or data resale. All files encrypted at rest." color="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-500" gradient="bg-gradient-to-br from-cyan-500/4 to-transparent" delay={0.5} />
+            <div className={!showAllFeatures ? "hidden md:block" : "block"}>
+              <FeatureCard icon={LayoutList} title="Tariff & Slab Analytics" description="State-wise DISCOM tariff slabs, live slab breach forecasting, electricity duty calculations, and fuel adjustments." color="bg-blue-500/10 dark:bg-blue-500/20 text-blue-500" gradient="bg-gradient-to-br from-blue-500/4 to-transparent" delay={0.3} />
+            </div>
+            <div className={!showAllFeatures ? "hidden md:block" : "block"}>
+              <FeatureCard icon={Sparkles} title="AI Energy Coach" description="Chat with your AI coach. Evaluates household load profiles, flags standby power loss, and ranks savings steps." color="bg-purple-500/10 dark:bg-purple-500/20 text-purple-500" gradient="bg-gradient-to-br from-purple-500/4 to-transparent" delay={0.4} />
+            </div>
+            <div className={!showAllFeatures ? "hidden md:block" : "block"}>
+              <FeatureCard icon={ShieldCheck} title="Private By Default" description="Your appliance loads remain secure. No tracking, ads, or data resale. All files encrypted at rest." color="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-500" gradient="bg-gradient-to-br from-cyan-500/4 to-transparent" delay={0.5} />
+            </div>
+          </div>
+          <div className="mt-6 text-center md:hidden">
+            <button
+              type="button"
+              onClick={() => setShowAllFeatures(!showAllFeatures)}
+              className="px-5 py-2.5 rounded-2xl text-xs font-bold border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 shadow-sm cursor-pointer"
+            >
+              {showAllFeatures ? "Show Less" : "View 3 More Features ↓"}
+            </button>
           </div>
         </div>
       </section>
@@ -611,11 +632,29 @@ export const Home: React.FC = () => {
             <h2 className="text-3xl sm:text-4xl font-display font-extrabold text-slate-900 dark:text-white">
               Real Stories, Verified Savings
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm">
+            <p className="text-slate-550 dark:text-slate-400 max-w-md mx-auto text-sm">
               Homeowners who optimized their slab categories and appliance usage.
             </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+
+          {/* Mobile Testimonial View: Single Featured Card with pagination pills */}
+          <div className="block md:hidden">
+            <TestimonialCard {...testimonials[activeTestimonialIdx]} i={0} />
+            <div className="flex justify-center items-center gap-2 mt-4">
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveTestimonialIdx(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${activeTestimonialIdx === idx ? "w-6 bg-primary-green" : "w-2 bg-slate-300 dark:bg-slate-700"}`}
+                  aria-label={`Testimonial ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Testimonials Grid: Unchanged 3 cards */}
+          <div className="hidden md:grid md:grid-cols-3 gap-7">
             {testimonials.map((t, i) => <TestimonialCard key={i} {...t} i={i} />)}
           </div>
         </div>

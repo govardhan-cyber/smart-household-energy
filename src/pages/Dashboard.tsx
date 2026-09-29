@@ -110,8 +110,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 pt-4 pb-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-4">
-      <div className="print:hidden w-full space-y-4">
-        {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
       <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left">
         <div className="flex justify-between items-end">
           <div>
@@ -130,6 +129,8 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <div className="print:hidden w-full space-y-4">
       
       {/* Tab Selector */}
       <div className="flex justify-center no-print relative z-10">

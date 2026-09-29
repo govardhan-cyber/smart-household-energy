@@ -77,8 +77,8 @@ You must ALWAYS return a complete JSON result even if you have to estimate (use 
     // Parse the JSON from the response robustly
     let jsonText = aiResponseText.trim();
     // Remove markdown code fences if present
-    if (jsonText.startsWith('\`\`\`')) {
-      const match = jsonText.match(/\`\`\`(?:json)?\s*([\s\S]*?)\s*\`\`\`/);
+    if (jsonText.startsWith('```')) {
+      const match = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
       if (match && match[1]) {
         jsonText = match[1].trim();
       }

@@ -289,28 +289,28 @@ export const KpiCard: React.FC<{
 
   return (
     <ThreeDCard maxTilt={8} className="h-full">
-      <div className={`card-client bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group ${hoverGlowClass} transition-all duration-300 w-full h-full [backface-visibility:hidden] [transform-style:preserve-3d]`}>
+      <div className={`card-client bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-950/20 p-3.5 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${borderColorClass} shadow-sm text-left flex flex-col justify-between relative overflow-hidden group ${hoverGlowClass} transition-all duration-300 w-full h-full [backface-visibility:hidden] [transform-style:preserve-3d]`}>
         {/* Top right corner glowing wash */}
         <div className={`absolute -right-6 -top-6 w-24 h-24 blur-xl opacity-35 dark:opacity-25 rounded-full pointer-events-none ${glowBgClass} group-hover:scale-150 group-hover:opacity-55 transition-all duration-500`} />
 
-        <div className="flex items-center justify-between relative z-10">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        <div className="flex items-center justify-between relative z-10 gap-1">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider line-clamp-1">
             {title}
           </span>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform">
+          <div className="p-1.5 sm:p-2 rounded-xl bg-slate-50 dark:bg-slate-850 group-hover:scale-110 transition-transform shrink-0">
             {icon}
           </div>
         </div>
-        <div className="mt-4 relative z-10">
+        <div className="mt-3 sm:mt-4 relative z-10">
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
+            <span className="text-2xl sm:text-3xl font-display font-black text-slate-900 dark:text-white leading-none">
               <AnimatedNumber value={value} formatter={formatter} />
             </span>
             {!isCurrency && !isPercent && (
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-550">kWh</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-550">kWh</span>
             )}
           </div>
-          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-2 leading-relaxed">
+          <p className="text-[9.5px] sm:text-[10px] font-semibold text-slate-500 dark:text-slate-500 mt-1.5 sm:mt-2 leading-relaxed line-clamp-1 sm:line-clamp-2">
             {subtext}
           </p>
         </div>
@@ -516,7 +516,7 @@ export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({
   let subConsumption = rawConsumption;
   let subEfficiency = rawEfficiency;
   let subCarbon = rawCarbon;
-  let subSolar = rawSolar;
+  const subSolar = rawSolar;
 
   if (diff !== 0) {
     const oldCons = subConsumption;
@@ -590,10 +590,10 @@ export const EnergyHealthScore: React.FC<EnergyHealthScoreProps> = ({
       negatives.push("Multiple refrigerators running simultaneously multiplies your base load.");
     }
 
-    let hasDecayAC = acApp?.unitAges?.some(age => age >= 5) ?? false;
-    let hasDecayFridge = fridgeApp?.unitAges?.some(age => age >= 5) ?? false;
+    const hasDecayAC = acApp?.unitAges?.some(age => age >= 5) ?? false;
+    const hasDecayFridge = fridgeApp?.unitAges?.some(age => age >= 5) ?? false;
     const fanApp = appliances.find(a => a.id === "fan");
-    let hasDecayFan = fanApp?.unitAges?.some(age => age >= 5) ?? false;
+    const hasDecayFan = fanApp?.unitAges?.some(age => age >= 5) ?? false;
 
     if (hasDecayAC || hasDecayFridge || hasDecayFan) {
       const decayingApps = [];

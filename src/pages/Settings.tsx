@@ -57,7 +57,7 @@ export const Settings: React.FC = () => {
   
   // Accent color state local storage syncing
   const [accentColor, setAccentColor] = useState<"blue" | "green" | "purple" | "orange" | "teal">(
-    () => (localStorage.getItem("she_accent") as any) || "blue"
+    () => (localStorage.getItem("she_accent") as "blue" | "green" | "purple" | "orange" | "teal") || "blue"
   );
   
   // Notification States
@@ -185,8 +185,38 @@ export const Settings: React.FC = () => {
   // Modal pop-up focus trapping ref and hooks
   const modalRef = useRef<HTMLDivElement>(null);
 
+interface SettingsSnapshot {
+  theme: "light" | "dark" | "system";
+  accentColor: "blue" | "green" | "purple" | "orange" | "teal";
+  energyUnit: "kwh" | "wh";
+  currency: "inr" | "usd";
+  temperatureUnit: "c" | "f";
+  distanceUnit: "km" | "mi";
+  notifyHighUsage: boolean;
+  weeklyDigest: boolean;
+  tariffState: string;
+  customFlatRate: number | string;
+  monthlyBudgetBill: number | string;
+  monthlyBudgetUnits: number | string;
+  customWattages: Record<string, number | string>;
+  aiEnabled: boolean;
+  voiceEnabled: boolean;
+  smartRecsEnabled: boolean;
+  memoryEnabled: boolean;
+  suggestionFreq: string;
+  billAlerts: boolean;
+  solarAlerts: boolean;
+  monthlyReports: boolean;
+  aiTips: boolean;
+  solarInstalled: string;
+  acRating: string;
+  fridgeSize: string;
+  fanType: string;
+  tvType: string;
+}
+
   // Snapshot structure for dirty state checks
-  const [initialState, setInitialState] = useState<any>(null);
+  const [initialState, setInitialState] = useState<SettingsSnapshot | null>(null);
 
   useEffect(() => {
     if (showAdminEditor) {
@@ -241,13 +271,13 @@ export const Settings: React.FC = () => {
   // Sync state values with auth user data
   useEffect(() => {
     if (user && !initialState) {
-      const initial = {
-        theme: (localStorage.getItem("theme") as any) || "light",
-        accentColor: (localStorage.getItem("she_accent") as any) || "blue",
-        energyUnit: (localStorage.getItem("she_energy_unit") as any) || "kwh",
-        currency: (localStorage.getItem("she_currency") as any) || "inr",
-        temperatureUnit: (localStorage.getItem("she_temp_unit") as any) || "c",
-        distanceUnit: (localStorage.getItem("she_distance_unit") as any) || "km",
+      const initial: SettingsSnapshot = {
+        theme: (localStorage.getItem("theme") as "light" | "dark" | "system") || "light",
+        accentColor: (localStorage.getItem("she_accent") as "blue" | "green" | "purple" | "orange" | "teal") || "blue",
+        energyUnit: (localStorage.getItem("she_energy_unit") as "kwh" | "wh") || "kwh",
+        currency: (localStorage.getItem("she_currency") as "inr" | "usd") || "inr",
+        temperatureUnit: (localStorage.getItem("she_temp_unit") as "c" | "f") || "c",
+        distanceUnit: (localStorage.getItem("she_distance_unit") as "km" | "mi") || "km",
         notifyHighUsage: localStorage.getItem("she_notify_high") !== "false",
         weeklyDigest: localStorage.getItem("she_weekly_digest") === "true",
         tariffState: user.tariffState || "ap",
@@ -505,6 +535,7 @@ export const Settings: React.FC = () => {
         billAlerts,
         solarAlerts,
         monthlyReports,
+        aiTips,
         acRating,
         fridgeSize,
         fanType,
@@ -552,18 +583,45 @@ export const Settings: React.FC = () => {
   const handleAddSlab = () => {
     setAdminTariff((prev) => {
       if (!prev) return prev;
-      const prevMax = prev.slabs.length > 0 ? prev.slabs[prev.slabs.length - 1].max : 0;
-      const newSlab = {
-        limit: "Above X units",
-        rate: "₹5.00",
-        max: Infinity,
-        prev: prevMax === Infinity ? 0 : prevMax,
-        numericRate: 5.0
-      };
-      return {
-        ...prev,
-        slabs: [...prev.slabs, newSlab]
-      };
+      const updatedSlabs = [...prev.slabs];
+      if (updatedSlabs.length > 0) {
+        const lastIndex = updatedSlabs.length - 1;
+        const lastSlab = updatedSlabs[lastIndex];
+        const finiteThreshold = lastSlab.max === Infinity 
+          ? (lastSlab.prev > 0 ? lastSlab.prev + 100 : 100) 
+          : lastSlab.max;
+
+        updatedSlabs[lastIndex] = {
+          ...lastSlab,
+          max: finiteThreshold,
+          limit: `${lastSlab.prev + 1} - ${finiteThreshold} units`
+        };
+
+        const newSlab = {
+          limit: `Above ${finiteThreshold} units`,
+          rate: "₹5.00",
+          max: Infinity,
+          prev: finiteThreshold,
+          numericRate: 5.0
+        };
+
+        return {
+          ...prev,
+          slabs: [...updatedSlabs, newSlab]
+        };
+      } else {
+        const newSlab = {
+          limit: "Above 0 units",
+          rate: "₹5.00",
+          max: Infinity,
+          prev: 0,
+          numericRate: 5.0
+        };
+        return {
+          ...prev,
+          slabs: [newSlab]
+        };
+      }
     });
   };
 
@@ -597,10 +655,11 @@ export const Settings: React.FC = () => {
       setTariffs(freshTariffs);
       setAdminSaveSuccess(true);
       setTimeout(() => setAdminSaveSuccess(false), 5000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to save global tariff rates:", err);
       setAdminSaveSuccess(false);
-      alert(err?.message || "Failed to save tariff rates. Please try again.");
+      const msg = err instanceof Error ? err.message : "Failed to save tariff rates. Please try again.";
+      alert(msg);
     } finally {
       setAdminSaving(false);
     }
@@ -870,14 +929,14 @@ export const Settings: React.FC = () => {
               <div className="lg:col-span-4 flex flex-col gap-6">
                 
                 {/* Top User Profile Card */}
-                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 rounded-3xl border border-slate-200/30 dark:border-slate-800/30 shadow-md backdrop-blur-md hover:shadow-lg transition-all duration-300 text-left">
+                <div className="hidden sm:block bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-5 rounded-3xl border border-slate-200/30 dark:border-slate-800/30 shadow-md backdrop-blur-md hover:shadow-lg transition-all duration-300 text-left">
                   
                   {/* User Profile Avatar with dynamic ring */}
                   <div className="flex items-center gap-4.5">
                     <div className="relative shrink-0 select-none group/avatar">
                       {/* Avatar completion ring 92% - now dynamic matching theme accent */}
                       <svg className="w-20 h-20 transform -rotate-90">
-                        <circle cx="40" cy="40" r="34" className="stroke-slate-100 dark:stroke-slate-850/50" strokeWidth="4" fill="none" />
+                        <circle cx="40" cy="40" r="34" className="stroke-slate-100 dark:stroke-slate-855/50" strokeWidth="4" fill="none" />
                         <circle 
                           cx="40" 
                           cy="40" 
@@ -929,7 +988,7 @@ export const Settings: React.FC = () => {
                 </div>
 
                 {/* Sidebar Navigation Cards Container */}
-                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-4.5 rounded-3xl border border-slate-200/20 dark:border-slate-800/20 shadow-md backdrop-blur-md flex flex-col gap-2">
+                <div className="bg-gradient-to-r from-slate-50/70 to-slate-100/40 dark:from-slate-900/70 dark:to-slate-950/45 p-2 sm:p-4.5 rounded-3xl border border-slate-200/20 dark:border-slate-800/20 shadow-md backdrop-blur-md flex flex-row sm:flex-col overflow-x-auto gap-2">
                   {settingsTabs.map(tab => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -937,8 +996,8 @@ export const Settings: React.FC = () => {
                       <button
                         key={tab.id}
                         type="button"
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`w-full p-3.5 rounded-2xl text-left transition-all duration-300 ease-out group cursor-pointer relative overflow-hidden flex items-center gap-4 hover:-translate-y-2.5 hover:shadow-md hover:shadow-slate-100 dark:hover:shadow-slate-950/40 ${
+                        onClick={() => setActiveTab(tab.id as "general" | "billing" | "appliances" | "ai" | "notifications" | "security" | "account" | "about")}
+                        className={`shrink-0 sm:shrink w-auto sm:w-full p-2.5 sm:p-3.5 rounded-2xl text-left transition-all duration-300 ease-out group cursor-pointer relative overflow-hidden flex items-center gap-2.5 sm:gap-4 sm:hover:-translate-y-2.5 hover:shadow-md hover:shadow-slate-100 dark:hover:shadow-slate-950/40 ${
                           isActive
                             ? `text-white shadow-lg bg-gradient-to-r ${accents[accentColor].gradient} ${accents[accentColor].glow}`
                             : "bg-slate-50/30 dark:bg-slate-900/20 border border-slate-200/20 dark:border-slate-800/20 text-slate-600 dark:text-slate-400 hover:bg-slate-50/70 dark:hover:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700"
@@ -947,20 +1006,20 @@ export const Settings: React.FC = () => {
                         {isActive && (
                           <motion.div
                             layoutId="activeSettingsTabPill"
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white rounded-r-full"
+                            className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-white rounded-r-full"
                             transition={{ type: "spring", stiffness: 350, damping: 25 }}
                           />
                         )}
-                        <div className={`p-2 rounded-xl transition-all duration-200 ${
+                        <div className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 ${
                           isActive 
                             ? "bg-white/20 text-white" 
                             : "bg-slate-105 dark:bg-slate-955/30 text-slate-400 dark:text-slate-500 group-hover:bg-slate-150 dark:group-hover:bg-slate-950/50"
                         }`}>
-                          <Icon className="w-4.5 h-4.5" />
+                          <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                         </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <span className={`block text-xs font-black uppercase tracking-wider ${isActive ? "text-white" : "text-slate-655 dark:text-slate-350"}`}>{tab.label}</span>
-                          <span className={`block text-[9.5px] mt-0.5 leading-normal truncate ${isActive ? "text-white/70" : "text-slate-400 dark:text-slate-550"}`}>{tab.sub}</span>
+                        <div className="flex-1 min-w-0 text-left pr-2 sm:pr-0">
+                          <span className={`block text-xs font-black uppercase tracking-wider whitespace-nowrap ${isActive ? "text-white" : "text-slate-655 dark:text-slate-350"}`}>{tab.label}</span>
+                          <span className={`hidden sm:block text-[9.5px] mt-0.5 leading-normal truncate ${isActive ? "text-white/70" : "text-slate-400 dark:text-slate-550"}`}>{tab.sub}</span>
                         </div>
                       </button>
                     );
@@ -1403,7 +1462,7 @@ export const Settings: React.FC = () => {
                                 <button
                                   key={tab}
                                   type="button"
-                                  onClick={() => setActiveWattageTab(tab as any)}
+                                  onClick={() => setActiveWattageTab(tab as "essentials" | "kitchen" | "electronics" | "comfort" | "water")}
                                   className={`flex-1 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all duration-300 ${
                                     activeWattageTab === tab
                                       ? `bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm shadow-md ${accents[accentColor].text}`

@@ -227,68 +227,12 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
             
             screenshotUrl = await Promise.race([uploadPromise, timeoutPromise]);
           } catch (uploadErr) {
-            console.warn("Firebase Storage upload failed, trying anonymous file.io fallback:", uploadErr);
-            try {
-              const fileIoUploadPromise = (async () => {
-                const anonymousFormData = new FormData();
-                anonymousFormData.append("file", file);
-                const fileIoResponse = await fetch("https://file.io", {
-                  method: "POST",
-                  body: anonymousFormData
-                });
-                if (fileIoResponse.ok) {
-                  const fileIoResult = await fileIoResponse.json();
-                  if (fileIoResult.success) {
-                    return fileIoResult.link;
-                  }
-                }
-                throw new Error("file.io upload rejected");
-              })();
-
-              const fileIoTimeoutPromise = new Promise<string>((_, reject) =>
-                setTimeout(() => reject(new Error("file.io upload timed out (5s)")), 5000)
-              );
-
-              screenshotUrl = await Promise.race([fileIoUploadPromise, fileIoTimeoutPromise]);
-              console.log("Anonymous file.io upload succeeded:", screenshotUrl);
-            } catch (fallbackErr) {
-              console.warn("Anonymous file.io upload also failed or timed out:", fallbackErr);
-            }
+            console.warn("Firebase Storage upload failed or timed out:", uploadErr);
+            screenshotUrl = "Attachment retained locally (Storage offline)";
           }
         } else {
-          // Firebase not configured - upload anonymously to file.io
-          try {
-            const fileIoUploadPromise = (async () => {
-              const anonymousFormData = new FormData();
-              anonymousFormData.append("file", file);
-              const fileIoResponse = await fetch("https://file.io", {
-                method: "POST",
-                body: anonymousFormData
-              });
-              if (fileIoResponse.ok) {
-                const fileIoResult = await fileIoResponse.json();
-                if (fileIoResult.success) {
-                  return fileIoResult.link;
-                }
-              }
-              throw new Error("file.io upload rejected");
-            })();
-
-            const fileIoTimeoutPromise = new Promise<string>((_, reject) =>
-              setTimeout(() => reject(new Error("file.io upload timed out (5s)")), 5000)
-            );
-
-            screenshotUrl = await Promise.race([fileIoUploadPromise, fileIoTimeoutPromise]);
-            console.log("Anonymous file.io upload succeeded:", screenshotUrl);
-          } catch (fileIoErr) {
-            console.warn("Anonymous file.io upload failed or timed out:", fileIoErr);
-          }
+          screenshotUrl = "Attachment retained locally (Storage unconfigured)";
         }
-      }
-
-      // 3. Fallback
-      if (file && !screenshotUrl) {
-        screenshotUrl = "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=600&auto=format&fit=crop";
       }
 
       // 2. Direct database logging fallback (with 2.5s timeout)
@@ -393,9 +337,10 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
         // Fallback so the user is not locked on loading screen
         setStatus("success");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to submit issue report:", err);
-      setErrorMsg(err.message || "An error occurred while submitting the issue. Please try again.");
+      const msg = err instanceof Error ? err.message : "An error occurred while submitting the issue. Please try again.";
+      setErrorMsg(msg);
       setStatus("error");
     }
   };

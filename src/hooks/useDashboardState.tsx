@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import type { UserProfile } from "../context/AuthContext";
 import { reportsService } from "../utils/reportsService";
 import type { EnergyReport } from "../utils/reportsService";
 import { calculateBill, defaultAppliances, getApplianceDecayRate } from "../utils/tariffCalculator";
@@ -35,7 +36,7 @@ export interface AnalysisResult {
 }
 
 export interface UseDashboardStateReturn {
-  user: any;
+  user: UserProfile | null;
   currentStep: 1 | 2 | 3 | 4;
   setCurrentStep: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>;
   activeTab: "wizard" | "solar" | "audit";
@@ -134,7 +135,7 @@ export const useDashboardState = (): UseDashboardStateReturn => {
       const saved = savedMap[app.id];
       let qty = saved?.quantity !== undefined ? saved.quantity : app.quantity;
       let hrs = saved?.hours !== undefined ? saved.hours : app.hours;
-      let wts = saved?.watts !== undefined ? saved.watts : app.watts;
+      const wts = saved?.watts !== undefined ? saved.watts : app.watts;
 
       if (saved === undefined) {
         if (app.id === 'ac') { qty = 1; hrs = 6; }
@@ -458,8 +459,13 @@ export const useDashboardState = (): UseDashboardStateReturn => {
     ? liveFridgeApp.quantity * (liveFridgeApp.watts / 1000) * liveFridgeApp.hours * 30 * 0.15
     : 0;
 
+  const liveFanApp = appliances.find(a => a.id === "fan" && a.quantity > 0);
+  const liveFanSavedKwh = liveFanApp && liveFanApp.watts > 28
+    ? liveFanApp.quantity * ((liveFanApp.watts - 28) / 1000) * liveFanApp.hours * 30
+    : 0;
+
   const liveStandbySavedKwh = liveTotalUnits * 0.05;
-  const liveTotalSavedKwh = liveAcSavedKwh + liveLightSavedKwh + liveTubeSavedKwh + liveFridgeSavedKwh + liveStandbySavedKwh;
+  const liveTotalSavedKwh = liveAcSavedKwh + liveLightSavedKwh + liveTubeSavedKwh + liveFridgeSavedKwh + liveFanSavedKwh + liveStandbySavedKwh;
   const liveUsageAfter = Math.max(0, liveTotalUnits - liveTotalSavedKwh);
   const liveBillAfter = calculateBill(liveUsageAfter, user?.tariffState || "ap", user?.customFlatRate || 7.5);
   const liveSavingsPotential = Math.max(0, liveBill.netEnergyCharge - liveBillAfter.netEnergyCharge);
@@ -626,6 +632,13 @@ export const useDashboardState = (): UseDashboardStateReturn => {
       });
     }
 
+    const roundedTotal = Math.round(totalSavingsMoney * 10) / 10;
+    const sumOpRounded = tips.reduce((sum, t) => sum + t.savings, 0);
+    const diff = Math.round((roundedTotal - sumOpRounded) * 10) / 10;
+    if (diff !== 0 && tips.length > 0) {
+      tips[0].savings = Math.max(0, Math.round((tips[0].savings + diff) * 10) / 10);
+    }
+
     const unitUpgradeCosts: Record<string, number> = {
       ac: 40000,
       fridge: 25000,
@@ -686,13 +699,6 @@ export const useDashboardState = (): UseDashboardStateReturn => {
         }
       }
     });
-
-    const roundedTotal = Math.round(totalSavingsMoney * 10) / 10;
-    const sumRounded = tips.reduce((sum, t) => sum + t.savings, 0);
-    const diff = Math.round((roundedTotal - sumRounded) * 10) / 10;
-    if (diff !== 0 && tips.length > 0) {
-      tips[0].savings = Math.round((tips[0].savings + diff) * 10) / 10;
-    }
 
     const result = {
       totalUnits: liveTotalUnits,
@@ -837,8 +843,8 @@ export const useDashboardState = (): UseDashboardStateReturn => {
   const getMomTrend = () => {
     let diff = 0;
     let label = "vs last month (est.)";
-    let trend: "up" | "down" | "neutral" = "down";
-    let type: "positive" | "negative" | "neutral" = "positive";
+    let trend: "up" | "down" | "neutral";
+    let type: "positive" | "negative" | "neutral";
 
     if (reports.length >= 2) {
       const latestVal = reports[0].totalUnits;

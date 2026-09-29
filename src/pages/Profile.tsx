@@ -101,7 +101,7 @@ export const Profile: React.FC = () => {
     try {
       await updateUserProfile(fullName, photoURL);
       setProfileSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getFriendlyErrorMessage(err));
     } finally {
@@ -132,7 +132,7 @@ export const Profile: React.FC = () => {
       setPasswordSuccess(true);
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getFriendlyErrorMessage(err));
     } finally {
@@ -209,7 +209,7 @@ export const Profile: React.FC = () => {
       {/* Title Header Banner Card */}
       <motion.div 
         variants={itemVariants} 
-        whileHover={{ y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" }}
+        whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -2, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" } : undefined}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 dark:from-emerald-950/20 dark:to-green-950/30 p-6 sm:p-8 rounded-3xl border border-slate-200/20 dark:border-green-900/20 shadow-md relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6"
       >
@@ -357,7 +357,7 @@ export const Profile: React.FC = () => {
         {/* Left Card: Info & Statistics Summary (Col span 4) */}
         <motion.div 
           variants={itemVariants}
-          whileHover={{ y: -3, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" }}
+          whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -3, boxShadow: "0 12px 30px -10px rgba(0,0,0,0.08)" } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
           className="lg:col-span-4 bg-white/40 dark:bg-slate-900/30 backdrop-blur-md p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/60 shadow-lg hover:shadow-xl hover:border-slate-250 dark:hover:border-slate-700 transition-all duration-300 text-center space-y-6 relative overflow-hidden"
         >
@@ -414,7 +414,7 @@ export const Profile: React.FC = () => {
           </div>
 
           {/* Your Overview stats widgets with mock sparklines */}
-          <div className="pt-4 space-y-3 text-left border-t border-slate-100 dark:border-slate-800/80 z-10 relative">
+          <div className="hidden sm:block pt-4 space-y-3 text-left border-t border-slate-100 dark:border-slate-800/80 z-10 relative">
             <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block pl-1">
               Your Overview
             </span>

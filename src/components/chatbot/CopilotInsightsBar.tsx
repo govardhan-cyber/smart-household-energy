@@ -46,19 +46,7 @@ const CopilotInsightsBar: React.FC<CopilotInsightsBarProps> = ({
         }
       }
 
-      // 2. Fallback to scanned bill history if report is missing
-      const billKeys = Object.keys(localStorage).filter(k => k.startsWith('she_bill_history_'));
-      if (billKeys.length > 0) {
-        const bills = JSON.parse(localStorage.getItem(billKeys[0]) || '[]');
-        if (Array.isArray(bills) && bills.length > 0 && bills[0]?.parsedData) {
-          const b = bills[0].parsedData;
-          setInsights(prev => ({
-            ...prev,
-            bill: prev.bill === '₹--' && b.totalAmount ? `₹${Math.round(b.totalAmount)}` : prev.bill,
-            units: prev.units === '--' && b.unitsConsumed ? `${Math.round(b.unitsConsumed)} kWh` : prev.units
-          }));
-        }
-      }
+
 
       // 3. Read cached solar data
       const solarKeys = Object.keys(localStorage).filter(k => k.startsWith('she_solar_cache_'));
@@ -80,8 +68,8 @@ const CopilotInsightsBar: React.FC<CopilotInsightsBarProps> = ({
       iconBg: 'bg-amber-500/10 dark:bg-amber-500/20 border-amber-400/20 dark:border-amber-400/30',
       bg: 'from-amber-500/10 via-amber-400/5 to-white/10 dark:from-amber-500/20 dark:via-amber-600/5 dark:to-slate-900/40',
       border: 'border-amber-300/60 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400 hover:shadow-[0_8px_30px_rgba(245,158,11,0.25)]',
-      actionLabel: 'Scan Bill',
-      path: '/bill-analyzer'
+      actionLabel: 'View Audit',
+      path: '/dashboard'
     },
     { 
       icon: <Sun className={compact ? 'w-3.5 h-3.5' : 'w-4.5 h-4.5'} />, 

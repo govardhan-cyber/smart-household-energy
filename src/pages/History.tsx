@@ -113,7 +113,7 @@ const heroStatVariants = {
   visible: (delay: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as any }
+    transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] as const }
   })
 };
 
@@ -358,8 +358,7 @@ export const History: React.FC = () => {
 
   return (
     <div className="flex-1 bg-transparent transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full space-y-8 min-h-screen">
-      <div className="print:hidden w-full space-y-8">
-        {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
+      {/* ─── PRINT ONLY HEADER ────────────────────────────────────────────────── */}
       <div className="hidden print:flex flex-col w-full border-b-2 border-primary-blue pb-4 mb-6 text-left print-background-content">
         <div className="flex justify-between items-end">
           <div>
@@ -378,6 +377,8 @@ export const History: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <div className="print:hidden w-full space-y-8">
       
       {/* Widescreen Layout Grid */}
       <div className="grid grid-cols-1 gap-8 items-start relative w-full print-background-content">
@@ -405,8 +406,10 @@ export const History: React.FC = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
                     <HeroStat icon={BarChart3}   iconColor="text-white"        label="Reports"   raw={reports.length}  prefix=""  suffix=""    delay={0}   />
                     <HeroStat icon={Zap}         iconColor="text-yellow-200"   label="Avg Bill"  raw={avgBill}         prefix="₹" suffix="/mo" delay={0.1} />
-                    <HeroStat icon={Bolt}        iconColor="text-blue-200"     label="Total kWh" raw={totalUnits}      prefix=""  suffix=" kWh" delay={0.2} />
-                    <HeroStat icon={TrendingDown} iconColor="text-emerald-200" label="Savings"   raw={totalSavings}    prefix="₹" suffix=""    delay={0.3} />
+                    <div className="hidden sm:contents">
+                      <HeroStat icon={Bolt}        iconColor="text-blue-200"     label="Total kWh" raw={totalUnits}      prefix=""  suffix=" kWh" delay={0.2} />
+                      <HeroStat icon={TrendingDown} iconColor="text-emerald-200" label="Savings"   raw={totalSavings}    prefix="₹" suffix=""    delay={0.3} />
+                    </div>
                   </div>
                 )}
               </div>
@@ -492,7 +495,7 @@ export const History: React.FC = () => {
                     variants={historyCardVariants}
                     initial="hidden"
                     animate="visible"
-                    whileHover={{ y: -6 }}
+                    whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -6 } : undefined}
                     onClick={() => setSelectedReport(report)}
                     className="group bg-white/40 dark:bg-slate-950/20 backdrop-blur-xl border border-white/20 dark:border-slate-800/40 rounded-2xl p-5 shadow-md dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-lg hover:border-primary-blue/30 dark:hover:border-primary-green/30 cursor-pointer transition-[transform,border-color,box-shadow] duration-300 flex flex-col gap-4"
                   >
@@ -511,7 +514,7 @@ export const History: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setSelectedReport(report)}
                           className="p-1.5 text-slate-400 hover:text-primary-blue dark:hover:text-blue-400 hover:bg-white/30 dark:hover:bg-slate-900/30 rounded-lg transition-colors cursor-pointer"

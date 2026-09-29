@@ -198,7 +198,7 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
   };
 
   // Render SVG circular score progress gauge
-  const renderScoreGauge = (score: number, status: string, _colorClass: string) => {
+  const renderScoreGauge = (score: number, status: string, colorClass?: string) => {
     const radius = 55;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (score / 100) * circumference;
@@ -233,13 +233,14 @@ export const AIHomeAudit: React.FC<AIHomeAuditProps> = ({
               transition={{ duration: 1.2, ease: "easeOut" }}
               strokeLinecap="round"
               className={
-                score >= 85
+                colorClass ||
+                (score >= 85
                   ? "text-emerald-500"
                   : score >= 70
                   ? "text-blue-500"
                   : score >= 50
                   ? "text-amber-500"
-                  : "text-red-500"
+                  : "text-red-500")
               }
             />
             {/* Spinning decorative inner dash circle */}

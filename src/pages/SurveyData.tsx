@@ -56,6 +56,32 @@ const AnimatedNumber: React.FC<{
   return <span>{formatter(displayValue)}</span>;
 };
 
+// Recharts custom tooltip defined outside render to avoid recreation
+const CustomTooltip = ({ active, payload, label }: {
+  active?: boolean;
+  payload?: { value: number; dataKey: string }[];
+  label?: string;
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xl text-xs space-y-1.5 text-left">
+        <p className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 mb-1">{label}</p>
+        <p className="text-primary-blue dark:text-primary-green font-semibold flex justify-between gap-4">
+          <span>Usage:</span>
+          <span className="font-bold">{payload[0].value} kWh</span>
+        </p>
+        {payload[1] && (
+          <p className="text-amber-500 font-semibold flex justify-between gap-4">
+            <span>Bill:</span>
+            <span className="font-bold">₹{payload[1].value}</span>
+          </p>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 export const SurveyData: React.FC = () => {
   // Detect theme state for Recharts components
   const [activeTheme, setActiveTheme] = useState<"light" | "dark">(
@@ -238,32 +264,6 @@ export const SurveyData: React.FC = () => {
     return <Zap className="w-4.5 h-4.5 text-slate-400" />;
   };
 
-  // Recharts custom tooltip
-  const CustomTooltip = ({ active, payload, label }: {
-    active?: boolean;
-    payload?: { value: number; dataKey: string }[];
-    label?: string;
-  }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xl text-xs space-y-1.5 text-left">
-          <p className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-1 mb-1">{label}</p>
-          <p className="text-primary-blue dark:text-primary-green font-semibold flex justify-between gap-4">
-            <span>Usage:</span>
-            <span className="font-bold">{payload[0].value} kWh</span>
-          </p>
-          {payload[1] && (
-            <p className="text-amber-500 font-semibold flex justify-between gap-4">
-              <span>Bill:</span>
-              <span className="font-bold">₹{payload[1].value}</span>
-            </p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
   // Analytics Chart Data formatting
   const chartData = sortedData.map(r => ({
     name: r.householdName.split(" ")[0],
@@ -378,7 +378,7 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } } : undefined}
           className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-blue-500/30 dark:hover:border-blue-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-blue-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
@@ -403,7 +403,7 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } } : undefined}
           className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-orange-500/30 dark:hover:border-orange-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-orange-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
@@ -429,7 +429,7 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } } : undefined}
           className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-yellow-500/30 dark:hover:border-yellow-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-yellow-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
@@ -456,7 +456,7 @@ export const SurveyData: React.FC = () => {
             hidden: { opacity: 0 },
             visible: { opacity: 1 }
           }}
-          whileHover={{ y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } }}
+          whileHover={typeof window !== "undefined" && window.innerWidth >= 768 ? { y: -8, scale: 1.025, transition: { type: "spring", stiffness: 380, damping: 18 } } : undefined}
           className="relative overflow-hidden bg-white/35 dark:bg-slate-900/30 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-800/40 shadow-sm hover:shadow-[0_20px_50px_-12px_rgba(31,38,135,0.06)] hover:border-emerald-500/30 dark:hover:border-emerald-500/40 transition-shadow duration-300 flex flex-col justify-between group"
         >
           <div className="absolute -right-6 -top-6 w-28 h-28 blur-2xl opacity-40 dark:opacity-30 rounded-full pointer-events-none bg-emerald-500 group-hover:scale-150 group-hover:opacity-60 transition-all duration-500" />
@@ -569,7 +569,7 @@ export const SurveyData: React.FC = () => {
                   <select
                     value={billFilter}
                     onChange={(e) => {
-                      setBillFilter(e.target.value as any);
+                      setBillFilter(e.target.value as "all" | "low" | "medium" | "high");
                       setCurrentPage(1);
                     }}
                     className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-250 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none dark:text-white"
@@ -587,7 +587,7 @@ export const SurveyData: React.FC = () => {
                   <select
                     value={userFilter}
                     onChange={(e) => {
-                      setUserFilter(e.target.value as any);
+                      setUserFilter(e.target.value as "all" | "high_user" | "low_user");
                       setCurrentPage(1);
                     }}
                     className="w-full bg-slate-50 dark:bg-slate-850 border border-slate-250 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none dark:text-white"

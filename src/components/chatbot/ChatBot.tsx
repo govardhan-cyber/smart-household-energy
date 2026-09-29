@@ -4,7 +4,6 @@ import { X, Send, Square, AlertCircle, ChevronDown, Sparkles, ArrowRight, Table,
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { loadTariffs, type TariffState } from "../../utils/tariffService";
 import type { EnergyReport } from "../../utils/reportsService";
-import type { BillRecord } from "../../pages/BillAnalyzer";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../firebase/config";
 import { useNavigate } from "react-router-dom";
@@ -171,78 +170,7 @@ export const ChatBot: React.FC = () => {
     });
   }, [user]);
 
-  // Listen to bill uploaded events for proactive help
-  useEffect(() => {
-    const handleBillUploaded = async (e: Event) => {
-      const customEvent = e as CustomEvent<Record<string, unknown>>;
-      const record = customEvent.detail as { parsedData: { unitsConsumed?: number; tariffCategory?: string; totalAmount?: number; dueDate?: string; address?: string } };
-      if (!record) return;
 
-      // 1. Open the chatbot in chat mode
-      setIsOpen(true);
-      setCopilotMode('chat');
-
-      // 2. Set loading & display detection steps
-      setIsLoading(true);
-      setError(null);
-      
-      // Stage 1: Uploading
-      setMessages([{ role: "model", text: "*Uploading...*", timestamp: Date.now() }]);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Stage 2: AI Detected checklist
-      const detectedMsgText = `AI detected:
-✓ Units Consumed: **${record.parsedData.unitsConsumed || 0} kWh**
-✓ Tariff Category: **${record.parsedData.tariffCategory || "Domestic"}**
-✓ Bill Amount: **₹${record.parsedData.totalAmount || 0}**
-✓ Due Date: **${record.parsedData.dueDate || "N/A"}**
-✓ Carbon Impact: **${Math.round((record.parsedData.unitsConsumed || 0) * 0.82)} kg CO₂**`;
-
-      setMessages([{ role: "model", text: detectedMsgText, timestamp: Date.now() }]);
-
-      // Stage 3: Generate Summary
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      const proactivePrompt = `The user has uploaded an electricity bill:
-- Units Consumed: ${record.parsedData.unitsConsumed} kWh
-- Bill Amount: ₹${record.parsedData.totalAmount}
-- Tariff Category: ${record.parsedData.tariffCategory}
-- Due Date: ${record.parsedData.dueDate}
-- Address: ${record.parsedData.address}
-
-Provide a proactive "⚡ AI Summary". Explain why their usage/bill is high or how it compares to standard average baseline (250 kWh). Provide 3 concrete, personalized action items (e.g. AC temperature to 24°C, buy BLDC fans, shift washing machine off-peak) and estimate the monthly savings (e.g. Potential savings: ₹410/month). Keep it brief, conversational, and direct.`;
-
-      try {
-        const responseText = await queryGeminiDirect(proactivePrompt);
-        setMessages(prev => [...prev, { role: "model", text: responseText, timestamp: Date.now() }]);
-      } catch (err: unknown) {
-        console.error("Proactive assistant fail:", err);
-        // Fallback to static smart template if Gemini fails
-        const baselineDiff = (record.parsedData.unitsConsumed || 0) - 250;
-        const baselineCompareText = baselineDiff > 0 
-          ? `Your consumption is **${baselineDiff} kWh higher** than the average similar household baseline (250 kWh).` 
-          : `Your consumption is **${Math.abs(baselineDiff)} kWh lower** than the average similar household baseline (250 kWh). Excellent!`;
-        
-        const fallbackSummary = `⚡ **AI Summary**
-
-Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedData.unitsConsumed || 0} kWh**. ${baselineCompareText}
-
-**Recommended actions:**
-1. **Increase AC temperature** to 24°C (Saves ~₹240/mo)
-2. **Replace ceiling fans with BLDC** models (Saves ~₹180/mo)
-3. **Shift heavy loads** (like washing machine) to off-peak hours (Saves ~₹90/mo)
-
-**Potential savings:** ₹410–510/month`;
-
-        setMessages(prev => [...prev, { role: "model", text: fallbackSummary, timestamp: Date.now() }]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    window.addEventListener("she_bill_uploaded", handleBillUploaded);
-    return () => window.removeEventListener("she_bill_uploaded", handleBillUploaded);
-  }, [user, tariffs]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -268,7 +196,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
 
   const suggestions = [
     { label: "🔍 Find Appliance", prompt: "FIND_APPLIANCE_PROMPT", icon: <Search className="w-3 h-3" /> },
-    { label: "📄 Analyze Bill", prompt: "Explain my electricity bill and tariff charge breakdown", icon: <Zap className="w-3 h-3" /> },
+    { label: "⚡ Tariff Rates", prompt: "Explain my domestic electricity tariff rates and slab breakdown", icon: <Zap className="w-3 h-3" /> },
     { label: "☀️ Solar ROI", prompt: "Should I install solar panels? What size, cost, and payback?", icon: <Sparkles className="w-3 h-3" /> },
     { label: "💡 Save Money", prompt: "How can I save ₹500 per month on my energy bill?", icon: <Leaf className="w-3 h-3" /> },
     { label: "📊 Usage Report", prompt: "Give me a detailed analysis of my household energy consumption", icon: <Table className="w-3 h-3" /> },
@@ -300,7 +228,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
 - Carbon Footprint: ${report.beforeCo2} kg CO2/month (Can reduce to ${report.afterCo2} kg CO2/month, saving ${report.savedCo2} kg CO2/month, equivalent to ${report.savedTrees} trees/month)
 - Appliances configured: ${report.appliances.map((app) => `${app.name} (Qty: ${app.quantity}, Running: ${app.hours} hrs/day, Watts: ${app.watts}W)`).join(", ")}`;
           }
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -326,45 +254,25 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
 - Solar Technology Chosen: ${solar.solarTech}
 - Configured Roof Area: ${solar.roofArea} sq ft
 - Configured Monthly Grid Bill: ₹${solar.monthlyBillInput}`;
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
     }
 
-    let billHistoryContext = "No extracted utility bill history logs found.";
-    if (user?.uid) {
-      const billHistoryKey = `she_bill_history_${user.uid}`;
-      const billHistoryData = localStorage.getItem(billHistoryKey);
-      if (billHistoryData) {
-        try {
-          const history: BillRecord[] = JSON.parse(billHistoryData);
-          if (history && history.length > 0) {
-            billHistoryContext = `Extracted Utility Bill Logs (previously uploaded bills):
-` + history.slice(0, 3).map((h, idx) => `- Bill #${idx + 1}: uploaded on ${h.uploadDate}, billing period is ${h.parsedData.billingPeriod}, usage units is ${h.parsedData.unitsConsumed} kWh, bill amount is ₹${h.parsedData.totalAmount}, tariff categories is ${h.parsedData.tariffCategory}, consumer name is ${h.parsedData.consumerName}, service number is ${h.parsedData.serviceNumber}`).join("\n");
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
-    }
-
-    let tariffContext = "";
-    if (tariffs) {
-      tariffContext = Object.values(tariffs)
-        .map((t: TariffState) => {
-          const slabsStr = t.slabs.map((s) => `${s.limit}: ${s.rate}`).join(", ");
-          const subsidyStr = t.subsidy.value > 0 
-            ? `Subsidy: ${t.subsidy.type === 'fixed' ? '₹' : ''}${t.subsidy.value}${t.subsidy.type === 'percentage' ? '%' : ''} (min gross: ₹${t.subsidy.minGross || 0})` 
-            : "No subsidy";
-          return `- ${t.displayName} Slabs: ${slabsStr}. ${subsidyStr}.`;
-        })
-        .join("\n    ");
-    } else {
-      tariffContext = `- Andhra Pradesh (AP Domestic LT-I) Slabs: 0 – 30 units: ₹1.90, 31 – 75 units: ₹3.00, 76 – 125 units: ₹4.50, 126 – 225 units: ₹6.00, 226 – 400 units: ₹8.75, Above 400 units: ₹9.75. Subsidy: ₹184.50 (fixed) (min gross: ₹0).
+    const tariffContext = tariffs
+      ? Object.values(tariffs)
+          .map((t: TariffState) => {
+            const slabsStr = t.slabs.map((s) => `${s.limit}: ${s.rate}`).join(", ");
+            const subsidyStr = t.subsidy.value > 0 
+              ? `Subsidy: ${t.subsidy.type === 'fixed' ? '₹' : ''}${t.subsidy.value}${t.subsidy.type === 'percentage' ? '%' : ''} (min gross: ₹${t.subsidy.minGross || 0})` 
+              : "No subsidy";
+            return `- ${t.displayName} Slabs: ${slabsStr}. ${subsidyStr}.`;
+          })
+          .join("\n    ")
+      : `- Andhra Pradesh (AP Domestic LT-I) Slabs: 0 – 30 units: ₹1.90, 31 – 75 units: ₹3.00, 76 – 125 units: ₹4.50, 126 – 225 units: ₹6.00, 226 – 400 units: ₹8.75, Above 400 units: ₹9.75. Subsidy: ₹184.50 (fixed) (min gross: ₹0).
     - Telangana (TSSPDCL Domestic) Slabs: 0 – 50 units: ₹1.95, 51 – 100 units: ₹3.10, 101 – 200 units: ₹4.80, 201 – 300 units: ₹7.70, 301 – 400 units: ₹9.00, 401 – 800 units: ₹9.50, Above 800 units: ₹10.00. Subsidy: 13% (percentage) (min gross: ₹0).
     - Karnataka (BESCOM Domestic) Slabs: 0 – 50 units: ₹4.15, 51 – 100 units: ₹5.60, 101 – 200 units: ₹7.15, Above 200 units: ₹8.20. Subsidy: 13% (percentage) (min gross: ₹0).`;
-    }
 
     const systemInstruction = `You are the "Smart Household Energy AI Assistant". Your goal is to help users clear their doubts about domestic energy consumption, electricity tariffs/bills, appliance power ratings, carbon footprints, solar ROI investments, and household sustainability.
     
@@ -372,15 +280,14 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     - User Profile: Name is ${user?.fullName || "Smart User"}, selected tariff state scheme is ${user?.tariffState || "ap"}, monthly budget bill target is ₹${user?.monthlyBudgetBill || 3000}, monthly units limit target is ${user?.monthlyBudgetUnits || 400} kWh.
     - ${reportsContext}
     - ${solarContext}
-    - ${billHistoryContext}
     
     Tariff Slab Reference:
     ${tariffContext}
     - Carbon Footprint: Grid emission factor is 0.82 kg CO2 / kWh. Tree absorption is 1.83 kg CO2 / month.
     
     CRITICAL INSTRUCTIONS FOR RESPONSE STYLE:
-    1. You have direct access to the user's home profile, appliances, recent calculations, bill history, and solar ROI data. Answer questions utilizing this data without asking the user to provide it.
-    2. Always explicitly reference or state that you have direct access to their active appliance records, uploaded bills, or solar calculation outputs.
+    1. You have direct access to the user's home profile, appliances, recent calculations, audit reports, and solar ROI data. Answer questions utilizing this data without asking the user to provide it.
+    2. Always explicitly reference or state that you have direct access to their active appliance records, energy reports, or solar calculation outputs.
     3. Be conversational but extremely direct and brief. Use bullet points or key stats tables where appropriate.
     4. If the user asks "How am I doing?" or "Explain my energy score", calculate and explain their energy score based on their usage (e.g. usage usage vs 250 kWh average baseline, tariff slabs, and appliance runtime).
     5. Keep responses under 4 sentences or a concise list. Use bold formatting like **text** for emphasis.
@@ -388,8 +295,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     7. You can suggest navigating to specific app pages by outputting action buttons in the format [Action: Page Name|/route] at the end of your response when relevant. For example:
        - To calculate solar: [Action: Solar Calculator|/dashboard?tab=solar]
        - To run home audit: [Action: AI Home Audit|/dashboard?tab=audit]
-       - To upload a bill: [Action: Analyze Bill|/BillAnalyzer]
-       - To check history: [Action: View Bill History|/history]
+       - To check history: [Action: View Audit History|/history]
        - To check appliance survey: [Action: View Appliance Survey|/survey-data]
        - To modify profile settings: [Action: Edit Settings|/settings]
        - To modify profile: [Action: View Profile|/profile]`;
@@ -407,7 +313,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
       }
     ];
 
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"];
+    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
     let lastError: Error | null = null;
     let responseText = "";
 
@@ -553,7 +459,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
 
     // Check if this is an appliance query
     const parsed = parseApplianceQuery(textToSend);
-    const isAppliance = isApplianceQuery(parsed);
+    const isAppliance = isApplianceQuery(parsed, textToSend);
 
     if (isAppliance) {
       // Appliance search pipeline
@@ -626,7 +532,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
         let fallbackText = "I'm having trouble connecting to my live AI brain, but I'd love to help you! Feel free to click any of the suggested actions below (like **Explain My Bill**, **Solar Advice**, or **Compare Homes**) or ask about saving energy.";
         
         if (lower.includes("bill") || lower.includes("cost") || lower.includes("charge")) {
-          fallbackText = `Based on your profile, your latest bill is computed using state slabs. Enter your appliance audit list or upload a bill to get a detailed tariff slab breakdown.`;
+          fallbackText = `Based on your profile, your latest bill is computed using state slabs. Enter your appliance audit list in the Dashboard to get a detailed tariff slab breakdown.`;
         } else if (lower.includes("save") || lower.includes("reduce")) {
           fallbackText = `Here is how you can save ₹500/month:
 1. **Optimize AC**: Set AC temperature to 24°C instead of 18°C (Saves ₹250/mo).
@@ -817,7 +723,7 @@ Your bill is **₹${record.parsedData.totalAmount || 0}** for **${record.parsedD
     const flushTable = (key: string) => {
       if (currentTableRows.length === 0) return null;
       
-      let headers = currentTableRows[0];
+      const headers = currentTableRows[0];
       let rows = currentTableRows.slice(1);
       
       if (rows.length > 0 && rows[0].every(cell => /^:?-+:?$/.test(cell.trim()))) {

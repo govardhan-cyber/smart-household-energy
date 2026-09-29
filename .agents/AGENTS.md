@@ -2,6 +2,19 @@
 
 ## Saved Versions
 
+- **Version 26**: Points to git tag `version-26`.
+  - **Features**:
+    - **15 Core Bug Fixes & Comprehensive Code Quality Hardening**:
+      - Resolved Rules-of-Hooks violation in `src/components/ThreeDCard.tsx` by lifting `glareBackground` `useTransform` to component top-level.
+      - Decoupled `CustomTooltip` in `src/pages/SurveyData.tsx` to outer module scope to eliminate Recharts re-render flickering and mount churn.
+      - Complete type safety refactor across 10 key files (`Settings.tsx`, `Login.tsx`, `Register.tsx`, `Profile.tsx`, `ForgotPassword.tsx`, `DashboardSidebarSummary.tsx`, `PrintReport.tsx`, `reportsService.ts`, `PremiumDashboard.tsx`, `History.tsx`), eliminating loose `any` casts with strictly typed interfaces (e.g. `SettingsSnapshot`).
+      - Cleaned redundant assignments and dead variable declarations across `solarCalculator.ts`, `useDashboardState.tsx`, `EnergyHealth.tsx`, `Home.tsx`, and `DashboardHero.tsx`.
+      - Corrected unescaped backtick regex matching in `searchService.ts`.
+      - Configured `eslint.config.js` with standard react-hooks rules (`rules-of-hooks: error`, `exhaustive-deps: warn`), achieving 0 ESLint errors across the entire codebase.
+  - **Verified:** 78/78 tests passing across 8 test suites, zero ESLint errors, clean TypeScript build (`tsc -b`), clean production bundle (`vite build`), deployed on Firebase Hosting (`https://smart-household-energy.web.app`).
+  - **Recovery Instruction**:
+    - If the user says "recover version 26", run `git checkout version-26`.
+
 - **Version 25**: Points to git tag `version-25`.
   - **Features**:
     - **Modular ChatBot Architecture & High-Fidelity Manual Background Integration**: Refactored monolithic `ChatBot.tsx` into modular sub-components in `src/components/chatbot/` (`MessageBubble.tsx`, `CopilotInsightsBar.tsx`, `QuickActionsGrid.tsx`, `CopilotPromptsLaunchpad.tsx`, `ChatBotLogo.tsx`). Integrated the manual's exact multi-layer ambient background system (`.manual-bg-base`, 4 blur-drifting aurora orbs, diagonal beam, dot grid, vignette, and multi-stop top accent border sheen). Removed outer logo rotating/breathing ring animations for a crisp static mascot badge.

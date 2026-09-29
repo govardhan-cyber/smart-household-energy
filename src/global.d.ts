@@ -1,5 +1,4 @@
 import React from "react";
-import * as pdfjsDist from "pdfjs-dist";
 
 declare global {
   interface AddApplianceEventDetail {
@@ -12,10 +11,6 @@ declare global {
 
   interface WindowEventMap {
     she_add_appliance: CustomEvent<AddApplianceEventDetail>;
-  }
-
-  interface Window {
-    pdfjsLib?: typeof pdfjsDist;
   }
 
   namespace JSX {

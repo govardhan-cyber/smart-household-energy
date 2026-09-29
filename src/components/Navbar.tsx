@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, Receipt, ClipboardList, Bell, AlertTriangle, Sparkles, FileText, CheckCheck } from "lucide-react";
+import { Sun, Moon, HelpCircle, User, History, Settings, LogOut, ChevronDown, Menu, X, Zap, LayoutDashboard, ClipboardList, Bell, AlertTriangle, Sparkles, FileText, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import type { NotificationItem } from "../services/notificationService";
@@ -38,15 +38,7 @@ const iconVariants: Record<string, Variants> = {
       transition: { type: "spring", stiffness: 400, damping: 10 }
     }
   },
-  "/BillAnalyzer": {
-    normal: { scale: 1, y: 0 },
-    active: { scale: 1.1, y: 0 },
-    hover: { 
-      scale: 1.18,
-      y: [0, -3, 2, -1, 0],
-      transition: { duration: 0.65, ease: "easeInOut" }
-    }
-  },
+
   "/history": {
     normal: { scale: 1, rotate: 0 },
     active: { scale: 1.1, rotate: 0 },
@@ -215,7 +207,11 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    theme === "dark" ? root.classList.add("dark") : root.classList.remove("dark");
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
     localStorage.setItem("theme", theme);
     window.dispatchEvent(new CustomEvent("theme-change", { detail: theme }));
   }, [theme]);
@@ -246,7 +242,6 @@ export const Navbar: React.FC = () => {
   const navLinks = user
     ? [
         { name: "Dashboard",    path: "/dashboard",   icon: LayoutDashboard },
-        { name: "Bill Analyzer",path: "/BillAnalyzer", icon: Receipt },
         { name: "My History",   path: "/history",     icon: History },
         { name: "Survey Data",  path: "/survey-data", icon: ClipboardList },
         { name: "FAQ",          path: "/faq",         icon: HelpCircle },

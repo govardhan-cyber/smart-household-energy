@@ -37,7 +37,7 @@ export const ForgotPassword: React.FC = () => {
     try {
       await resetPassword(email);
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(getFriendlyErrorMessage(err));
     } finally {

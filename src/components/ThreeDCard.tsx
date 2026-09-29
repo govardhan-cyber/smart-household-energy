@@ -22,6 +22,19 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
   const x = useMotionValue(0.5);
   const y = useMotionValue(0.5);
 
+  // Detect mobile and touch devices to bypass 3D calculations and prevent sticky/jittery transforms
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkTouch = () => {
+      const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches);
+      setIsTouchDevice(isMobile);
+    };
+    checkTouch();
+    window.addEventListener("resize", checkTouch);
+    return () => window.removeEventListener("resize", checkTouch);
+  }, []);
+
   // Smooth springs for 3D rotation
   const rotateXSpring = useSpring(useTransform(y, [0, 1], [maxTilt, -maxTilt]), { damping: 25, stiffness: 200 });
   const rotateYSpring = useSpring(useTransform(x, [0, 1], [-maxTilt, maxTilt]), { damping: 25, stiffness: 200 });
@@ -30,9 +43,14 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
   const glareX = useSpring(useTransform(x, [0, 1], [0, 100]), { damping: 25, stiffness: 200 });
   const glareY = useSpring(useTransform(y, [0, 1], [0, 100]), { damping: 25, stiffness: 200 });
   const glareOpacityVal = useSpring(useMotionValue(0), { damping: 20, stiffness: 150 });
+  const glareBackground = useTransform(
+    [glareX, glareY],
+    ([gx, gy]) =>
+      `radial-gradient(circle at ${gx}% ${gy}%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 80%)`
+  );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (isTouchDevice || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -46,6 +64,7 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
   };
 
   const handleMouseLeave = () => {
+    if (isTouchDevice) return;
     // Reset rotations to 0 when mouse leaves
     x.set(0.5);
     y.set(0.5);
@@ -53,12 +72,21 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
   };
 
   const handleMouseEnter = () => {
+    if (isTouchDevice) return;
     glareOpacityVal.set(glareOpacity);
   };
 
   // Determine if a custom height (e.g. h-full, h-fit, h-[300px]) is requested
   const hasHeightClass = className.split(" ").some((c) => c.startsWith("h-"));
   const heightClass = hasHeightClass ? "h-full" : "h-fit";
+
+  if (isTouchDevice) {
+    return (
+      <div className={`w-full relative overflow-hidden rounded-3xl ${heightClass} ${className}`}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -107,11 +135,7 @@ export const ThreeDCard: React.FC<ThreeDCardProps> = ({
         {/* Dynamic glossy glare overlay */}
         <motion.div
           style={{
-            background: useTransform(
-              [glareX, glareY],
-              ([gx, gy]) =>
-                `radial-gradient(circle at ${gx}% ${gy}%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 80%)`
-            ),
+            background: glareBackground,
             opacity: glareOpacityVal,
           }}
           className="absolute inset-0 pointer-events-none z-20"

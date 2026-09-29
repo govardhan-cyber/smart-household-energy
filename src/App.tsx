@@ -14,7 +14,6 @@ const Login = React.lazy(() => import("./pages/Login").then(m => ({ default: m.L
 const Register = React.lazy(() => import("./pages/Register").then(m => ({ default: m.Register })));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword").then(m => ({ default: m.ForgotPassword })));
 const Dashboard = React.lazy(() => import("./pages/Dashboard").then(m => ({ default: m.Dashboard })));
-const BillAnalyzer = React.lazy(() => import("./pages/BillAnalyzer").then(m => ({ default: m.BillAnalyzer })));
 const History = React.lazy(() => import("./pages/History").then(m => ({ default: m.History })));
 const SurveyData = React.lazy(() => import("./pages/SurveyData").then(m => ({ default: m.SurveyData })));
 const Profile = React.lazy(() => import("./pages/Profile").then(m => ({ default: m.Profile })));
@@ -70,16 +69,8 @@ const AppContent: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/BillAnalyzer"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary page="Bill Analyzer">
-                    <BillAnalyzer />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/BillAnalyzer" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/bill-analyzer" element={<Navigate to="/dashboard" replace />} />
             <Route
               path="/history"
               element={
@@ -137,19 +128,39 @@ const App: React.FC = () => {
   // Theme initialization on mount
   useEffect(() => {
     initTariffCalculator().catch(console.error);
-    const savedTheme = localStorage.getItem("theme") || "light";
+    const savedTheme = localStorage.getItem("theme") || "system";
     const savedAccent = localStorage.getItem("she_accent") || "blue";
     const root = document.documentElement;
     
-    if (savedTheme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    const applyTheme = (theme: string) => {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const isDark = theme === "dark" || (theme === "system" && prefersDark);
+      if (isDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    };
+
+    applyTheme(savedTheme);
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = () => {
+      const currentTheme = localStorage.getItem("theme") || "system";
+      if (currentTheme === "system") {
+        applyTheme("system");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
     
     // Set accent class
     root.classList.remove("accent-blue", "accent-green", "accent-purple", "accent-orange", "accent-teal");
     root.classList.add(`accent-${savedAccent}`);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    };
   }, []);
 
   return (

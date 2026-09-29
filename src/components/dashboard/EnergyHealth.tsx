@@ -115,19 +115,22 @@ export const EnergyHealth: React.FC<EnergyHealthProps> = ({
     }
 
     const fridge = appliances.find(a => a.id === "fridge" && a.quantity > 0);
-    if (fridge && fridge.hours < 24) {
-      // Refrigerator should run 24 hours normally. If they configured lower or multiple units:
+    if (fridge) {
       if (fridge.quantity > 1) {
         score -= 5;
         details.push("multiple refrigerators");
+      }
+      if (fridge.hours < 18) {
+        score -= 3;
+        details.push("intermittent refrigerator runtime");
       }
     }
 
     const finalScore = Math.max(10, Math.min(100, Math.round(score)));
 
-    let status: "Excellent" | "Good" | "Average" | "Needs Improvement" = "Good";
-    let themeClass = "";
-    let explanation = "";
+    let status: "Excellent" | "Good" | "Average" | "Needs Improvement";
+    let themeClass: string;
+    let explanation: string;
 
     if (finalScore >= 85) {
       status = "Excellent";

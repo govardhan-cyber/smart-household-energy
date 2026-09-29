@@ -138,8 +138,33 @@ export const parseApplianceQuery = (query: string): ParsedAppliance => {
 };
 
 /**
- * Checks if the parsed query looks like an appliance query.
+ * Checks if the parsed query looks like an appliance spec/product query.
+ * Excludes conversational questions that happen to mention an appliance.
  */
-export const isApplianceQuery = (parsed: ParsedAppliance): boolean => {
-  return parsed.brand !== null || parsed.category !== null;
+export const isApplianceQuery = (parsed: ParsedAppliance, rawQueryOverride?: string): boolean => {
+  const query = (rawQueryOverride || parsed.rawQuery || '').trim();
+
+  // If query expresses conversational intent or advice seeking, route to conversational AI
+  const conversationalPattern = /\b(how|why|what|when|where|who|should|could|would|can|is|are|tell|explain|reduce|saving|savings|save|bill|bills|cost|costs|tariff|slab|audit|benchmark|compare|tips|help|advice)\b|\?/i;
+  if (conversationalPattern.test(query)) {
+    return false;
+  }
+
+  // Definite appliance lookup if specific brand or model is identified
+  if (parsed.brand !== null || parsed.model !== null) {
+    return true;
+  }
+
+  // Category with explicit specifications or attributes
+  if (parsed.category !== null) {
+    if (parsed.starRating !== null || parsed.capacity !== null || parsed.technology !== null) {
+      return true;
+    }
+    const specKeywords = /\b(watt|watts|wattage|power|spec|specs|specification|model|rating|kwh)\b/i;
+    if (specKeywords.test(query)) {
+      return true;
+    }
+  }
+
+  return false;
 };

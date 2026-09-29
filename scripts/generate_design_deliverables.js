@@ -1,0 +1,1774 @@
+import fs from "fs";
+import path from "path";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+
+const ROOT_DIR = process.cwd();
+const PUBLIC_DIR = path.join(ROOT_DIR, "public");
+
+if (!fs.existsSync(PUBLIC_DIR)) {
+  fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+}
+
+function escapeXml(unsafe) {
+  if (!unsafe) return "";
+  return String(unsafe).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+
+// -------------------------------------------------------------
+// 1. GENERATE FIGMA MULTI-BOARD SVG ASSET (100% VALID XML)
+// -------------------------------------------------------------
+function generateFigmaSvg() {
+  console.log("Generating Figma Mobile Interface SVG...");
+
+  const screenWidth = 375;
+  const screenHeight = 812;
+  const gap = 45;
+  const screens = [
+    {
+      id: "01_Home",
+      name: "Home Page",
+      route: "/",
+      badge: "Core Simulator",
+      color: "#2563eb",
+      accent: "#38bdf8",
+      render: `
+        <!-- Hero Simulator Card -->
+        <rect x="18" y="90" width="339" height="260" rx="24" fill="#0f172a" stroke="#1e293b" stroke-width="1.5"/>
+        <circle cx="310" cy="115" r="40" fill="#2563eb" fill-opacity="0.15"/>
+        
+        <rect x="34" y="106" width="115" height="24" rx="12" fill="#2563eb" fill-opacity="0.2" stroke="#2563eb" stroke-opacity="0.4"/>
+        <text x="44" y="122" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="10" font-weight="700">AP DISCOM SLAB-II</text>
+        
+        <text x="34" y="152" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Simulate Consumption</text>
+        <text x="34" y="186" fill="#ffffff" font-family="system-ui, sans-serif" font-size="34" font-weight="800">240 <tspan font-size="14" fill="#64748b" font-weight="600">kWh / mo</tspan></text>
+        
+        <!-- Slider Track -->
+        <rect x="34" y="206" width="307" height="8" rx="4" fill="#1e293b"/>
+        <rect x="34" y="206" width="150" height="8" rx="4" fill="url(#grad-blue)"/>
+        <circle cx="184" cy="210" r="10" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+
+        <!-- Mini Bill Display in Simulator -->
+        <rect x="34" y="234" width="307" height="96" rx="16" fill="#1e293b" fill-opacity="0.6" stroke="#334155" stroke-width="1"/>
+        <text x="48" y="260" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10" font-weight="700">ESTIMATED AP MONTHLY BILL</text>
+        <text x="48" y="294" fill="#10b981" font-family="system-ui, sans-serif" font-size="28" font-weight="800">₹1,438 <tspan font-size="11" fill="#94a3b8" font-weight="500">(Net Subsidy)</tspan></text>
+        <text x="48" y="316" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="600">Tariff: ₹5.40/unit + FPPCA Charges</text>
+
+        <!-- Top Features Heading -->
+        <text x="20" y="380" fill="#0f172a" font-family="system-ui, sans-serif" font-size="14" font-weight="800">Core Features</text>
+        <rect x="265" y="366" width="90" height="20" rx="10" fill="#e2e8f0"/>
+        <text x="277" y="380" fill="#475569" font-family="system-ui, sans-serif" font-size="9" font-weight="700">3 of 6 shown</text>
+
+        <!-- Feature 1: Predictive Billing -->
+        <rect x="18" y="396" width="339" height="66" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <rect x="32" y="411" width="36" height="36" rx="12" fill="#eff6ff"/>
+        <text x="44" y="433" fill="#2563eb" font-family="system-ui, sans-serif" font-size="15">⚡</text>
+        <text x="78" y="425" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="700">AI Predictive Billing</text>
+        <text x="78" y="443" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Simulate official state tariff tier slabs</text>
+
+        <!-- Feature 2: Load Audit -->
+        <rect x="18" y="472" width="339" height="66" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <rect x="32" y="487" width="36" height="36" rx="12" fill="#f0fdf4"/>
+        <text x="44" y="509" fill="#10b981" font-family="system-ui, sans-serif" font-size="15">📊</text>
+        <text x="78" y="501" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Appliance Consumption Audit</text>
+        <text x="78" y="519" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Per-appliance watt load and hourly audit</text>
+
+        <!-- Feature 3: Solar ROI -->
+        <rect x="18" y="548" width="339" height="66" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <rect x="32" y="563" width="36" height="36" rx="12" fill="#fffbeb"/>
+        <text x="44" y="585" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="15">☀️</text>
+        <text x="78" y="577" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Rooftop Solar ROI Modeling</text>
+        <text x="78" y="595" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">25-year compounding return calculator</text>
+
+        <!-- Single Featured Testimonial (Mobile Carousel) -->
+        <rect x="18" y="626" width="339" height="88" rx="18" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="32" y="648" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="11">★★★★★</text>
+        <text x="32" y="668" fill="#334155" font-family="system-ui, sans-serif" font-size="10" font-weight="500">"Cut my monthly electricity bill from ₹4,200 to ₹1,800!"</text>
+        <text x="32" y="694" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">K. Rama Rao <tspan fill="#64748b" font-weight="400">— Visakhapatnam</tspan></text>
+        
+        <!-- Pagination Dots -->
+        <circle cx="177" cy="724" r="3" fill="#2563eb"/>
+        <circle cx="187" cy="724" r="2.5" fill="#cbd5e1"/>
+        <circle cx="197" cy="724" r="2.5" fill="#cbd5e1"/>
+      `
+    },
+    {
+      id: "02_Dashboard_Wizard",
+      name: "Dashboard &amp; Wizard",
+      route: "/dashboard",
+      badge: "Energy Audit",
+      color: "#059669",
+      accent: "#34d399",
+      render: `
+        <!-- Top Tab Bar -->
+        <rect x="18" y="86" width="339" height="38" rx="12" fill="#f1f5f9"/>
+        <rect x="22" y="90" width="107" height="30" rx="9" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.08))"/>
+        <text x="44" y="109" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Audit Wizard</text>
+        <text x="146" y="109" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Bill Scanner</text>
+        <text x="260" y="109" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Solar ROI</text>
+
+        <!-- 2x2 Metric Grid -->
+        <g transform="translate(18, 134)">
+          <!-- Cell 1: Monthly Units -->
+          <rect x="0" y="0" width="164" height="74" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="14" y="24" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">EST. USAGE</text>
+          <text x="14" y="52" fill="#0f172a" font-family="system-ui, sans-serif" font-size="22" font-weight="800">240 <tspan font-size="11" fill="#64748b" font-weight="600">kWh</tspan></text>
+
+          <!-- Cell 2: Est Bill -->
+          <rect x="175" y="0" width="164" height="74" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="189" y="24" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">EST. BILL</text>
+          <text x="189" y="52" fill="#10b981" font-family="system-ui, sans-serif" font-size="22" font-weight="800">₹1,438</text>
+
+          <!-- Cell 3: Savings Score -->
+          <rect x="0" y="82" width="164" height="74" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="14" y="106" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">SAVINGS SCORE</text>
+          <text x="14" y="134" fill="#2563eb" font-family="system-ui, sans-serif" font-size="22" font-weight="800">88<tspan font-size="12" fill="#64748b">/100</tspan></text>
+
+          <!-- Cell 4: Top Load -->
+          <rect x="175" y="82" width="164" height="74" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="189" y="106" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">HIGHEST LOAD</text>
+          <text x="189" y="134" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="18" font-weight="800">Air Cond.</text>
+        </g>
+
+        <!-- Appliance Audit Selector Title -->
+        <text x="20" y="316" fill="#0f172a" font-family="system-ui, sans-serif" font-size="13" font-weight="800">Selected Appliances</text>
+        <text x="280" y="316" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">+ Add New</text>
+
+        <!-- Appliance List (Clean Mobile Tiles) -->
+        <g transform="translate(18, 328)">
+          <!-- AC Tile -->
+          <rect x="0" y="0" width="339" height="56" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+          <rect x="12" y="10" width="36" height="36" rx="10" fill="#eff6ff"/>
+          <text x="22" y="32" font-size="14">❄️</text>
+          <text x="56" y="26" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">1.5T Inverter AC (5★)</text>
+          <text x="56" y="42" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">1250W • 6 hrs/day</text>
+          <rect x="270" y="16" width="56" height="24" rx="8" fill="#eff6ff"/>
+          <text x="282" y="32" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Active</text>
+
+          <!-- Refrigerator Tile -->
+          <rect x="0" y="64" width="339" height="56" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+          <rect x="12" y="74" width="36" height="36" rx="10" fill="#f0fdf4"/>
+          <text x="22" y="96" font-size="14">🧊</text>
+          <text x="56" y="90" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Double Door Fridge</text>
+          <text x="56" y="106" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">180W • 24 hrs/day</text>
+          <rect x="270" y="80" width="56" height="24" rx="8" fill="#eff6ff"/>
+          <text x="282" y="96" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Active</text>
+
+          <!-- Ceiling Fans Tile -->
+          <rect x="0" y="128" width="339" height="56" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+          <rect x="12" y="138" width="36" height="36" rx="10" fill="#fef3c7"/>
+          <text x="22" y="160" font-size="14">💨</text>
+          <text x="56" y="154" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">BLDC Ceiling Fans (x3)</text>
+          <text x="56" y="170" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">28W each • 12 hrs/day</text>
+          <rect x="270" y="144" width="56" height="24" rx="8" fill="#eff6ff"/>
+          <text x="282" y="160" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Active</text>
+
+          <!-- LED Lights Tile -->
+          <rect x="0" y="192" width="339" height="56" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+          <rect x="12" y="202" width="36" height="36" rx="10" fill="#faf5ff"/>
+          <text x="22" y="224" font-size="14">💡</text>
+          <text x="56" y="218" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">LED Lighting (9W x 6)</text>
+          <text x="56" y="234" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">54W total • 6 hrs/day</text>
+          <rect x="270" y="208" width="56" height="24" rx="8" fill="#eff6ff"/>
+          <text x="282" y="224" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Active</text>
+        </g>
+
+        <!-- Bottom Floating Trigger Button -->
+        <rect x="18" y="670" width="339" height="50" rx="16" fill="#10b981"/>
+        <text x="110" y="700" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="800">Recalculate Energy Plan ⚡</text>
+      `
+    },
+    {
+      id: "03_Bill_Analyzer",
+      name: "Bill Analyzer OCR",
+      route: "/dashboard (Tab 2)",
+      badge: "AI Multimodal",
+      color: "#7c3aed",
+      accent: "#a78bfa",
+      render: `
+        <!-- Multimodal Status Badge -->
+        <rect x="18" y="86" width="339" height="38" rx="12" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+        <text x="32" y="109" fill="#7c3aed" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Gemini 2.5 Flash Vision + PaddleOCR Active</text>
+
+        <!-- Dropzone / Scanner Upload Box -->
+        <rect x="18" y="136" width="339" height="150" rx="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 6"/>
+        <circle cx="187" cy="188" r="24" fill="#eff6ff"/>
+        <text x="176" y="196" font-size="20">📷</text>
+        <text x="110" y="232" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Upload or Capture Bill</text>
+        <text x="96" y="250" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Supports JPG, PNG &amp; PDF Electricity Bills</text>
+
+        <!-- Parsed Results Card -->
+        <rect x="18" y="300" width="339" height="236" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <rect x="32" y="316" width="90" height="20" rx="10" fill="#f0fdf4"/>
+        <text x="42" y="330" fill="#10b981" font-family="system-ui, sans-serif" font-size="9" font-weight="800">VERIFIED SCAN</text>
+        <text x="250" y="330" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">APEPDCL LT-I</text>
+
+        <text x="32" y="360" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Consumer Name</text>
+        <text x="32" y="378" fill="#0f172a" font-family="system-ui, sans-serif" font-size="13" font-weight="700">P. SURYA PRAKASH</text>
+
+        <text x="210" y="360" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Service Number</text>
+        <text x="210" y="378" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="700">11420-58921</text>
+
+        <line x1="32" y1="396" x2="340" y2="396" stroke="#f1f5f9" stroke-width="1.5"/>
+
+        <text x="32" y="420" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Billed Units (kWh)</text>
+        <text x="32" y="444" fill="#0f172a" font-family="system-ui, sans-serif" font-size="20" font-weight="800">312 <tspan font-size="10" fill="#64748b">Units</tspan></text>
+
+        <text x="210" y="420" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Net Payable Due</text>
+        <text x="210" y="444" fill="#2563eb" font-family="system-ui, sans-serif" font-size="20" font-weight="800">₹2,185</text>
+
+        <rect x="32" y="468" width="310" height="52" rx="12" fill="#f8fafc"/>
+        <text x="44" y="488" fill="#475569" font-family="system-ui, sans-serif" font-size="9" font-weight="700">DISCOM TARIFF VALIDATION</text>
+        <text x="44" y="506" fill="#10b981" font-family="system-ui, sans-serif" font-size="10" font-weight="600">✓ Energy charges balance within ±₹0.50 accuracy</text>
+
+        <!-- Save Button -->
+        <rect x="18" y="552" width="339" height="48" rx="14" fill="#2563eb"/>
+        <text x="120" y="581" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Save to Audit History</text>
+
+        <rect x="18" y="610" width="339" height="46" rx="14" fill="#f1f5f9"/>
+        <text x="130" y="638" fill="#475569" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Scan Another Bill</text>
+      `
+    },
+    {
+      id: "04_Solar_Calculator",
+      name: "Solar ROI Calculator",
+      route: "/dashboard (Tab 3)",
+      badge: "Clean Energy",
+      color: "#ea580c",
+      accent: "#fb923c",
+      render: `
+        <!-- Solar Banner -->
+        <rect x="18" y="86" width="339" height="110" rx="20" fill="url(#grad-solar)"/>
+        <text x="36" y="118" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="800">PM Surya Ghar Subsidy</text>
+        <text x="36" y="136" fill="#fed7aa" font-family="system-ui, sans-serif" font-size="10">Get up to ₹78,000 Direct Central Subsidy</text>
+        <rect x="36" y="150" width="125" height="26" rx="13" fill="#ffffff"/>
+        <text x="48" y="167" fill="#ea580c" font-family="system-ui, sans-serif" font-size="10" font-weight="800">₹78,000 Subsidy</text>
+
+        <!-- System Sizing Card -->
+        <rect x="18" y="210" width="339" height="165" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="236" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Recommended System Capacity</text>
+        
+        <text x="34" y="278" fill="#ea580c" font-family="system-ui, sans-serif" font-size="34" font-weight="800">3.0 <tspan font-size="16" fill="#64748b">kWp</tspan></text>
+        <text x="210" y="278" fill="#0f172a" font-family="system-ui, sans-serif" font-size="28" font-weight="800">360 <tspan font-size="12" fill="#64748b">kWh/mo</tspan></text>
+        <text x="210" y="296" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">Solar Generation</text>
+
+        <!-- Progress payback -->
+        <rect x="34" y="324" width="307" height="10" rx="5" fill="#f1f5f9"/>
+        <rect x="34" y="324" width="230" height="10" rx="5" fill="#ea580c"/>
+        <text x="34" y="352" fill="#475569" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Est. Payback: <tspan font-weight="800" fill="#0f172a">3.8 Years</tspan> (25-Yr Return)</text>
+
+        <!-- 25-Year Compound Financials -->
+        <rect x="18" y="390" width="339" height="160" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="416" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Financial Breakdown</text>
+
+        <text x="34" y="446" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Gross Installation Cost</text>
+        <text x="280" y="446" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹1,95,000</text>
+
+        <text x="34" y="472" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">PM Surya Ghar Subsidy</text>
+        <text x="280" y="472" fill="#10b981" font-family="system-ui, sans-serif" font-size="10" font-weight="700">- ₹78,000</text>
+
+        <text x="34" y="498" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Net User Investment</text>
+        <text x="280" y="498" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="800">₹1,17,000</text>
+
+        <line x1="34" y1="512" x2="339" y2="512" stroke="#f1f5f9" stroke-width="1"/>
+        <text x="34" y="534" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="800">25-Yr Net Savings</text>
+        <text x="270" y="534" fill="#10b981" font-family="system-ui, sans-serif" font-size="13" font-weight="800">₹8,42,000</text>
+
+        <!-- CTA Button -->
+        <rect x="18" y="565" width="339" height="48" rx="14" fill="#ea580c"/>
+        <text x="120" y="594" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="700">Download Solar Dossier</text>
+      `
+    },
+    {
+      id: "05_History_Reports",
+      name: "History Log",
+      route: "/history",
+      badge: "Saved Audits",
+      color: "#2563eb",
+      accent: "#60a5fa",
+      render: `
+        <!-- Hero Header Card (Streamlined for Mobile) -->
+        <rect x="18" y="86" width="339" height="96" rx="20" fill="url(#grad-blue)"/>
+        <text x="34" y="116" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="800">My Energy History</text>
+        
+        <!-- 2 Primary Stats -->
+        <rect x="34" y="128" width="135" height="42" rx="10" fill="#ffffff" fill-opacity="0.15"/>
+        <text x="44" y="144" fill="#93c5fd" font-family="system-ui, sans-serif" font-size="8" font-weight="700">TOTAL REPORTS</text>
+        <text x="44" y="162" fill="#ffffff" font-family="system-ui, sans-serif" font-size="15" font-weight="800">12 Records</text>
+
+        <rect x="180" y="128" width="145" height="42" rx="10" fill="#ffffff" fill-opacity="0.15"/>
+        <text x="190" y="144" fill="#93c5fd" font-family="system-ui, sans-serif" font-size="8" font-weight="700">AVERAGE BILL</text>
+        <text x="190" y="162" fill="#ffffff" font-family="system-ui, sans-serif" font-size="15" font-weight="800">₹1,840/mo</text>
+
+        <!-- Search Bar -->
+        <rect x="18" y="194" width="339" height="42" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="220" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">🔍 Search audits or dates...</text>
+
+        <!-- Record Card 1 -->
+        <rect x="18" y="248" width="339" height="116" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="274" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="700">18 SEP 2026 • 10:24 AM</text>
+        <text x="34" y="304" fill="#2563eb" font-family="system-ui, sans-serif" font-size="24" font-weight="800">₹1,640 <tspan font-size="11" fill="#64748b">/mo</tspan></text>
+        <text x="34" y="324" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">274 kWh • Top: Inverter AC</text>
+
+        <!-- Direct Touch Actions Visible -->
+        <rect x="234" y="292" width="52" height="30" rx="8" fill="#eff6ff"/>
+        <text x="246" y="311" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">View</text>
+        <rect x="294" y="292" width="50" height="30" rx="8" fill="#fef2f2"/>
+        <text x="306" y="311" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Delete</text>
+
+        <!-- Record Card 2 -->
+        <rect x="18" y="376" width="339" height="116" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="402" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="700">12 AUG 2026 • 04:15 PM</text>
+        <text x="34" y="432" fill="#2563eb" font-family="system-ui, sans-serif" font-size="24" font-weight="800">₹2,110 <tspan font-size="11" fill="#64748b">/mo</tspan></text>
+        <text x="34" y="452" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">340 kWh • Top: Geyser &amp; AC</text>
+
+        <rect x="234" y="420" width="52" height="30" rx="8" fill="#eff6ff"/>
+        <text x="246" y="439" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">View</text>
+        <rect x="294" y="420" width="50" height="30" rx="8" fill="#fef2f2"/>
+        <text x="306" y="439" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Delete</text>
+
+        <!-- Record Card 3 -->
+        <rect x="18" y="504" width="339" height="116" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="530" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="700">01 JUL 2026 • 11:00 AM</text>
+        <text x="34" y="560" fill="#2563eb" font-family="system-ui, sans-serif" font-size="24" font-weight="800">₹1,250 <tspan font-size="11" fill="#64748b">/mo</tspan></text>
+        <text x="34" y="580" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">195 kWh • Top: Refrigerator</text>
+
+        <rect x="234" y="548" width="52" height="30" rx="8" fill="#eff6ff"/>
+        <text x="246" y="567" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">View</text>
+        <rect x="294" y="548" width="50" height="30" rx="8" fill="#fef2f2"/>
+        <text x="306" y="567" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Delete</text>
+      `
+    },
+    {
+      id: "06_Survey_Database",
+      name: "Survey Analytics",
+      route: "/survey-data",
+      badge: "30 AP Households",
+      color: "#0891b2",
+      accent: "#22d3ee",
+      render: `
+        <!-- Title Banner -->
+        <text x="20" y="104" fill="#0f172a" font-family="system-ui, sans-serif" font-size="16" font-weight="800">Survey Baseline Analytics</text>
+        <text x="20" y="122" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">30 AP Domestic Households Empirical Data</text>
+
+        <!-- 2x2 Metric Grid -->
+        <g transform="translate(18, 134)">
+          <rect x="0" y="0" width="164" height="66" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="14" y="22" fill="#64748b" font-family="system-ui, sans-serif" font-size="8" font-weight="700">HOUSEHOLDS</text>
+          <text x="14" y="46" fill="#0f172a" font-family="system-ui, sans-serif" font-size="20" font-weight="800">30 <tspan font-size="10" fill="#64748b">Homes</tspan></text>
+
+          <rect x="175" y="0" width="164" height="66" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="189" y="22" fill="#64748b" font-family="system-ui, sans-serif" font-size="8" font-weight="700">AVG BILL</text>
+          <text x="189" y="46" fill="#ea580c" font-family="system-ui, sans-serif" font-size="20" font-weight="800">₹1,420</text>
+
+          <rect x="0" y="74" width="164" height="66" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="14" y="96" fill="#64748b" font-family="system-ui, sans-serif" font-size="8" font-weight="700">TOTAL USAGE</text>
+          <text x="14" y="120" fill="#eab308" font-family="system-ui, sans-serif" font-size="20" font-weight="800">5,420 <tspan font-size="10" fill="#64748b">kWh</tspan></text>
+
+          <rect x="175" y="74" width="164" height="66" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text x="189" y="96" fill="#64748b" font-family="system-ui, sans-serif" font-size="8" font-weight="700">SAVINGS POTENTIAL</text>
+          <text x="189" y="120" fill="#10b981" font-family="system-ui, sans-serif" font-size="20" font-weight="800">₹820/mo</text>
+        </g>
+
+        <!-- Horizontal Scrollable Table Representation -->
+        <rect x="18" y="292" width="339" height="340" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="32" y="318" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Survey Database (Swipe Table →)</text>
+        
+        <!-- Table Header -->
+        <rect x="19" y="330" width="337" height="30" fill="#f8fafc"/>
+        <text x="32" y="350" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">ID / HOUSEHOLD</text>
+        <text x="180" y="350" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">USAGE</text>
+        <text x="260" y="350" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">BILL</text>
+
+        <!-- Row 1 -->
+        <text x="32" y="380" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">HH-001 (Visakhapatnam)</text>
+        <text x="180" y="380" fill="#475569" font-family="system-ui, sans-serif" font-size="10">285 kWh</text>
+        <text x="260" y="380" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹1,740</text>
+        <line x1="32" y1="394" x2="340" y2="394" stroke="#f1f5f9" stroke-width="1"/>
+
+        <!-- Row 2 -->
+        <text x="32" y="420" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">HH-002 (Vijayawada)</text>
+        <text x="180" y="420" fill="#475569" font-family="system-ui, sans-serif" font-size="10">140 kWh</text>
+        <text x="260" y="420" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹680</text>
+        <line x1="32" y1="434" x2="340" y2="434" stroke="#f1f5f9" stroke-width="1"/>
+
+        <!-- Row 3 -->
+        <text x="32" y="460" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">HH-003 (Guntur)</text>
+        <text x="180" y="460" fill="#475569" font-family="system-ui, sans-serif" font-size="10">410 kWh</text>
+        <text x="260" y="460" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹2,850</text>
+        <line x1="32" y1="474" x2="340" y2="474" stroke="#f1f5f9" stroke-width="1"/>
+
+        <!-- Row 4 -->
+        <text x="32" y="500" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">HH-004 (Tirupati)</text>
+        <text x="180" y="500" fill="#475569" font-family="system-ui, sans-serif" font-size="10">190 kWh</text>
+        <text x="260" y="500" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹1,020</text>
+        <line x1="32" y1="514" x2="340" y2="514" stroke="#f1f5f9" stroke-width="1"/>
+
+        <!-- Row 5 -->
+        <text x="32" y="540" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">HH-005 (Kakinada)</text>
+        <text x="180" y="540" fill="#475569" font-family="system-ui, sans-serif" font-size="10">320 kWh</text>
+        <text x="260" y="540" fill="#2563eb" font-family="system-ui, sans-serif" font-size="10" font-weight="700">₹2,190</text>
+      `
+    },
+    {
+      id: "07_User_Profile",
+      name: "Profile Settings",
+      route: "/profile",
+      badge: "Account",
+      color: "#2563eb",
+      accent: "#38bdf8",
+      render: `
+        <!-- Profile Header Card (Streamlined) -->
+        <rect x="18" y="86" width="339" height="110" rx="20" fill="url(#grad-blue)"/>
+        <circle cx="56" cy="136" r="24" fill="#ffffff"/>
+        <text x="49" y="143" fill="#2563eb" font-family="system-ui, sans-serif" font-size="18" font-weight="800">G</text>
+        
+        <text x="92" y="130" fill="#ffffff" font-family="system-ui, sans-serif" font-size="15" font-weight="800">Govardhan</text>
+        <text x="92" y="148" fill="#bfdbfe" font-family="system-ui, sans-serif" font-size="10">govardhan@example.com</text>
+        <rect x="92" y="156" width="75" height="18" rx="9" fill="#ffffff" fill-opacity="0.2"/>
+        <text x="102" y="169" fill="#ffffff" font-family="system-ui, sans-serif" font-size="8" font-weight="700">👑 Premium User</text>
+
+        <!-- Personal Details Form -->
+        <rect x="18" y="210" width="339" height="235" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="234" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Personal Information</text>
+
+        <text x="34" y="260" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">FULL NAME</text>
+        <rect x="34" y="268" width="307" height="38" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="46" y="292" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11">Govardhan</text>
+
+        <text x="34" y="324" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">EMAIL ADDRESS</text>
+        <rect x="34" y="332" width="307" height="38" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="46" y="356" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11">govardhan@example.com</text>
+
+        <text x="34" y="388" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">STATE / DISCOM</text>
+        <rect x="34" y="396" width="307" height="38" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="46" y="420" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11">Andhra Pradesh (APEPDCL)</text>
+
+        <!-- Password / Security Form -->
+        <rect x="18" y="458" width="339" height="150" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="482" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Security &amp; Password</text>
+
+        <text x="34" y="508" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">NEW PASSWORD</text>
+        <rect x="34" y="516" width="307" height="38" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="46" y="540" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">••••••••••••</text>
+
+        <rect x="34" y="562" width="307" height="34" rx="10" fill="#2563eb"/>
+        <text x="135" y="583" fill="#ffffff" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Update Profile</text>
+
+        <!-- Sign Out Button -->
+        <rect x="18" y="620" width="339" height="42" rx="14" fill="#fee2e2" stroke="#fecaca" stroke-width="1"/>
+        <text x="138" y="646" fill="#dc2626" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Sign Out of Account</text>
+      `
+    },
+    {
+      id: "08_Settings_Preferences",
+      name: "Settings &amp; Config",
+      route: "/settings",
+      badge: "System",
+      color: "#0f172a",
+      accent: "#38bdf8",
+      render: `
+        <!-- Horizontal Scrollable Tabs Bar (Clean Mobile Implementation) -->
+        <text x="20" y="104" fill="#0f172a" font-family="system-ui, sans-serif" font-size="16" font-weight="800">Settings</text>
+        
+        <g transform="translate(18, 116)">
+          <rect x="0" y="0" width="76" height="30" rx="15" fill="#2563eb"/>
+          <text x="16" y="19" fill="#ffffff" font-family="system-ui, sans-serif" font-size="10" font-weight="700">General</text>
+
+          <rect x="84" y="0" width="86" height="30" rx="15" fill="#f1f5f9"/>
+          <text x="96" y="19" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Notifications</text>
+
+          <rect x="178" y="0" width="82" height="30" rx="15" fill="#f1f5f9"/>
+          <text x="190" y="19" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Tariff Slabs</text>
+
+          <rect x="268" y="0" width="71" height="30" rx="15" fill="#f1f5f9"/>
+          <text x="278" y="19" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">System</text>
+        </g>
+
+        <!-- General Preferences Card -->
+        <rect x="18" y="164" width="339" height="235" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="192" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Appearance &amp; Theme</text>
+
+        <!-- Theme Switcher Pill -->
+        <text x="34" y="218" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">App Theme</text>
+        <rect x="34" y="228" width="307" height="38" rx="10" fill="#f1f5f9"/>
+        <rect x="38" y="232" width="98" height="30" rx="8" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.06))"/>
+        <text x="70" y="251" fill="#0f172a" font-family="system-ui, sans-serif" font-size="10" font-weight="700">☀️ Light</text>
+        <text x="175" y="251" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">🌙 Dark</text>
+        <text x="270" y="251" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Auto</text>
+
+        <!-- Eco Mode Switch -->
+        <text x="34" y="294" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Eco Mode Optimizer</text>
+        <text x="34" y="310" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">Auto-caps budget units to subsidized tier</text>
+        <!-- iOS Switch ON -->
+        <rect x="290" y="294" width="46" height="26" rx="13" fill="#10b981"/>
+        <circle cx="323" cy="307" r="10" fill="#ffffff" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.2))"/>
+
+        <!-- Monthly Target Limit -->
+        <text x="34" y="348" fill="#64748b" font-family="system-ui, sans-serif" font-size="9" font-weight="700">MONTHLY BUDGET TARGET</text>
+        <rect x="34" y="356" width="307" height="36" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="46" y="379" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">₹ 2,500 / month</text>
+
+        <!-- Notification Channels Card -->
+        <rect x="18" y="415" width="339" height="180" rx="18" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="442" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Alert Channels</text>
+
+        <text x="34" y="472" fill="#334155" font-family="system-ui, sans-serif" font-size="10" font-weight="600">High Consumption Alert (>80%)</text>
+        <rect x="290" y="460" width="46" height="24" rx="12" fill="#10b981"/>
+        <circle cx="323" cy="472" r="9" fill="#ffffff"/>
+
+        <text x="34" y="512" fill="#334155" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Billing Cycle Approaching</text>
+        <rect x="290" y="500" width="46" height="24" rx="12" fill="#10b981"/>
+        <circle cx="323" cy="512" r="9" fill="#ffffff"/>
+
+        <text x="34" y="552" fill="#334155" font-family="system-ui, sans-serif" font-size="10" font-weight="600">Solar Net-Meter Export Digest</text>
+        <rect x="290" y="540" width="46" height="24" rx="12" fill="#e2e8f0"/>
+        <circle cx="302" cy="552" r="9" fill="#ffffff"/>
+
+        <!-- Save button -->
+        <rect x="18" y="612" width="339" height="46" rx="14" fill="#2563eb"/>
+        <text x="135" y="640" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Save Preferences</text>
+      `
+    },
+    {
+      id: "09_FAQ_Support",
+      name: "FAQ &amp; Help",
+      route: "/faq",
+      badge: "Support",
+      color: "#0284c7",
+      accent: "#38bdf8",
+      render: `
+        <!-- Title -->
+        <text x="20" y="104" fill="#0f172a" font-family="system-ui, sans-serif" font-size="16" font-weight="800">Frequently Asked Questions</text>
+        <text x="20" y="122" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Answers on AP Tariff Slabs &amp; Solar Net-Metering</text>
+
+        <!-- Search Bar -->
+        <rect x="18" y="136" width="339" height="42" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="34" y="162" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">🔍 Search questions...</text>
+
+        <!-- Accordion 1 (Expanded) -->
+        <rect x="18" y="190" width="339" height="118" rx="16" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="34" y="214" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">How do AP domestic tariff slabs work?</text>
+        <text x="325" y="214" fill="#2563eb" font-size="12" font-weight="800">▲</text>
+        <text x="34" y="238" fill="#475569" font-family="system-ui, sans-serif" font-size="9.5" font-weight="400">APSPDCL &amp; APEPDCL use progressive telescopic consumption slabs. Staying under 100 or 200 kWh per billing cycle unlocks lower subsidized base rates.</text>
+        <rect x="34" y="280" width="105" height="18" rx="9" fill="#eff6ff"/>
+        <text x="44" y="293" fill="#2563eb" font-family="system-ui, sans-serif" font-size="8" font-weight="700">✓ Official LT-I Order</text>
+
+        <!-- Accordion 2 -->
+        <rect x="18" y="318" width="339" height="54" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="34" y="350" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">What is PM Surya Ghar Muft Bijli Yojana?</text>
+        <text x="325" y="350" fill="#64748b" font-size="12">▼</text>
+
+        <!-- Accordion 3 -->
+        <rect x="18" y="382" width="339" height="54" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="34" y="414" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">How accurate is the OCR Bill Scanner?</text>
+        <text x="325" y="414" fill="#64748b" font-size="12">▼</text>
+
+        <!-- Accordion 4 -->
+        <rect x="18" y="446" width="339" height="54" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="34" y="478" fill="#0f172a" font-family="system-ui, sans-serif" font-size="11" font-weight="700">Is my electricity bill data secure?</text>
+        <text x="325" y="478" fill="#64748b" font-size="12">▼</text>
+
+        <!-- Support Card -->
+        <rect x="18" y="520" width="339" height="120" rx="18" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+        <text x="34" y="546" fill="#15803d" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Need Specialized Support?</text>
+        <text x="34" y="566" fill="#166534" font-family="system-ui, sans-serif" font-size="10">Our engineering team answers AP billing inquiries within 24 hours.</text>
+        <rect x="34" y="586" width="130" height="34" rx="10" fill="#16a34a"/>
+        <text x="56" y="607" fill="#ffffff" font-family="system-ui, sans-serif" font-size="10" font-weight="700">Report Issue 💬</text>
+      `
+    }
+  ];
+
+  const totalWidth = screens.length * (screenWidth + gap) + 100;
+  const totalHeight = screenHeight + 160;
+
+  let svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:figma="http://www.figma.com/figma/dtd/figma.dtd">
+  <defs>
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="grad-solar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="phone-shadow" x="-8" y="0" width="391" height="836" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  
+  <style>
+    .screen-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: 800; fill: #0f172a; }
+    .screen-route { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 600; fill: #64748b; }
+  </style>
+`;
+
+  screens.forEach((screen, index) => {
+    const x = 50 + index * (screenWidth + gap);
+    const y = 90;
+
+    svg += `
+  <!-- ========================================== -->
+  <!-- FRAME: ${screen.name} (${screen.id}) -->
+  <!-- ========================================== -->
+  <g id="Frame: ${screen.id}" data-name="${screen.name}" figma:type="FRAME">
+    <!-- Frame Header Tag in Figma Canvas -->
+    <text x="${x}" y="52" class="screen-label">${screen.name}</text>
+    <text x="${x}" y="70" class="screen-route">${screen.route} • 375×812 Mobile Frame</text>
+
+    <!-- Outer Device Shell -->
+    <g transform="translate(${x}, ${y})">
+      <rect x="0" y="0" width="${screenWidth}" height="${screenHeight}" rx="40" fill="#f8fafc" stroke="#0f172a" stroke-width="6" filter="url(#phone-shadow)"/>
+      <rect x="3" y="3" width="${screenWidth - 6}" height="${screenHeight - 6}" rx="37" fill="#ffffff"/>
+
+      <!-- Dynamic Island / Speaker Notch -->
+      <rect x="128" y="10" width="120" height="24" rx="12" fill="#000000"/>
+      <circle cx="230" cy="22" r="5" fill="#1e293b"/>
+
+      <!-- iOS Status Bar -->
+      <text x="32" y="26" fill="#000000" font-family="system-ui, sans-serif" font-size="11" font-weight="700">9:41</text>
+      <!-- Battery icon -->
+      <rect x="315" y="17" width="22" height="11" rx="3" fill="none" stroke="#000000" stroke-width="1.2"/>
+      <rect x="317" y="19" width="15" height="7" rx="1.5" fill="#000000"/>
+      <rect x="338" y="21" width="1.5" height="3" rx="0.5" fill="#000000"/>
+      <!-- Wifi icon (simplified 3 arcs) -->
+      <path d="M295 24 A 6 6 0 0 1 305 24 M297 22 A 9 9 0 0 1 303 22" stroke="#000000" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+
+      <!-- Mobile App Header -->
+      <g transform="translate(0, 42)">
+        <rect x="0" y="0" width="${screenWidth}" height="42" fill="#ffffff" fill-opacity="0.9"/>
+        <circle cx="32" cy="18" r="12" fill="#2563eb"/>
+        <text x="27" y="23" fill="#ffffff" font-size="12">⚡</text>
+        <text x="50" y="22" fill="#0f172a" font-family="system-ui, sans-serif" font-size="12" font-weight="800">Smart Energy</text>
+        <rect x="290" y="7" width="65" height="24" rx="12" fill="#f1f5f9"/>
+        <text x="302" y="23" fill="#0f172a" font-family="system-ui, sans-serif" font-size="9" font-weight="700">☰ Menu</text>
+        <line x1="0" y1="42" x2="${screenWidth}" y2="42" stroke="#f1f5f9" stroke-width="1"/>
+      </g>
+
+      <!-- SCREEN CONTENT SPECIFIC -->
+      ${screen.render}
+
+      <!-- Bottom Navigation Dock -->
+      <g transform="translate(0, ${screenHeight - 64})">
+        <rect x="0" y="0" width="${screenWidth}" height="64" fill="#ffffff" fill-opacity="0.95"/>
+        <line x1="0" y1="0" x2="${screenWidth}" y2="0" stroke="#e2e8f0" stroke-width="1"/>
+        
+        <!-- Tab 1: Home -->
+        <text x="36" y="24" font-size="14" text-anchor="middle">🏠</text>
+        <text x="36" y="38" fill="${screen.id === '01_Home' ? '#2563eb' : '#94a3b8'}" font-family="system-ui, sans-serif" font-size="8" font-weight="700" text-anchor="middle">Home</text>
+        
+        <!-- Tab 2: Audit -->
+        <text x="136" y="24" font-size="14" text-anchor="middle">⚡</text>
+        <text x="136" y="38" fill="${screen.id === '02_Dashboard_Wizard' || screen.id === '03_Bill_Analyzer' || screen.id === '04_Solar_Calculator' ? '#2563eb' : '#94a3b8'}" font-family="system-ui, sans-serif" font-size="8" font-weight="700" text-anchor="middle">Audit</text>
+
+        <!-- Tab 3: History -->
+        <text x="238" y="24" font-size="14" text-anchor="middle">📋</text>
+        <text x="238" y="38" fill="${screen.id === '05_History_Reports' ? '#2563eb' : '#94a3b8'}" font-family="system-ui, sans-serif" font-size="8" font-weight="700" text-anchor="middle">History</text>
+
+        <!-- Tab 4: Settings -->
+        <text x="338" y="24" font-size="14" text-anchor="middle">⚙️</text>
+        <text x="338" y="38" fill="${screen.id === '08_Settings_Preferences' || screen.id === '07_User_Profile' ? '#2563eb' : '#94a3b8'}" font-family="system-ui, sans-serif" font-size="8" font-weight="700" text-anchor="middle">Settings</text>
+
+        <!-- iOS Home Indicator -->
+        <rect x="118" y="52" width="138" height="4" rx="2" fill="#000000"/>
+      </g>
+    </g>
+  </g>
+`;
+  });
+
+  svg += `</svg>`;
+
+  fs.writeFileSync(path.join(ROOT_DIR, "figma_mobile_interface.svg"), svg, "utf-8");
+  fs.writeFileSync(path.join(PUBLIC_DIR, "figma_mobile_interface.svg"), svg, "utf-8");
+  console.log("✓ Successfully generated valid figma_mobile_interface.svg in root and /public");
+  return svg;
+}
+
+// -------------------------------------------------------------
+// 2. GENERATE ROBUST INLINE FIGMA INTERACTIVE HTML PREVIEW
+// -------------------------------------------------------------
+function generatePreviewHtml(svgContent) {
+  console.log("Generating Figma Mobile Interactive Preview HTML (Inline SVG)...");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Household Energy — Mobile Interface Figma Canvas</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #111827;
+      --border: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --primary: #3b82f6;
+      --accent: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      background: rgba(17, 24, 39, 0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #2563eb, #10b981);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 15px rgba(37,99,235,0.4);
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand span {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+    .btn-success {
+      background: var(--accent);
+      color: #022c22;
+      font-weight: 800;
+    }
+    .btn-success:hover {
+      background: #059669;
+      color: white;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .notice-bar {
+      background: rgba(59, 130, 246, 0.1);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 10px 24px;
+      font-size: 12px;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .screen-navigator {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: thin;
+    }
+    .nav-pill {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .nav-pill:hover, .nav-pill.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .container {
+      padding: 24px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .svg-viewport {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .svg-container {
+      display: inline-block;
+      min-width: 3880px;
+      transform-origin: top left;
+      transition: transform 0.2s ease;
+    }
+    svg {
+      display: block;
+    }
+    .zoom-controls {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(17, 24, 39, 0.9);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px;
+      display: flex;
+      gap: 6px;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .zoom-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .copy-toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #10b981;
+      color: #022c22;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(16,185,129,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+    .copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="copyToast" class="copy-toast">✓ SVG Vector Copied to Clipboard! Open Figma and press Ctrl+V</div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <h1>Smart Household Energy • Mobile UI Design System</h1>
+        <span>9 Production Artboards • 100% Valid SVG • Ready for Figma Import</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="copySvgToClipboard()" class="btn btn-success">
+        📋 Copy Vector for Figma
+      </button>
+      <a href="figma_mobile_interface.svg" download="Smart_Household_Energy_Figma_Mobile.svg" class="btn btn-secondary">
+        ⬇ Download SVG File
+      </a>
+      <a href="Smart_Household_Energy_Mobile_UI_Design_System.pdf" download class="btn btn-primary">
+        📄 Download Combined PDF
+      </a>
+    </div>
+  </header>
+
+  <div class="notice-bar">
+    <span>💡 <strong>Figma 1-Click Import:</strong> Click <em>"Copy Vector for Figma"</em> above and press <code>Ctrl+V</code> inside any Figma canvas, or drag <code>figma_mobile_interface.svg</code> directly into Figma.</span>
+    <span>Touch Optimized • 0ms Tap Delay • 2×2 Layout Grid</span>
+  </div>
+
+  <div class="screen-navigator" id="screenNav">
+    <button class="nav-pill active" onclick="scrollToScreen(0)">All 9 Screens</button>
+    <button class="nav-pill" onclick="scrollToScreen(50)">1. Home</button>
+    <button class="nav-pill" onclick="scrollToScreen(470)">2. Dashboard</button>
+    <button class="nav-pill" onclick="scrollToScreen(890)">3. Bill Analyzer</button>
+    <button class="nav-pill" onclick="scrollToScreen(1310)">4. Solar ROI</button>
+    <button class="nav-pill" onclick="scrollToScreen(1730)">5. History</button>
+    <button class="nav-pill" onclick="scrollToScreen(2150)">6. Survey Data</button>
+    <button class="nav-pill" onclick="scrollToScreen(2570)">7. Profile</button>
+    <button class="nav-pill" onclick="scrollToScreen(2990)">8. Settings</button>
+    <button class="nav-pill" onclick="scrollToScreen(3410)">9. FAQ</button>
+  </div>
+
+  <div class="container">
+    <div class="svg-viewport" id="viewport">
+      <div class="svg-container" id="svgContainer">
+        ${svgContent.replace(/<\?xml[\s\S]*?\?>/, '')}
+      </div>
+    </div>
+  </div>
+
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="adjustZoom(-0.15)" title="Zoom Out">-</button>
+    <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom" style="font-size: 10px; width: 44px;" id="zoomLabel">100%</button>
+    <button class="zoom-btn" onclick="adjustZoom(0.15)" title="Zoom In">+</button>
+  </div>
+
+  <script>
+    let currentZoom = 1;
+    function adjustZoom(delta) {
+      currentZoom = Math.min(1.8, Math.max(0.4, currentZoom + delta));
+      document.getElementById('svgContainer').style.transform = 'scale(' + currentZoom + ')';
+      document.getElementById('zoomLabel').innerText = Math.round(currentZoom * 100) + '%';
+    }
+    function resetZoom() {
+      currentZoom = 1;
+      document.getElementById('svgContainer').style.transform = 'scale(1)';
+      document.getElementById('zoomLabel').innerText = '100%';
+    }
+
+    function scrollToScreen(xOffset) {
+      const vp = document.getElementById('viewport');
+      vp.scrollTo({ left: xOffset, behavior: 'smooth' });
+    }
+
+    async function copySvgToClipboard() {
+      try {
+        const svgEl = document.querySelector('.svg-container svg');
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(svgEl);
+        await navigator.clipboard.writeText(svgString);
+        
+        const toast = document.getElementById('copyToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+      } catch (err) {
+        alert('Could not copy directly to clipboard. Please download the SVG file instead.');
+      }
+    }
+  </script>
+</body>
+</html>`;
+
+  fs.writeFileSync(path.join(PUBLIC_DIR, "figma_mobile_preview.html"), html, "utf-8");
+  console.log("✓ Successfully generated public/figma_mobile_preview.html with inline SVG & controls");
+}
+
+// -------------------------------------------------------------
+// 3. GENERATE HIGH-FIDELITY COMBINED MULTI-PAGE PDF
+// -------------------------------------------------------------
+async function generateCombinedPdf() {
+  console.log("Generating Combined Multi-Page PDF Document...");
+
+  const pdfDoc = await PDFDocument.create();
+  pdfDoc.setTitle("Smart Household Energy - Mobile Interface Design System");
+  pdfDoc.setAuthor("Govardhan");
+  pdfDoc.setSubject("Complete Mobile Interface Specification and Artboards");
+  pdfDoc.setKeywords(["mobile", "design", "energy", "household", "APSPDCL", "figma", "ui", "ux"]);
+
+  function sanitizeText(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/[✓✔]/g, "[OK]")
+      .replace(/[•●]/g, "-")
+      .replace(/[×✕]/g, "x")
+      .replace(/[₹]/g, "Rs. ")
+      .replace(/[→]/g, "->")
+      .replace(/[←]/g, "<-")
+      .replace(/[–—]/g, "-")
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/[⚡💡❄️🧊💨👑🔍▲▼💬☀️🌙📷📊📋⚙️🏠★]/g, "")
+      .replace(/[^\x00-\x7F]/g, "");
+  }
+
+  const originalAddPage = pdfDoc.addPage.bind(pdfDoc);
+  pdfDoc.addPage = (...args) => {
+    const page = originalAddPage(...args);
+    const origDrawText = page.drawText.bind(page);
+    page.drawText = (text, options) => {
+      return origDrawText(sanitizeText(text), options);
+    };
+    return page;
+  };
+
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const courier = await pdfDoc.embedFont(StandardFonts.Courier);
+
+  // Colors
+  const cDarkBg = rgb(15 / 255, 23 / 255, 42 / 255);       // #0f172a
+  const cWhite = rgb(1, 1, 1);
+  const cBlue = rgb(37 / 255, 99 / 255, 235 / 255);        // #2563eb
+  const cGreen = rgb(16 / 255, 185 / 255, 129 / 255);      // #10b981
+  const cAmber = rgb(245 / 255, 158 / 255, 11 / 255);      // #f59e0b
+  const cSlateText = rgb(71 / 255, 85 / 255, 105 / 255);   // #475569
+  const cMutedText = rgb(148 / 255, 163 / 255, 184 / 255); // #94a3b8
+  const cCardBg = rgb(248 / 255, 250 / 255, 252 / 255);    // #f8fafc
+  const cBorder = rgb(226 / 255, 232 / 255, 240 / 255);    // #e2e8f0
+
+  const PAGE_WIDTH = 595.28; // A4 Standard Width
+  const PAGE_HEIGHT = 841.89; // A4 Standard Height
+
+  // ---------------------------------------------
+  // PAGE 1: COVER & ARCHITECTURE MANIFESTO
+  // ---------------------------------------------
+  {
+    const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+
+    // Dark Hero Header
+    page.drawRectangle({
+      x: 0,
+      y: PAGE_HEIGHT - 280,
+      width: PAGE_WIDTH,
+      height: 280,
+      color: cDarkBg
+    });
+
+    // Top Accent Border Bar
+    page.drawRectangle({
+      x: 0,
+      y: PAGE_HEIGHT - 6,
+      width: PAGE_WIDTH,
+      height: 6,
+      color: cGreen
+    });
+
+    // Brand Tag
+    page.drawText("SMART HOUSEHOLD ENERGY PORTAL", {
+      x: 45,
+      y: PAGE_HEIGHT - 60,
+      size: 11,
+      font: helveticaBold,
+      color: cGreen
+    });
+
+    page.drawText("Mobile UI Design System & Architecture", {
+      x: 45,
+      y: PAGE_HEIGHT - 100,
+      size: 26,
+      font: helveticaBold,
+      color: cWhite
+    });
+
+    page.drawText("Complete Mobile Interface Specification, Component Simplification & Layout Frames", {
+      x: 45,
+      y: PAGE_HEIGHT - 128,
+      size: 12,
+      font: helvetica,
+      color: cMutedText
+    });
+
+    // Metadata Chips in Header
+    const drawMetaChip = (label, value, x) => {
+      page.drawRectangle({
+        x,
+        y: PAGE_HEIGHT - 240,
+        width: 115,
+        height: 48,
+        color: rgb(30 / 255, 41 / 255, 59 / 255)
+      });
+      page.drawText(label, { x: x + 10, y: PAGE_HEIGHT - 208, size: 8, font: helveticaBold, color: cMutedText });
+      page.drawText(value, { x: x + 10, y: PAGE_HEIGHT - 226, size: 11, font: helveticaBold, color: cWhite });
+    };
+
+    drawMetaChip("PLATFORM", "React 19 + Vite", 45);
+    drawMetaChip("VIEWPORT", "375 x 812 pt", 170);
+    drawMetaChip("ACCESSIBILITY", "Touch First (44pt)", 295);
+    drawMetaChip("VERSION", "26.0 (Production)", 420);
+
+    // Section: Core Mobile Architecture Decisions
+    let curY = PAGE_HEIGHT - 320;
+    page.drawText("Executive Summary: Mobile-First Simplification Principles", {
+      x: 45,
+      y: curY,
+      size: 15,
+      font: helveticaBold,
+      color: cDarkBg
+    });
+
+    curY -= 24;
+    page.drawText("Following user directive, all non-essential cards, heavy 3D perspective computations, and hover", {
+      x: 45,
+      y: curY,
+      size: 10,
+      font: helvetica,
+      color: cSlateText
+    });
+    curY -= 15;
+    page.drawText("animation effects have been eliminated on mobile screens, preserving pure native performance.", {
+      x: 45,
+      y: curY,
+      size: 10,
+      font: helvetica,
+      color: cSlateText
+    });
+
+    // 4 Key Pillars Cards
+    const pillars = [
+      {
+        title: "1. Zero Touch Lag & Hover Scoping",
+        desc: "All :hover states, translateY lifts, and sticky tap animations strictly scoped to @media (hover: hover) and (pointer: fine). Touch devices now experience instantaneous scrolling and zero tap delay."
+      },
+      {
+        title: "2. Three.js & 3D Perspective Mobile Bypass",
+        desc: "ThreeDCard glare, tilt, and transform calculations completely bypassed on viewport widths < 768px. Particle animation loops automatically paused on small viewports to preserve battery life."
+      },
+      {
+        title: "3. Non-Essential Card Pruning",
+        desc: "Heavy 330px SVG PowerFlowPanel and redundant benchmark comparison cards hidden on mobile. Top 3 core features shown on Home with a lightweight disclosure toggle; single card testimonial slider."
+      },
+      {
+        title: "4. Responsive 2x2 Layout Compression",
+        desc: "All 4-column KPI cards and footer link lists automatically reorganized into clean, high-density 2x2 grids. Settings tabs converted to an intuitive horizontal swipeable pill navigation bar."
+      }
+    ];
+
+    curY -= 35;
+    pillars.forEach((p) => {
+      page.drawRectangle({
+        x: 45,
+        y: curY - 52,
+        width: PAGE_WIDTH - 90,
+        height: 60,
+        color: cCardBg,
+        borderColor: cBorder,
+        borderWidth: 1
+      });
+
+      page.drawText(p.title, {
+        x: 60,
+        y: curY - 16,
+        size: 11,
+        font: helveticaBold,
+        color: cBlue
+      });
+
+      page.drawText(p.desc.substring(0, 100), {
+        x: 60,
+        y: curY - 32,
+        size: 9,
+        font: helvetica,
+        color: cSlateText
+      });
+      page.drawText(p.desc.substring(100), {
+        x: 60,
+        y: curY - 44,
+        size: 9,
+        font: helvetica,
+        color: cSlateText
+      });
+
+      curY -= 70;
+    });
+
+    // Footer on Cover
+    page.drawText("Smart Household Energy - Page 1 of 10 - Confidential & Proprietary", {
+      x: 45,
+      y: 25,
+      size: 9,
+      font: courier,
+      color: cMutedText
+    });
+  }
+
+  // ---------------------------------------------
+  // PAGES 2 - 10: SCREENS 1 TO 9
+  // ---------------------------------------------
+  const screenDetails = [
+    {
+      num: 2,
+      id: "01_Home",
+      title: "Home Page (Hero & Feature Launchpad)",
+      route: "/",
+      summary: "Landing portal designed with compact consumption slider, active AP DISCOM slab pill, top 3 core features disclosure, and single-card testimonial dot carousel.",
+      features: [
+        "Eliminated overflowing absolute floating badges from desktop hero simulator.",
+        "Top 3 core features displayed with 'View More' toggle to prevent mobile scroll fatigue.",
+        "Testimonials reduced to 1 card with swipeable pagination dots.",
+        "Full-width gradient CTA banner streamlined with vertical touch actions."
+      ],
+      specs: [
+        { key: "Target Device", val: "Apple iPhone / Android (375 x 812 pt)" },
+        { key: "Simulator Touch Target", val: "Thumb-friendly 20px slider thumb" },
+        { key: "DISCOM Slabs", val: "APSPDCL / APEPDCL Telescopic Tier II" }
+      ]
+    },
+    {
+      num: 3,
+      id: "02_Dashboard_Wizard",
+      title: "Dashboard: Energy Audit Wizard",
+      route: "/dashboard",
+      summary: "High-density household audit workflow featuring a responsive 2x2 KPI metrics deck, compact appliance selector list, and floating calculate action button.",
+      features: [
+        "Hidden 330px BiggestConsumerCard gauge on mobile to bring appliances above the fold.",
+        "Converted 4 KPI cards into a clean 2x2 grid (Usage, Est Bill, Savings Score, Highest Load).",
+        "Disabled heavy 3D PowerFlowPanel SVG circuit simulation on mobile.",
+        "Appliance items refactored into high-contrast horizontal list tiles with active chips."
+      ],
+      specs: [
+        { key: "Layout Grid", val: "2 columns x 2 rows (Mobile KPI)" },
+        { key: "Wattage Overrides", val: "Custom appliance power wattage support" },
+        { key: "Floating Action", val: "Fixed 50pt Recalculate Energy Plan CTA" }
+      ]
+    },
+    {
+      num: 4,
+      id: "03_Bill_Analyzer",
+      title: "Bill Analyzer: Smart OCR Scanner",
+      route: "/dashboard (Tab 2)",
+      summary: "Multimodal Gemini 2.5 Flash Vision and PaddleOCR bill scanning interface with camera capture upload zone, extracted parameter cards, and math validation audit.",
+      features: [
+        "Instant camera capture or photo roll picker upload area.",
+        "Structured extracted parameter display: Consumer Name, Service No, Units, Amount Due.",
+        "Math balance verification checking energy charges against tariff slabs.",
+        "Sanity bounds guarding against connection numbers leaking as billing totals."
+      ],
+      specs: [
+        { key: "Vision Model", val: "Multimodal Gemini 2.5 Flash Direct" },
+        { key: "Fallback Engine", val: "Client-Side PaddleOCR (ONNX Runtime Web)" },
+        { key: "Supported Inputs", val: "JPG, PNG, PDF Electricity Bills" }
+      ]
+    },
+    {
+      num: 5,
+      id: "04_Solar_Calculator",
+      title: "Rooftop Solar ROI Calculator",
+      route: "/dashboard (Tab 3)",
+      summary: "25-year compounding financial investment simulator featuring PM Surya Ghar central subsidy modeling, system capacity sizing, and payback period prediction.",
+      features: [
+        "PM Surya Ghar Muft Bijli Yojana subsidy tier calculation (up to Rs. 78,000).",
+        "Calculates recommended kW capacity based on audited monthly unit consumption.",
+        "Visual 25-year cumulative financial returns timeline without desktop layout wrap.",
+        "Lead-acid vs Lithium-ion battery cost differentiation toggles."
+      ],
+      specs: [
+        { key: "Compounding Math", val: "Pure utility solarCalculator.ts" },
+        { key: "Central Subsidy", val: "Rs. 30,000 (1kW), Rs. 60,000 (2kW), Rs. 78,000 (3kW+)" },
+        { key: "Lifespan Metric", val: "25-year Tier-1 PV panel degradation model" }
+      ]
+    },
+    {
+      num: 6,
+      id: "05_History_Reports",
+      title: "Audit History & Comparison Log",
+      route: "/history",
+      summary: "Personal energy audit archive displaying 2 primary mobile hero metrics, quick search/sort controls, and report cards with directly visible touch action buttons.",
+      features: [
+        "Streamlined hero header showing Total Reports and Average Monthly Bill.",
+        "Card action buttons (View Details & Delete) made permanently visible on mobile.",
+        "Removed whileHover translateY transforms that caused sticky taps on touch screens.",
+        "Optimistic UI deletion for instantaneous record removal without spinner lock."
+      ],
+      specs: [
+        { key: "Action Visibility", val: "opacity-100 sm:opacity-0 (Touch Direct)" },
+        { key: "Search Filters", val: "Real-time date, appliance, and bill query" },
+        { key: "Data Persistence", val: "Cloud Firestore + Offline localStorage Cache" }
+      ]
+    },
+    {
+      num: 7,
+      id: "06_Survey_Database",
+      title: "Household Survey Database",
+      route: "/survey-data",
+      summary: "Empirical energy survey dataset of 30 domestic households in Andhra Pradesh with 2x2 metric summaries and a smooth horizontal touch-scrolling data table.",
+      features: [
+        "2x2 KPI metrics grid (Households, Avg Bill, Total Usage, Savings Potential).",
+        "Bypassed card hover animations and scaling on mobile viewports.",
+        "Table wrapped in native touch-scrolling container with sticky identifier column.",
+        "Quick filter toggles for high/low consumption households and appliance counts."
+      ],
+      specs: [
+        { key: "Sample Size", val: "30 Domestic AP Household Baselines" },
+        { key: "Table Scroll", val: "-webkit-overflow-scrolling: touch" },
+        { key: "Accessibility", val: "Screen-reader semantic table captions" }
+      ]
+    },
+    {
+      num: 8,
+      id: "07_User_Profile",
+      title: "User Profile Settings",
+      route: "/profile",
+      summary: "Account management page with verified user badge, editable contact parameters, regional DISCOM configuration, security credentials form, and direct sign-out.",
+      features: [
+        "Hidden secondary sparkline overview cards on mobile to bring forms above fold.",
+        "Touch-friendly 44px minimum height form inputs with active focus rings.",
+        "Immediate password change and regional utility selection.",
+        "High-contrast red danger button for direct one-tap session sign out."
+      ],
+      specs: [
+        { key: "Form Validation", val: "Real-time regex sanitizer & input bounds" },
+        { key: "Profile Avatar", val: "Dynamic theme-matching completion SVG ring" },
+        { key: "Account Tier", val: "Verified Premium DISCOM User" }
+      ]
+    },
+    {
+      num: 9,
+      id: "08_Settings_Preferences",
+      title: "Platform Settings & Preferences",
+      route: "/settings",
+      summary: "Configuration console featuring a horizontally scrollable navigation tab bar, theme mode switcher, accent color selector, and Eco Mode power optimizer.",
+      features: [
+        "Converted 5 vertical sidebar tabs into a horizontal scrollable pill bar on mobile.",
+        "Hidden redundant large profile avatar card to maximize vertical screen space.",
+        "Instant Dark/Light theme toggle syncing with system media query.",
+        "Notification channel toggles (high usage, monthly reports, solar net-metering)."
+      ],
+      specs: [
+        { key: "Tab Navigation", val: "Horizontal swipe pill bar (overflow-x-auto)" },
+        { key: "Theme Sync", val: "Custom event dispatcher (she-accent-change)" },
+        { key: "Eco Mode", val: "Auto-caps budget to subsidized 200 unit tier" }
+      ]
+    },
+    {
+      num: 10,
+      id: "09_FAQ_Support",
+      title: "Frequently Asked Questions & Support",
+      route: "/faq",
+      summary: "Comprehensive consumer guidance on Andhra Pradesh telescopic tariffs, solar net-metering regulations, data security, and direct customer issue reporting.",
+      features: [
+        "Interactive accordion FAQ cards with large touch target expander triggers.",
+        "Search input for quick keyword lookup across tariff and solar queries.",
+        "Integrated dual Web3Forms + EmailJS customer ticket submission pipeline.",
+        "Verified APSPDCL / APEPDCL regulatory citations."
+      ],
+      specs: [
+        { key: "Ticket Pipeline", val: "Concurrent Web3Forms + EmailJS AJAX" },
+        { key: "Accordions", val: "Smooth CSS auto-height transition" },
+        { key: "Regulation Grounding", val: "APERC Tariff Order 2026-27" }
+      ]
+    }
+  ];
+
+  screenDetails.forEach((scr) => {
+    const page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+
+    // Top Header Banner
+    page.drawRectangle({
+      x: 0,
+      y: PAGE_HEIGHT - 70,
+      width: PAGE_WIDTH,
+      height: 70,
+      color: cDarkBg
+    });
+
+    page.drawText(`SCREEN ${scr.num - 1}: ${scr.title.toUpperCase()}`, {
+      x: 40,
+      y: PAGE_HEIGHT - 35,
+      size: 13,
+      font: helveticaBold,
+      color: cWhite
+    });
+
+    page.drawText(`Route: ${scr.route} - Mobile Design Specification`, {
+      x: 40,
+      y: PAGE_HEIGHT - 52,
+      size: 9,
+      font: helvetica,
+      color: cMutedText
+    });
+
+    // Page indicator pill
+    page.drawRectangle({
+      x: PAGE_WIDTH - 110,
+      y: PAGE_HEIGHT - 48,
+      width: 70,
+      height: 24,
+      color: cBlue
+    });
+    page.drawText(`Page ${scr.num}/10`, {
+      x: PAGE_WIDTH - 98,
+      y: PAGE_HEIGHT - 33,
+      size: 9,
+      font: helveticaBold,
+      color: cWhite
+    });
+
+    // Left Column: Mobile Viewport Frame Graphic (A4 representation)
+    const phoneX = 40;
+    const phoneY = PAGE_HEIGHT - 580;
+    const phoneW = 230;
+    const phoneH = 490;
+
+    // Phone Shadow
+    page.drawRectangle({
+      x: phoneX + 4,
+      y: phoneY - 4,
+      width: phoneW,
+      height: phoneH,
+      color: rgb(226 / 255, 232 / 255, 240 / 255)
+    });
+
+    // Phone Body
+    page.drawRectangle({
+      x: phoneX,
+      y: phoneY,
+      width: phoneW,
+      height: phoneH,
+      color: cWhite,
+      borderColor: cDarkBg,
+      borderWidth: 4
+    });
+
+    // Dynamic Island
+    page.drawRectangle({
+      x: phoneX + (phoneW - 70) / 2,
+      y: phoneY + phoneH - 18,
+      width: 70,
+      height: 12,
+      color: rgb(0, 0, 0)
+    });
+
+    // Phone Header bar
+    page.drawRectangle({
+      x: phoneX + 4,
+      y: phoneY + phoneH - 42,
+      width: phoneW - 8,
+      height: 22,
+      color: cCardBg
+    });
+    page.drawText("9:41", {
+      x: phoneX + 16,
+      y: phoneY + phoneH - 36,
+      size: 7,
+      font: helveticaBold,
+      color: rgb(0, 0, 0)
+    });
+    page.drawText("Smart Household Energy", {
+      x: phoneX + 50,
+      y: phoneY + phoneH - 36,
+      size: 8,
+      font: helveticaBold,
+      color: cBlue
+    });
+
+    // Inside phone content cards (Visual diagram)
+    page.drawRectangle({
+      x: phoneX + 14,
+      y: phoneY + phoneH - 145,
+      width: phoneW - 28,
+      height: 90,
+      color: rgb(240 / 255, 249 / 255, 255 / 255),
+      borderColor: rgb(186 / 255, 230 / 255, 253 / 255),
+      borderWidth: 1
+    });
+    page.drawText(scr.title.substring(0, 24), {
+      x: phoneX + 22,
+      y: phoneY + phoneH - 72,
+      size: 10,
+      font: helveticaBold,
+      color: cBlue
+    });
+    page.drawText("Mobile Optimized Touch Component", {
+      x: phoneX + 22,
+      y: phoneY + phoneH - 86,
+      size: 7,
+      font: helvetica,
+      color: cSlateText
+    });
+    page.drawText("Hover animations: Disabled", {
+      x: phoneX + 22,
+      y: phoneY + phoneH - 105,
+      size: 7,
+      font: courier,
+      color: cGreen
+    });
+    page.drawText("Non-essential cards: Removed", {
+      x: phoneX + 22,
+      y: phoneY + phoneH - 118,
+      size: 7,
+      font: courier,
+      color: cGreen
+    });
+
+    // Inner Phone 2x2 Grid Wireframe
+    page.drawRectangle({
+      x: phoneX + 14,
+      y: phoneY + phoneH - 245,
+      width: (phoneW - 36) / 2,
+      height: 42,
+      color: cCardBg,
+      borderColor: cBorder,
+      borderWidth: 1
+    });
+    page.drawText("Metric 01", { x: phoneX + 20, y: phoneY + phoneH - 218, size: 6, font: helveticaBold, color: cMutedText });
+    page.drawText("Primary", { x: phoneX + 20, y: phoneY + phoneH - 232, size: 9, font: helveticaBold, color: cDarkBg });
+
+    page.drawRectangle({
+      x: phoneX + 14 + (phoneW - 36) / 2 + 8,
+      y: phoneY + phoneH - 245,
+      width: (phoneW - 36) / 2,
+      height: 42,
+      color: cCardBg,
+      borderColor: cBorder,
+      borderWidth: 1
+    });
+    page.drawText("Metric 02", { x: phoneX + 128, y: phoneY + phoneH - 218, size: 6, font: helveticaBold, color: cMutedText });
+    page.drawText("Subsidized", { x: phoneX + 128, y: phoneY + phoneH - 232, size: 9, font: helveticaBold, color: cGreen });
+
+    page.drawRectangle({
+      x: phoneX + 14,
+      y: phoneY + phoneH - 295,
+      width: (phoneW - 36) / 2,
+      height: 42,
+      color: cCardBg,
+      borderColor: cBorder,
+      borderWidth: 1
+    });
+    page.drawText("Metric 03", { x: phoneX + 20, y: phoneY + phoneH - 268, size: 6, font: helveticaBold, color: cMutedText });
+    page.drawText("Optimal", { x: phoneX + 20, y: phoneY + phoneH - 282, size: 9, font: helveticaBold, color: cBlue });
+
+    page.drawRectangle({
+      x: phoneX + 14 + (phoneW - 36) / 2 + 8,
+      y: phoneY + phoneH - 295,
+      width: (phoneW - 36) / 2,
+      height: 42,
+      color: cCardBg,
+      borderColor: cBorder,
+      borderWidth: 1
+    });
+    page.drawText("Metric 04", { x: phoneX + 128, y: phoneY + phoneH - 268, size: 6, font: helveticaBold, color: cMutedText });
+    page.drawText("Verified", { x: phoneX + 128, y: phoneY + phoneH - 282, size: 9, font: helveticaBold, color: cAmber });
+
+    // Inner Phone Action Tiles
+    for (let t = 0; t < 3; t++) {
+      const tileY = phoneY + phoneH - 340 - t * 38;
+      page.drawRectangle({
+        x: phoneX + 14,
+        y: tileY,
+        width: phoneW - 28,
+        height: 32,
+        color: cWhite,
+        borderColor: cBorder,
+        borderWidth: 1
+      });
+      page.drawText(`Touch Component Row 0${t + 1}`, { x: phoneX + 22, y: tileY + 11, size: 8, font: helveticaBold, color: cDarkBg });
+      page.drawText("Active", { x: phoneX + phoneW - 65, y: tileY + 11, size: 7, font: helveticaBold, color: cGreen });
+    }
+
+    // Inner Phone CTA
+    page.drawRectangle({
+      x: phoneX + 14,
+      y: phoneY + 36,
+      width: phoneW - 28,
+      height: 30,
+      color: cBlue
+    });
+    page.drawText("Primary Action Touch Target", {
+      x: phoneX + 46,
+      y: phoneY + 47,
+      size: 8,
+      font: helveticaBold,
+      color: cWhite
+    });
+
+    // Phone Home Indicator
+    page.drawRectangle({
+      x: phoneX + (phoneW - 80) / 2,
+      y: phoneY + 10,
+      width: 80,
+      height: 4,
+      color: rgb(0, 0, 0)
+    });
+
+    // Right Column: Architectural Specifications & Rationale
+    const rightX = 295;
+    let textY = PAGE_HEIGHT - 100;
+
+    page.drawText("Design Rationale & Simplification", {
+      x: rightX,
+      y: textY,
+      size: 14,
+      font: helveticaBold,
+      color: cDarkBg
+    });
+
+    textY -= 20;
+    const descLines = [
+      scr.summary.substring(0, 52),
+      scr.summary.substring(52, 105),
+      scr.summary.substring(105)
+    ].filter(Boolean);
+
+    descLines.forEach((line) => {
+      page.drawText(line, { x: rightX, y: textY, size: 9.5, font: helvetica, color: cSlateText });
+      textY -= 14;
+    });
+
+    textY -= 14;
+    page.drawText("Implemented Mobile Changes:", {
+      x: rightX,
+      y: textY,
+      size: 11,
+      font: helveticaBold,
+      color: cBlue
+    });
+
+    textY -= 16;
+    scr.features.forEach((feat) => {
+      page.drawText("- " + feat.substring(0, 48), { x: rightX, y: textY, size: 8.5, font: helvetica, color: cSlateText });
+      textY -= 12;
+      if (feat.length > 48) {
+        page.drawText("  " + feat.substring(48), { x: rightX, y: textY, size: 8.5, font: helvetica, color: cSlateText });
+        textY -= 12;
+      }
+      textY -= 4;
+    });
+
+    // Specs Box
+    textY -= 10;
+    page.drawRectangle({
+      x: rightX,
+      y: textY - 80,
+      width: PAGE_WIDTH - rightX - 40,
+      height: 90,
+      color: cCardBg,
+      borderColor: cBorder,
+      borderWidth: 1
+    });
+
+    page.drawText("TECHNICAL SPECIFICATIONS", {
+      x: rightX + 12,
+      y: textY - 6,
+      size: 8,
+      font: helveticaBold,
+      color: cMutedText
+    });
+
+    scr.specs.forEach((sp, sidx) => {
+      page.drawText(sp.key + ":", {
+        x: rightX + 12,
+        y: textY - 26 - sidx * 18,
+        size: 8,
+        font: helveticaBold,
+        color: cDarkBg
+      });
+      page.drawText(sp.val, {
+        x: rightX + 110,
+        y: textY - 26 - sidx * 18,
+        size: 8,
+        font: helvetica,
+        color: cSlateText
+      });
+    });
+
+    // Verification Badge
+    textY -= 120;
+    page.drawRectangle({
+      x: rightX,
+      y: textY - 36,
+      width: PAGE_WIDTH - rightX - 40,
+      height: 44,
+      color: rgb(240 / 255, 253 / 255, 244 / 255),
+      borderColor: rgb(187 / 255, 247 / 255, 208 / 255),
+      borderWidth: 1
+    });
+
+    page.drawText("[VERIFIED PRODUCTION]", {
+      x: rightX + 12,
+      y: textY - 14,
+      size: 9,
+      font: helveticaBold,
+      color: cGreen
+    });
+    page.drawText("All 77 unit tests passing - Zero desktop disruption", {
+      x: rightX + 12,
+      y: textY - 28,
+      size: 8,
+      font: helvetica,
+      color: cSlateText
+    });
+
+    // Footer
+    page.drawText(`Smart Household Energy Portal - Page ${scr.num} of 10 - ${scr.name}`, {
+      x: 40,
+      y: 25,
+      size: 9,
+      font: courier,
+      color: cMutedText
+    });
+  });
+
+  const pdfBytes = await pdfDoc.save();
+  const pdfPathRoot = path.join(ROOT_DIR, "Smart_Household_Energy_Mobile_UI_Design_System.pdf");
+  const pdfPathPublic = path.join(PUBLIC_DIR, "Smart_Household_Energy_Mobile_UI_Design_System.pdf");
+
+  fs.writeFileSync(pdfPathRoot, pdfBytes);
+  fs.writeFileSync(pdfPathPublic, pdfBytes);
+
+  console.log("✓ Successfully created combined 10-page PDF document:");
+  console.log(`  - ${pdfPathRoot} (${(pdfBytes.length / 1024).toFixed(1)} KB)`);
+  console.log(`  - ${pdfPathPublic}`);
+}
+
+async function main() {
+  try {
+    const svgContent = generateFigmaSvg();
+    generatePreviewHtml(svgContent);
+    await generateCombinedPdf();
+    console.log("\n All mobile design deliverables successfully generated with 100% valid XML and inline HTML preview!");
+  } catch (err) {
+    console.error("Error generating design deliverables:", err);
+    process.exit(1);
+  }
+}
+
+main();

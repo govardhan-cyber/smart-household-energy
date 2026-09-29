@@ -37,7 +37,7 @@ export const Login: React.FC = () => {
   const { login, loginWithGoogle, user } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
-  const from      = (location.state as any)?.from?.pathname || "/dashboard";
+  const from      = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || "/dashboard";
 
   useEffect(() => {
     if (user) navigate(from, { replace: true });
@@ -78,14 +78,14 @@ export const Login: React.FC = () => {
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setError(null); setIsSubmitting(true);
     try { await login(email, password, rememberMe); navigate(from, { replace: true }); }
-    catch (err: any) { setError(getFriendlyErrorMessage(err)); }
+    catch (err: unknown) { setError(getFriendlyErrorMessage(err)); }
     finally { setIsSubmitting(false); }
   };
 
   const handleGoogleSignIn = async () => {
     setError(null); setIsSubmitting(true);
     try { await loginWithGoogle(); navigate(from, { replace: true }); }
-    catch (err: any) { setError(getFriendlyErrorMessage(err)); }
+    catch (err: unknown) { setError(getFriendlyErrorMessage(err)); }
     finally { setIsSubmitting(false); }
   };
 

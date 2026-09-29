@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Zap, IndianRupee, ChevronRight, Lightbulb,
@@ -67,7 +67,7 @@ const cardVariants = {
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as any } 
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
   }
 };
 
@@ -104,7 +104,7 @@ const biggestConsumerCardVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as any, delay: 0.05 }
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const, delay: 0.05 }
   }
 };
 
@@ -658,7 +658,7 @@ function ApplianceBreakdown({ items }: {
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-5">Appliance Usage Breakdown</h3>
 
       {/* Appliance tiles */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-5">
         {items.map((item, i) => {
           const col = COLORS[item.colorIdx % COLORS.length];
           return (
@@ -699,208 +699,6 @@ function ApplianceBreakdown({ items }: {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-// ── 4. Power Flow Panel ───────────────────────────────────────────────────────
-// @ts-ignore
-function PowerFlowPanel_Deprecated({ totalUnits }: { totalUnits: number }) {
-  const [gridPower, setGridPower] = useState(0.42);
-  const [solarPower, setSolarPower] = useState(0.35);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGridPower(prev => {
-        const drift = (Math.random() - 0.5) * 0.03;
-        return Math.round(Math.min(0.95, Math.max(0.15, prev + drift)) * 100) / 100;
-      });
-      setSolarPower(prev => {
-        const drift = (Math.random() - 0.5) * 0.04;
-        return Math.round(Math.min(1.80, Math.max(0.10, prev + drift)) * 100) / 100;
-      });
-    }, 2800);
-    return () => clearInterval(interval);
-  }, []);
-
-  const totalDemand = Math.round((gridPower + solarPower) * 100) / 100;
-
-  return (
-    <div className="relative bg-gradient-to-br from-white/95 via-slate-50/70 to-blue-50/30 dark:from-slate-900/90 dark:via-slate-950/60 dark:to-blue-950/20 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-sm p-6 hover:shadow-md transition-all duration-300 overflow-hidden">
-      {/* Decorative Blur Glows */}
-      <div className="absolute -left-10 -top-10 w-36 h-36 bg-blue-500/8 dark:bg-blue-600/6 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -right-10 -bottom-10 w-36 h-36 bg-indigo-500/8 dark:bg-indigo-600/6 rounded-full blur-2xl pointer-events-none" />
-      
-      {/* Blueprint Grid Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.015] pointer-events-none bg-[linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]" />
-
-      <div className="relative z-10 flex flex-col gap-5">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 relative flex shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            </div>
-            <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Live Household Power Flow</h3>
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Grid Active
-          </span>
-        </div>
-
-        {/* Nodes and Flow Layout */}
-        <div className="flex items-center justify-between gap-4 w-full">
-          {/* Left Column: Power Sources (Grid & Solar) */}
-          <div className="flex flex-col gap-6 shrink-0 z-10">
-            {/* Grid Node */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-600/15 border border-blue-500/25 dark:border-blue-500/35 flex items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-500 dark:text-blue-400">
-                  <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="5" y1="6" x2="19" y2="6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  <line x1="12" y1="10" x2="6" y2="6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-                  <line x1="12" y1="10" x2="18" y2="6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-                  <circle cx="5" cy="6" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
-                  <circle cx="19" cy="6" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
-                  <circle cx="3" cy="12" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
-                  <circle cx="21" cy="12" r="2.2" className="fill-blue-500 dark:fill-blue-400 animate-pulse" />
-                </svg>
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Grid Import</p>
-                <p className="text-sm font-black text-blue-600 dark:text-blue-400 mt-0.5 tracking-tight font-display">{gridPower.toFixed(2)} kW</p>
-              </div>
-            </div>
-
-            {/* Solar Node */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-600/15 border border-amber-500/25 dark:border-amber-500/35 flex items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Glowing Sun rays & circle */}
-                  <circle cx="17" cy="7" r="3" className="fill-amber-400 dark:fill-amber-300 stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" />
-                  <line x1="17" y1="2" x2="17" y2="3" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="21" y1="3" x2="22" y2="2" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="22" y1="7" x2="21" y2="7" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="13" y1="11" x2="12" y2="12" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-                  
-                  {/* Solar Panel grid */}
-                  <rect x="3" y="10" width="14" height="11" rx="1.5" transform="rotate(-10 3 10)" className="stroke-emerald-600 dark:stroke-emerald-400 fill-emerald-50/20 dark:fill-emerald-950/20" strokeWidth="1.6" />
-                  <line x1="4.5" y1="13.5" x2="17.5" y2="11.2" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
-                  <line x1="5.5" y1="18.5" x2="18.5" y2="16.2" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
-                  <line x1="11" y1="10.5" x2="13.2" y2="21.5" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1" opacity="0.8" />
-                </svg>
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Solar Output</p>
-                <p className="text-sm font-black text-emerald-600 dark:text-emerald-500 mt-0.5 tracking-tight font-display">{solarPower.toFixed(2)} kW</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column: Animated Curved Flow Paths */}
-          <div className="flex-1 h-28 relative">
-            <svg className="w-full h-full overflow-visible" viewBox="0 0 100 80" preserveAspectRatio="none">
-              <defs>
-                {/* Glow filter */}
-                <filter id="glow-pf" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-              
-              {/* Grid to Home Path */}
-              <path
-                d="M 0 20 C 50 20, 50 40, 100 40"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="1.8"
-                strokeOpacity="0.15"
-              />
-              <path
-                d="M 0 20 C 50 20, 50 40, 100 40"
-                fill="none"
-                stroke="#60a5fa"
-                strokeWidth="1.5"
-                strokeDasharray="4,6"
-                strokeOpacity="0.8"
-                style={{ animation: "flow-dash 1.2s linear infinite" }}
-              />
-
-              {/* Solar to Home Path */}
-              <path
-                d="M 0 60 C 50 60, 50 40, 100 40"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="1.8"
-                strokeOpacity="0.15"
-              />
-              <path
-                d="M 0 60 C 50 60, 50 40, 100 40"
-                fill="none"
-                stroke="#34d399"
-                strokeWidth="1.5"
-                strokeDasharray="4,6"
-                strokeOpacity="0.8"
-                style={{ animation: "flow-dash 1.2s linear infinite" }}
-              />
-
-              {/* Glowing animated particles along paths */}
-              <circle r="3.2" fill="#60a5fa" filter="url(#glow-pf)">
-                <animateMotion dur="2.4s" repeatCount="indefinite" path="M 0 20 C 50 20, 50 40, 100 40" />
-              </circle>
-              <circle r="3.2" fill="#60a5fa" filter="url(#glow-pf)">
-                <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M 0 20 C 50 20, 50 40, 100 40" />
-              </circle>
-
-              <circle r="3.2" fill="#10b981" filter="url(#glow-pf)">
-                <animateMotion dur="2.0s" repeatCount="indefinite" path="M 0 60 C 50 60, 50 40, 100 40" />
-              </circle>
-              <circle r="3.2" fill="#10b981" filter="url(#glow-pf)">
-                <animateMotion dur="2.0s" begin="1.0s" repeatCount="indefinite" path="M 0 60 C 50 60, 50 40, 100 40" />
-              </circle>
-            </svg>
-          </div>
-
-          {/* Right Column: Home Destination */}
-          <div className="flex items-center gap-3 shrink-0 z-10">
-            <div className="text-right">
-              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Home Load</p>
-              <p className="text-base font-black text-slate-800 dark:text-white mt-0.5 tracking-tight font-display">{totalDemand.toFixed(2)} kW</p>
-              <span className="text-[9px] font-bold text-slate-400 dark:text-slate-550 leading-none">
-                Cum. {Math.round(totalUnits)} kWh
-              </span>
-            </div>
-            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 dark:bg-indigo-600/15 border border-indigo-500/25 dark:border-indigo-500/35 flex flex-col items-center justify-center shadow-inner hover:scale-105 transition-transform duration-300">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* House Body */}
-                <rect x="6" y="11" width="12" height="11" rx="1" className="stroke-indigo-500 dark:stroke-indigo-400 fill-indigo-50/40 dark:fill-indigo-950/30" strokeWidth="1.6" />
-                {/* Roof */}
-                <path d="M4 11L12 4L20 11" className="stroke-indigo-600 dark:stroke-indigo-400" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                {/* Door */}
-                <rect x="10" y="16" width="4" height="6" rx="0.5" className="stroke-indigo-500 dark:stroke-indigo-400 fill-indigo-100 dark:fill-indigo-900" strokeWidth="1" />
-                {/* Glowing Windows */}
-                <rect x="8" y="13" width="2.5" height="2.5" rx="0.5" className="fill-amber-300 dark:fill-amber-400 glowing-window" />
-                <rect x="13.5" y="13" width="2.5" height="2.5" rx="0.5" className="fill-amber-300 dark:fill-amber-400 glowing-window" />
-                {/* WiFi Waves */}
-                <path d="M9 3C10.5 1.8 13.5 1.8 15 3" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M10.5 5C11.3 4.2 12.7 4.2 13.5 5" className="stroke-emerald-500 dark:stroke-emerald-400" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="12" cy="7" r="1" className="fill-emerald-500 dark:fill-emerald-400" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Inline styles for custom flowing path animations */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes flow-dash {
-          to {
-            stroke-dashoffset: -20;
-          }
-        }
-      `}} />
     </div>
   );
 }
@@ -1191,7 +989,7 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
         {/* Center Main Content Column */}
         <main className="col-span-1 space-y-5 w-full">
           {/* Row 1: Hero + Biggest Consumer */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 items-stretch">
             <div className="sm:col-span-2">
               <HeroCard
                 userName={userName}
@@ -1201,7 +999,8 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
                 vsAvgTrend={vsAvgTrend}
               />
             </div>
-            <div className="sm:col-span-1">
+            {/* Biggest Consumer Gauge: Desktop & Tablet only (< 640px hidden to keep mobile fast and uncluttered) */}
+            <div className="hidden sm:block sm:col-span-1">
               <BiggestConsumerCard
                 name={biggest.name}
                 pct={biggest.pct}
@@ -1210,36 +1009,36 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
             </div>
           </div>
 
-          {/* Row 2: KPI cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 no-print">
+          {/* Row 2: KPI cards (2x2 grid on mobile, 4 columns on desktop) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 no-print">
             <KpiCard
-              title="Monthly Consumption"
+              title="Monthly Units"
               value={totalUnits}
-              subtext="Based on active audit configuration"
-              icon={<Zap className="w-5 h-5 text-primary-blue dark:text-blue-400" />}
+              subtext="Active audit configuration"
+              icon={<Zap className="w-4.5 h-4.5 text-primary-blue dark:text-blue-400" />}
               borderColorClass="border-l-primary-blue"
             />
             <KpiCard
               title="Estimated Bill"
               value={bill.netEnergyCharge}
-              subtext={`Calculated using ${(tariffState || "AP").toUpperCase()} rates`}
-              icon={<IndianRupee className="w-5 h-5 text-warning-orange" />}
+              subtext={`Using ${(tariffState || "AP").toUpperCase()} rates`}
+              icon={<IndianRupee className="w-4.5 h-4.5 text-warning-orange" />}
               borderColorClass="border-l-warning-orange"
               isCurrency={true}
             />
             <KpiCard
               title="Potential Savings"
               value={savingsPotential}
-              subtext="Apply smart appliance settings"
-              icon={<Sparkles className="w-5 h-5 text-primary-green animate-pulse" />}
+              subtext="Smart appliance advice"
+              icon={<Sparkles className="w-4.5 h-4.5 text-primary-green animate-pulse" />}
               borderColorClass="border-l-primary-green"
               isCurrency={true}
             />
             <KpiCard
               title="Solar Offset"
               value={solarOffsetPercent || 0}
-              subtext={`With recommended ${recommendedKw} kW system`}
-              icon={<Sun className="w-5 h-5 text-amber-500" />}
+              subtext={`With ${recommendedKw} kW solar`}
+              icon={<Sun className="w-4.5 h-4.5 text-amber-500" />}
               borderColorClass="border-l-amber-500"
               isPercent={true}
             />
@@ -1247,11 +1046,14 @@ export const PremiumDashboard: React.FC<PremiumDashboardProps> = ({
 
           {/* Row 3: Appliance breakdown + AI Recommendations */}
           {applianceData.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
               {/* Left col: Appliance + Power Flow */}
-              <div className="lg:col-span-2 space-y-5">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-5">
                 <ApplianceBreakdown items={applianceData} />
-                <PowerFlowPanel totalUnits={totalUnits} activeAppliances={activeAppliances} />
+                {/* Power Flow: Purely decorative animated grid flow hidden on mobile to conserve CPU/battery */}
+                <div className="hidden md:block">
+                  <PowerFlowPanel totalUnits={totalUnits} activeAppliances={activeAppliances} />
+                </div>
               </div>
               {/* Right col: AI Recommendations */}
               <div className="lg:col-span-1">

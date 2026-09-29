@@ -1,6 +1,7 @@
 import React from "react";
 import type { ApplianceItem, TariffResult } from "../../utils/tariffCalculator";
 import { getSlabsForState } from "../../utils/tariffCalculator";
+import type { UserProfile } from "../../context/AuthContext";
 
 interface RecommendationItem {
   id?: string;
@@ -64,7 +65,7 @@ interface BillRecord {
 
 interface PrintReportProps {
   mode?: "audit" | "bill" | "history";
-  user: any;
+  user: UserProfile | null;
   activeAppliances?: ApplianceItem[];
   analysisResult?: AnalysisResult | null;
   recommendedKw?: number;
@@ -365,7 +366,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
     : "3.5";
 
   // Fallback recommendations if empty (e.g. history mode)
-  let recommendationsList = analysisResult.recommendations || [];
+  const recommendationsList = [...(analysisResult.recommendations || [])];
   if (recommendationsList.length === 0 && activeAppliances.length > 0) {
     // Generate default tips based on active appliances
     activeAppliances.forEach((app) => {

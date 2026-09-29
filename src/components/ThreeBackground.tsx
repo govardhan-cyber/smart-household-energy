@@ -51,6 +51,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
 
     // Track mouse coordinates normalized between -0.5 and 0.5
     const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) return;
       mouseRaw.current.x = e.clientX;
       mouseRaw.current.y = e.clientY;
 
@@ -135,7 +136,7 @@ export const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ className = "-
     let animId = 0;
     const animateSparks = () => {
       animId = requestAnimationFrame(animateSparks);
-      if (!isVisibleRef.current || document.hidden || window.matchMedia("print").matches) return;
+      if (!isVisibleRef.current || document.hidden || window.matchMedia("print").matches || window.innerWidth < 768) return;
 
       const dark = document.documentElement.classList.contains("dark");
       ctx.clearRect(0, 0, W, H);

@@ -92,17 +92,42 @@ export const getEstimatedCost = (kw: number, city: string): number => {
 
 // Unit estimator from bill amount (₹)
 export const estimateUnitsFromBill = (bill: number, stateKey: string): number => {
+  if (bill <= 0) return 0;
+
+  let low = 0;
+  let high = 5000;
   let bestUnits = 0;
   let minDiff = Infinity;
-  for (let u = 0; u <= 4000; u++) {
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const calc = calculateBill(mid, stateKey);
+    const diff = Math.abs(calc.netEnergyCharge - bill);
+
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestUnits = mid;
+    }
+
+    if (calc.netEnergyCharge < bill) {
+      low = mid + 1;
+    } else if (calc.netEnergyCharge > bill) {
+      high = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+
+  // Neighbor scan to guarantee global minimum around binary search convergence
+  for (let u = Math.max(0, bestUnits - 3); u <= Math.min(5000, bestUnits + 3); u++) {
     const calc = calculateBill(u, stateKey);
     const diff = Math.abs(calc.netEnergyCharge - bill);
     if (diff < minDiff) {
       minDiff = diff;
       bestUnits = u;
     }
-    if (calc.netEnergyCharge > bill + 100) break;
   }
+
   return bestUnits;
 };
 
@@ -179,7 +204,7 @@ export const calculateSolarROI = (input: SolarSimulationInput): SolarSimulationO
   );
   const oldBill = oldBillCalc.netEnergyCharge;
 
-  let newBill = 0;
+  let newBill: number;
   if (netMeteringPolicy === "net-metering") {
     const newUnits = Math.max(0, kwhNeeded - monthlyGeneration);
     const newBillCalc = calculateBill(
@@ -238,7 +263,7 @@ export const calculateSolarROI = (input: SolarSimulationInput): SolarSimulationO
     const baseSolarGen = recommendedKw * 120;
     const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
     
-    let newB = 0;
+    let newB: number;
     if (netMeteringPolicy === "net-metering") {
       const monthNetUnits = Math.max(0, monthUnits - monthSolarGen);
       const newCalcResult = calculateBill(
@@ -324,7 +349,7 @@ export const calculateSolarROI = (input: SolarSimulationInput): SolarSimulationO
       const monthSolarGen = Math.round(baseSolarGen * solarMultipliers[idx] * solarEfficiencyFactor);
       const degradedGen = monthSolarGen * Math.pow(1 - panelDegradation / 100, y - 1);
       
-      let newBillBase = 0;
+      let newBillBase: number;
       if (netMeteringPolicy === "net-metering") {
         const netUnits = Math.max(0, monthUnits - degradedGen);
         newBillBase = calculateBill(

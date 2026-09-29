@@ -37,6 +37,8 @@ export const AnimatedNumber: React.FC<{
   return <span>{formatter(displayValue)}</span>;
 };
 
+import type { UserProfile } from "../../context/AuthContext";
+
 interface DashboardSidebarSummaryProps {
   liveTotalUnits: number;
   liveBill: { netEnergyCharge: number; stateName: string };
@@ -44,7 +46,7 @@ interface DashboardSidebarSummaryProps {
   benchmarkDiffPercent: number;
   benchmarkCharge: number;
   benchmarkUnits: number;
-  user: any;
+  user: UserProfile | null;
 }
 
 export const DashboardSidebarSummary: React.FC<DashboardSidebarSummaryProps> = ({
@@ -109,7 +111,7 @@ export const DashboardSidebarSummary: React.FC<DashboardSidebarSummaryProps> = (
           </span>
         </div>
       </div>      {/* Benchmarking Comparison Banner */}
-      <div className={`p-4 rounded-2xl border border-l-4 text-xs font-bold flex items-start gap-3 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default group ${
+      <div className={`hidden sm:flex p-4 rounded-2xl border border-l-4 text-xs font-bold items-start gap-3 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default group ${
         isAboveBenchmark 
           ? "bg-red-500/8 border-red-500/20 border-l-red-500 text-red-750 dark:bg-red-955/10 dark:border-red-900/30 dark:text-red-400" 
           : "bg-emerald-500/8 border-emerald-500/20 border-l-emerald-500 text-emerald-755 dark:bg-green-950/10 dark:border-green-900/30 dark:text-emerald-400"

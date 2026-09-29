@@ -59,7 +59,7 @@ export const reportsService = {
         try {
           const saveReportFn = httpsCallable(functions, "saveReport");
           const res = await withTimeout(saveReportFn(reportWithUser));
-          const docId = (res.data as any).id;
+          const docId = (res.data as { id?: string })?.id || tempId;
 
           // Update cached item with real Firestore doc ID
           const freshData = localStorage.getItem(cacheKey);
