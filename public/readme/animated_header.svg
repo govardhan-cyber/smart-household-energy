@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="100%" height="auto" style="background:#090d16; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#4facfe"/>
+    </linearGradient>
+    <linearGradient id="neonGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="aurora" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#064e3b" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#0e7490" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#3b0764" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="cardGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.03"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="slightGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Animations -->
+    <style>
+      @keyframes floatSlow {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(1deg); }
+      }
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 15px #00f2fe); }
+        50% { opacity: 0.95; filter: drop-shadow(0 0 25px #10b981); }
+      }
+      @keyframes dashFlow {
+        to { stroke-dashoffset: -200; }
+      }
+      @keyframes waveDrift {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-600px); }
+      }
+      @keyframes spinSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes blinkNode {
+        0%, 100% { opacity: 0.3; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.3); }
+      }
+      .bg-aurora { animation: pulseGlow 8s ease-in-out infinite; }
+      .floating-logo { animation: floatSlow 6s ease-in-out infinite; }
+      .data-stream { stroke-dasharray: 8, 12; animation: dashFlow 4s linear infinite; }
+      .spinning-ring { transform-origin: 1060px 180px; animation: spinSlow 20s linear infinite; }
+      .node-pulse-1 { animation: blinkNode 2.5s ease-in-out infinite; transform-origin: 180px 80px; }
+      .node-pulse-2 { animation: blinkNode 3.2s ease-in-out infinite 0.8s; transform-origin: 940px 280px; }
+      .node-pulse-3 { animation: blinkNode 2.8s ease-in-out infinite 1.5s; transform-origin: 320px 300px; }
+      .title-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; letter-spacing: -0.5px; }
+      .mono-text { font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', monospace; }
+    </style>
+
+    <!-- Grid Pattern -->
+    <pattern id="techGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+      <circle cx="40" cy="40" r="1.5" fill="#00f2fe" fill-opacity="0.15"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="1200" height="360" fill="#060911"/>
+  
+  <!-- Aurora Ambient Blobs -->
+  <circle cx="200" cy="100" r="280" fill="url(#aurora)" class="bg-aurora" opacity="0.6"/>
+  <circle cx="1000" cy="260" r="260" fill="url(#aurora)" class="bg-aurora" opacity="0.5"/>
+  <rect width="1200" height="360" fill="url(#techGrid)"/>
+
+  <!-- Flowing Hologram Circuit Curves -->
+  <path d="M -50 180 Q 300 60, 600 180 T 1250 180" fill="none" stroke="#00f2fe" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M -50 180 Q 300 60, 600 180 T 1250 180" fill="none" stroke="#10b981" stroke-width="2.5" class="data-stream"/>
+  
+  <path d="M -50 240 Q 400 320, 800 220 T 1250 260" fill="none" stroke="#38bdf8" stroke-opacity="0.25" stroke-width="1.5"/>
+  <path d="M -50 240 Q 400 320, 800 220 T 1250 260" fill="none" stroke="#38bdf8" stroke-width="2" class="data-stream" style="animation-duration: 6s;"/>
+
+  <!-- Pulsing Circuit Nodes -->
+  <circle cx="180" cy="80" r="4" fill="#10b981" class="node-pulse-1" filter="url(#slightGlow)"/>
+  <circle cx="940" cy="280" r="5" fill="#00f2fe" class="node-pulse-2" filter="url(#slightGlow)"/>
+  <circle cx="320" cy="300" r="4" fill="#a855f7" class="node-pulse-3" filter="url(#slightGlow)"/>
+
+  <!-- Right Decorative Orbit Rings -->
+  <g class="spinning-ring" opacity="0.4">
+    <circle cx="1060" cy="180" r="110" fill="none" stroke="#00f2fe" stroke-width="1.5" stroke-dasharray="10, 20"/>
+    <circle cx="1060" cy="180" r="85" fill="none" stroke="#10b981" stroke-width="1.2" stroke-dasharray="30, 40"/>
+    <circle cx="1060" cy="180" r="60" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="1"/>
+    <circle cx="1170" cy="180" r="5" fill="#00f2fe" filter="url(#slightGlow)"/>
+    <circle cx="975" cy="180" r="4" fill="#10b981" filter="url(#slightGlow)"/>
+  </g>
+
+  <!-- Left Futuristic Energy Icon Badge -->
+  <g transform="translate(60, 80)" class="floating-logo">
+    <rect width="84" height="84" rx="22" fill="url(#cardGlass)" stroke="#00f2fe" stroke-width="1.5" stroke-opacity="0.5" filter="url(#glow)"/>
+    <path d="M 45 16 L 25 46 L 41 46 L 39 68 L 61 38 L 45 38 Z" fill="url(#neonCyan)"/>
+  </g>
+
+  <!-- Header Title -->
+  <g transform="translate(170, 115)">
+    <!-- Version & Platform Badges -->
+    <g transform="translate(0, -32)">
+      <rect width="138" height="26" rx="13" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-opacity="0.4" stroke-width="1"/>
+      <circle cx="14" cy="13" r="4" fill="#10b981">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <text x="26" y="17" fill="#34d399" font-size="11" font-weight="700" class="mono-text" letter-spacing="1">VERSION 26.0</text>
+      
+      <rect x="148" y="0" width="128" height="26" rx="13" fill="#0284c7" fill-opacity="0.15" stroke="#38bdf8" stroke-opacity="0.4" stroke-width="1"/>
+      <text x="162" y="17" fill="#38bdf8" font-size="11" font-weight="700" class="mono-text" letter-spacing="1">PRODUCTION LIVE</text>
+    </g>
+
+    <!-- Main Title -->
+    <text x="0" y="42" fill="#ffffff" font-size="46" class="title-text">
+      SMART HOUSEHOLD <tspan fill="url(#neonCyan)">ENERGY</tspan>
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="78" fill="#94a3b8" font-size="17" font-weight="400" class="title-text">
+      Next-Gen AI Energy Auditing • 25-Year Compound Solar ROI Engine • Real-Time Copilot
+    </text>
+
+    <!-- Tech Spec Pills -->
+    <g transform="translate(0, 105)">
+      <g transform="translate(0, 0)">
+        <rect width="115" height="24" rx="6" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1"/>
+        <text x="12" y="16" fill="#cbd5e1" font-size="11" font-weight="600" class="mono-text">⚛ React 19</text>
+      </g>
+      <g transform="translate(125, 0)">
+        <rect width="125" height="24" rx="6" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1"/>
+        <text x="12" y="16" fill="#cbd5e1" font-size="11" font-weight="600" class="mono-text">⚡ Vite + TS</text>
+      </g>
+      <g transform="translate(260, 0)">
+        <rect width="135" height="24" rx="6" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1"/>
+        <text x="12" y="16" fill="#cbd5e1" font-size="11" font-weight="600" class="mono-text">🔥 Firebase Cloud</text>
+      </g>
+      <g transform="translate(405, 0)">
+        <rect width="130" height="24" rx="6" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1"/>
+        <text x="12" y="16" fill="#cbd5e1" font-size="11" font-weight="600" class="mono-text">🧠 Gemini AI</text>
+      </g>
+      <g transform="translate(545, 0)">
+        <rect width="125" height="24" rx="6" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1"/>
+        <text x="12" y="16" fill="#34d399" font-size="11" font-weight="600" class="mono-text">✓ 78/78 Passed</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Subtle Top Highlight Border -->
+  <line x1="0" y1="1" x2="1200" y2="1" stroke="url(#neonCyan)" stroke-width="2" stroke-opacity="0.6"/>
+</svg>
