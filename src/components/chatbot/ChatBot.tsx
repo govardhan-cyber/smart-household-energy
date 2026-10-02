@@ -468,8 +468,12 @@ export const ChatBot: React.FC = () => {
           const data = result.data;
           const text = (data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
           if (text) return text;
-        } catch {
-          // Proxy unavailable — fall through to direct call
+        } catch (proxyErr: unknown) {
+          // If unauthenticated or forbidden, break immediately rather than trying other models
+          const code = (proxyErr as { code?: string })?.code;
+          if (code === 'unauthenticated' || code === 'permission-denied') {
+            break;
+          }
         }
       }
     }

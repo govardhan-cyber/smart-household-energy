@@ -6,6 +6,7 @@ import {
   SUGGESTED_HOURS 
 } from './energyEstimator';
 import type { ApplianceSpec } from './energyEstimator';
+import { findInCatalog } from './applianceCatalog';
 import { getCachedResult, setCachedResult } from './cacheService';
 
 export interface SearchResult {
@@ -14,7 +15,7 @@ export interface SearchResult {
 }
 
 /**
- * Searches for an appliance by query. Uses cache, AI Gemini API, and fallback estimator.
+ * Searches for an appliance by query. Uses cache, AI Gemini API, curated offline catalog, and fallback estimator.
  */
 export const searchAppliance = async (
   query: string,
@@ -27,7 +28,13 @@ export const searchAppliance = async (
 
   const parsed = parseApplianceQuery(query);
   if (!isApplianceQuery(parsed)) {
-    // If we can't detect it, still attempt fallback or return a generic unknown.
+    // If not detected by parser regex, check curated catalog first before generic fallback
+    const catalogMatch = findInCatalog(query, parsed);
+    if (catalogMatch) {
+      const validated = validateSpec(catalogMatch);
+      setCachedResult(query, validated);
+      return { spec: validated, fromCache: false };
+    }
     return { spec: validateSpec(estimateFromFallback(parsed)), fromCache: false };
   }
 
@@ -94,6 +101,16 @@ You must ALWAYS return a complete JSON result even if you have to estimate (use 
     const auditCategory = CATEGORY_TO_AUDIT_ID[category] || 'other';
     const suggestedDailyHours = SUGGESTED_HOURS[category] || 2;
 
+    // If AI confidence was low or rated power was missing, check if our verified catalog has a high-confidence match
+    if (parsedJson.confidence === 'low' || typeof parsedJson.ratedPowerW !== 'number') {
+      const catalogMatch = findInCatalog(query, parsed);
+      if (catalogMatch && catalogMatch.confidence === 'high') {
+        const validatedCatalog = validateSpec(catalogMatch);
+        setCachedResult(query, validatedCatalog);
+        return { spec: validatedCatalog, fromCache: false };
+      }
+    }
+
     const spec: ApplianceSpec = validateSpec({
       name: parsedJson.name || `${parsed.brand || 'Generic'} ${category}`,
       brand: parsedJson.brand || parsed.brand || 'Generic',
@@ -119,7 +136,17 @@ You must ALWAYS return a complete JSON result even if you have to estimate (use 
     return { spec, fromCache: false };
 
   } catch (error) {
-    console.warn('[searchAppliance] Error fetching/parsing Gemini response, falling back to estimator:', error);
+    console.warn('[searchAppliance] Error fetching/parsing Gemini response, checking curated catalog / estimator:', error);
+    
+    // 1. Check curated offline catalog of verified Indian & global appliances
+    const catalogMatch = findInCatalog(query, parsed);
+    if (catalogMatch) {
+      const validatedCatalog = validateSpec(catalogMatch);
+      setCachedResult(query, validatedCatalog);
+      return { spec: validatedCatalog, fromCache: false };
+    }
+
+    // 2. Intelligent BEE benchmark fallback
     const fallbackSpec = validateSpec(estimateFromFallback(parsed));
     setCachedResult(query, fallbackSpec);
     return { spec: fallbackSpec, fromCache: false };

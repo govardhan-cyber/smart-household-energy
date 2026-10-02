@@ -3,6 +3,7 @@ import { parseApplianceQuery, isApplianceQuery } from './applianceParser';
 import { estimateFromFallback, validateSpec } from './energyEstimator';
 import { normalizeQuery, getCachedResult, setCachedResult, clearApplianceCache } from './cacheService';
 import { searchAppliance } from './searchService';
+import { findInCatalog, APPLIANCE_CATALOG } from './applianceCatalog';
 import type { ApplianceSpec } from './energyEstimator';
 
 describe('Appliance Parser', () => {
@@ -73,13 +74,21 @@ describe('Appliance Parser', () => {
 });
 
 describe('Energy Estimator', () => {
-  it('estimates wattage from fallback for AC', () => {
+  it('estimates wattage and benchmark confidence from fallback for AC', () => {
     const parsed = parseApplianceQuery('LG 1.5 Ton AC');
     const spec = estimateFromFallback(parsed);
     expect(spec.category).toBe('Air Conditioner');
     expect(spec.ratedPowerW).toBe(1500);
-    expect(spec.confidence).toBe('low');
+    expect(spec.confidence).toBe('medium');
+    expect(spec.energyStarRating).toBe(3);
     expect(spec.auditCategory).toBe('ac');
+  });
+
+  it('assigns low confidence in fallback for unrecognized generic appliances', () => {
+    const parsed = parseApplianceQuery('Generic Smart Gadget');
+    const spec = estimateFromFallback(parsed);
+    expect(spec.confidence).toBe('low');
+    expect(spec.confidenceReason).toContain('fallback database');
   });
 
   it('sanitizes and clamps invalid values in validateSpec', () => {
@@ -221,4 +230,120 @@ Hope this helps!`;
     expect(result.spec.confidence).toBe('high');
     expect(result.spec.auditCategory).toBe('ac');
   });
+
+  it('falls back to curated catalog with high confidence when Gemini API fails', async () => {
+    const failingMock = async () => {
+      throw new Error('Firebase / Gemini API unreachable (unauthenticated)');
+    };
+
+    const result = await searchAppliance('LG Air Conditioner', failingMock);
+    expect(result.fromCache).toBe(false);
+    expect(result.spec.name).toContain('LG 1.5 Ton 5-Star Dual Inverter');
+    expect(result.spec.ratedPowerW).toBe(1450);
+    expect(result.spec.annualEnergyKwh).toBe(830);
+    expect(result.spec.energyStarRating).toBe(5);
+    expect(result.spec.confidence).toBe('high');
+    expect(result.spec.confidenceReason).toContain('BEE India');
+    expect(result.spec.source).toContain('LG Electronics');
+    expect(result.spec.auditCategory).toBe('ac');
+  });
+
+  it('upgrades low-confidence Gemini responses using verified catalog data', async () => {
+    const lowConfidenceMock = async () => JSON.stringify({
+      name: 'LG AC',
+      brand: 'LG',
+      category: 'Air Conditioner',
+      confidence: 'low',
+      confidenceReason: 'Vague query model approximation'
+    });
+
+    const result = await searchAppliance('LG AC', lowConfidenceMock);
+    expect(result.spec.confidence).toBe('high');
+    expect(result.spec.energyStarRating).toBe(5);
+    expect(result.spec.ratedPowerW).toBe(1450);
+  });
 });
+
+describe('Curated Appliance Catalog (Offline Database)', () => {
+  it('contains over 40 verified Indian and global appliance models', () => {
+    expect(APPLIANCE_CATALOG.length).toBeGreaterThan(40);
+  });
+
+  it('matches brand + category queries to verified flagship models with high confidence', () => {
+    const lgAcParsed = parseApplianceQuery('LG Air Conditioner');
+    const lgAcSpec = findInCatalog('LG Air Conditioner', lgAcParsed);
+    expect(lgAcSpec).not.toBeNull();
+    expect(lgAcSpec?.name).toContain('LG 1.5 Ton 5-Star Dual Inverter Split AC');
+    expect(lgAcSpec?.ratedPowerW).toBe(1450);
+    expect(lgAcSpec?.annualEnergyKwh).toBe(830);
+    expect(lgAcSpec?.energyStarRating).toBe(5);
+    expect(lgAcSpec?.confidence).toBe('high');
+
+    const samsungFridgeParsed = parseApplianceQuery('Samsung Refrigerator');
+    const samsungFridgeSpec = findInCatalog('Samsung Refrigerator', samsungFridgeParsed);
+    expect(samsungFridgeSpec).not.toBeNull();
+    expect(samsungFridgeSpec?.ratedPowerW).toBe(190);
+    expect(samsungFridgeSpec?.annualEnergyKwh).toBe(240);
+    expect(samsungFridgeSpec?.energyStarRating).toBe(3);
+    expect(samsungFridgeSpec?.confidence).toBe('high');
+  });
+
+  it('matches popular preset queries with high precision', () => {
+    // 1. LG 1.5 Ton Dual Inverter AC
+    const acParsed = parseApplianceQuery('LG 1.5 Ton Dual Inverter AC');
+    const acSpec = findInCatalog('LG 1.5 Ton Dual Inverter AC', acParsed);
+    expect(acSpec?.ratedPowerW).toBe(1450);
+    expect(acSpec?.energyStarRating).toBe(5);
+
+    // 2. Samsung 253L Refrigerator
+    const fridgeParsed = parseApplianceQuery('Samsung 253L Refrigerator');
+    const fridgeSpec = findInCatalog('Samsung 253L Refrigerator', fridgeParsed);
+    expect(fridgeSpec?.ratedPowerW).toBe(190);
+    expect(fridgeSpec?.capacity).toBe('253 L');
+
+    // 3. Crompton BLDC Ceiling Fan
+    const fanParsed = parseApplianceQuery('Crompton BLDC Ceiling Fan');
+    const fanSpec = findInCatalog('Crompton BLDC Ceiling Fan', fanParsed);
+    expect(fanSpec?.ratedPowerW).toBe(28);
+    expect(fanSpec?.energyStarRating).toBe(5);
+
+    // 4. Whirlpool 7kg Washing Machine
+    const washerParsed = parseApplianceQuery('Whirlpool 7kg Washing Machine');
+    const washerSpec = findInCatalog('Whirlpool 7kg Washing Machine', washerParsed);
+    expect(washerSpec?.ratedPowerW).toBe(360);
+    expect(washerSpec?.energyStarRating).toBe(5);
+
+    // 5. Havells 15L Water Heater
+    const geyserParsed = parseApplianceQuery('Havells 15L Water Heater');
+    const geyserSpec = findInCatalog('Havells 15L Water Heater', geyserParsed);
+    expect(geyserSpec?.ratedPowerW).toBe(2000);
+    expect(geyserSpec?.energyStarRating).toBe(5);
+
+    // 6. Dell Inspiron 15 Laptop
+    const laptopParsed = parseApplianceQuery('Dell Inspiron 15 Laptop');
+    const laptopSpec = findInCatalog('Dell Inspiron 15 Laptop', laptopParsed);
+    expect(laptopSpec?.ratedPowerW).toBe(65);
+    expect(laptopSpec?.category).toBe('Laptop');
+  });
+
+  it('matches other major brands (Voltas, Daikin, Atomberg, Sony, Apple, Kirloskar)', () => {
+    const voltas = findInCatalog('Voltas 1.5 Ton AC', parseApplianceQuery('Voltas 1.5 Ton AC'));
+    expect(voltas?.ratedPowerW).toBe(1430);
+
+    const daikin = findInCatalog('Daikin AC', parseApplianceQuery('Daikin AC'));
+    expect(daikin?.ratedPowerW).toBe(1380);
+
+    const atomberg = findInCatalog('Atomberg BLDC Fan', parseApplianceQuery('Atomberg BLDC Fan'));
+    expect(atomberg?.ratedPowerW).toBe(28);
+
+    const macbook = findInCatalog('Apple MacBook Air', parseApplianceQuery('Apple MacBook Air'));
+    expect(macbook?.ratedPowerW).toBe(35);
+
+    const sony = findInCatalog('Sony 55 inch TV', parseApplianceQuery('Sony 55 inch TV'));
+    expect(sony?.ratedPowerW).toBe(115);
+
+    const pump = findInCatalog('Kirloskar Water Pump', parseApplianceQuery('Kirloskar Water Pump'));
+    expect(pump?.ratedPowerW).toBe(750);
+  });
+});
+
