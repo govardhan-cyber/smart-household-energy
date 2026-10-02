@@ -4,7 +4,8 @@ export interface Message {
   role: 'user' | 'model';
   text: string;
   applianceSpec?: ApplianceSpec;
-  timestamp?: number; // NEW: unix ms timestamp for relative time display
+  timestamp?: number; // unix ms timestamp for relative time display
+  interactiveChips?: string[];
 }
 
 export interface ChatBotLogoProps {

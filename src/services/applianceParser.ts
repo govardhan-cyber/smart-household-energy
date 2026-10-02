@@ -10,6 +10,7 @@ export interface ParsedAppliance {
   technology: string | null;
   starRating: number | null;
   rawQuery: string;
+  cleanedQuery: string;
 }
 
 const BRANDS = [
@@ -17,39 +18,42 @@ const BRANDS = [
   'Panasonic', 'Haier', 'Godrej', 'Bosch', 'Bajaj', 'Crompton', 'Orient', 'Havells',
   'Syska', 'Wipro', 'Lenovo', 'Asus', 'Acer', 'Apple', 'Dyson', 'IFB', 'Blue Star',
   'Carrier', 'Hitachi', 'Toshiba', 'Sharp', 'BPL', 'Videocon', 'Onida', 'Sansui',
-  'Realme', 'Mi', 'Xiaomi', 'OnePlus'
+  'Realme', 'Mi', 'Xiaomi', 'OnePlus', 'TCL', 'Lloyd', 'O General', 'Mitsubishi',
+  'Usha', 'Morphy Richards', 'Prestige', 'Kent', 'Aquaguard', 'Eureka Forbes',
+  'V-Guard', 'Kenstar', 'Symphony', 'Hindware', 'AO Smith', 'Racold', 'Atomberg',
+  'Motorola', 'Hisense', 'Zebronics'
 ];
 
 const CATEGORIES: Record<string, string[]> = {
-  'Refrigerator': ['refrigerator', 'fridge', 'double door', 'single door'],
-  'Air Conditioner': ['ac', 'air conditioner', 'split ac', 'window ac'],
-  'Fan': ['fan', 'ceiling fan', 'bldc fan', 'table fan', 'pedestal fan'],
+  'Refrigerator': ['refrigerator', 'fridge', 'double door', 'single door', 'freezer', 'deep freezer'],
+  'Air Conditioner': ['ac', 'air conditioner', 'split ac', 'window ac', 'inverter ac'],
+  'Fan': ['fan', 'ceiling fan', 'bldc fan', 'table fan', 'pedestal fan', 'bldc'],
   'LED Bulb': ['led', 'led bulb', 'bulb', 'light', 'lamp'],
-  'Tube Light': ['tube light', 'tube', 'tubelight', 'cfl'],
-  'Television': ['tv', 'television', 'smart tv', 'led tv', 'oled'],
+  'Tube Light': ['tube light', 'tube', 'tubelight', 'cfl', 'fluorescent'],
+  'Television': ['tv', 'television', 'smart tv', 'led tv', 'oled', 'qled'],
   'Washing Machine': ['washing machine', 'washer', 'front load', 'top load'],
-  'Water Heater': ['geyser', 'water heater', 'immersion'],
-  'Microwave': ['microwave', 'oven', 'otg'],
-  'Induction Stove': ['induction', 'induction cooktop', 'cooktop'],
-  'Laptop': ['laptop', 'notebook'],
-  'Desktop Computer': ['desktop', 'pc', 'computer', 'monitor'],
-  'Wi-Fi Router': ['router', 'wifi router', 'modem'],
+  'Water Heater': ['geyser', 'water heater', 'immersion', 'immersion rod'],
+  'Microwave': ['microwave', 'oven', 'otg', 'convection oven'],
+  'Induction Stove': ['induction', 'induction cooktop', 'cooktop', 'induction stove'],
+  'Laptop': ['laptop', 'notebook', 'macbook'],
+  'Desktop Computer': ['desktop', 'pc', 'computer', 'monitor', 'cpu'],
+  'Wi-Fi Router': ['router', 'wifi router', 'modem', 'wifi'],
   'Gaming Console': ['gaming console', 'xbox', 'playstation', 'ps5', 'ps4'],
-  'Printer': ['printer'],
+  'Printer': ['printer', 'scanner', 'all in one printer'],
   'Air Cooler': ['cooler', 'desert cooler', 'air cooler'],
   'Air Purifier': ['purifier', 'air purifier'],
-  'Room Heater': ['heater', 'room heater', 'blower'],
+  'Room Heater': ['heater', 'room heater', 'blower', 'oil heater'],
   'Exhaust Fan': ['exhaust', 'exhaust fan'],
-  'Water Pump': ['water pump', 'pump', 'motor'],
-  'RO Water Purifier': ['water purifier', 'ro', 'ro purifier'],
-  'Iron': ['iron', 'steam iron', 'pressing iron'],
+  'Water Pump': ['water pump', 'pump', 'motor', 'submersible'],
+  'RO Water Purifier': ['water purifier', 'ro', 'ro purifier', 'water filter'],
+  'Iron': ['iron', 'steam iron', 'pressing iron', 'dry iron'],
   'Mixer Grinder': ['mixer', 'grinder', 'mixer grinder', 'blender', 'juicer'],
   'Electric Kettle': ['kettle', 'electric kettle'],
-  'Toaster': ['toaster'],
+  'Toaster': ['toaster', 'sandwich maker'],
   'Dishwasher': ['dishwasher'],
-  'Vacuum Cleaner': ['vacuum cleaner', 'vacuum'],
+  'Vacuum Cleaner': ['vacuum cleaner', 'vacuum', 'robot vacuum'],
   'Hair Dryer': ['hair dryer', 'dryer'],
-  'Rice Cooker': ['rice cooker'],
+  'Rice Cooker': ['rice cooker', 'electric cooker'],
   'Set-Top Box': ['set top box', 'stb', 'dth'],
   'CCTV Camera': ['cctv', 'camera', 'security camera'],
   'Smart Speaker': ['smart speaker', 'alexa', 'echo', 'google home'],
@@ -59,9 +63,22 @@ const CATEGORIES: Record<string, string[]> = {
 const TECHNOLOGIES = ['dual inverter', 'frost free', 'inverter', 'bldc', 'smart', 'wifi', 'iot', 'digital', 'convection'];
 
 /**
+ * Strips command prefixes like "find appliance", "find", "search for", "wattage of", etc.
+ */
+export const cleanQueryPrefix = (raw: string): string => {
+  return raw
+    .trim()
+    .replace(/^(find|search|lookup|show|check|get|what\s+is\s+the\s+wattage\s+of|what\s+is\s+the\s+power\s+of|wattage\s+of|power\s+of|specs?\s+of)\s+(appliance\s+)?(:|-)?\s*/i, '')
+    .trim();
+};
+
+/**
  * Parses a query string to extract appliance details.
  */
 export const parseApplianceQuery = (query: string): ParsedAppliance => {
+  const cleaned = cleanQueryPrefix(query);
+  const targetQuery = cleaned.length > 0 ? cleaned : query;
+
   const result: ParsedAppliance = {
     brand: null,
     model: null,
@@ -70,13 +87,14 @@ export const parseApplianceQuery = (query: string): ParsedAppliance => {
     technology: null,
     starRating: null,
     rawQuery: query,
+    cleanedQuery: targetQuery,
   };
 
-  const lowerQuery = query.toLowerCase();
+  const lowerQuery = targetQuery.toLowerCase();
 
   // Extract brand
   for (const brand of BRANDS) {
-    if (lowerQuery.includes(brand.toLowerCase())) {
+    if (new RegExp(`\\b${brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(lowerQuery)) {
       result.brand = brand;
       break;
     }
@@ -144,9 +162,9 @@ export const parseApplianceQuery = (query: string): ParsedAppliance => {
 export const isApplianceQuery = (parsed: ParsedAppliance, rawQueryOverride?: string): boolean => {
   const query = (rawQueryOverride || parsed.rawQuery || '').trim();
 
-  // If query expresses conversational intent or advice seeking, route to conversational AI
-  const conversationalPattern = /\b(how|why|what|when|where|who|should|could|would|can|is|are|tell|explain|reduce|saving|savings|save|bill|bills|cost|costs|tariff|slab|audit|benchmark|compare|tips|help|advice)\b|\?/i;
-  if (conversationalPattern.test(query)) {
+  // If query expresses conversational advice or savings inquiry, route to conversational Copilot
+  const conversationalAdvicePattern = /\b(how\s+can\s+i|how\s+to\s+save|how\s+do\s+i\s+reduce|why\s+is\s+my|why\s+does|reduce|saving|savings|save|bill|bills|cost|costs|tariff|slab|audit|benchmark|compare|tips|help|advice)\b|\bhow\s+much\s+(money|cost)\b/i;
+  if (conversationalAdvicePattern.test(query)) {
     return false;
   }
 
@@ -155,13 +173,23 @@ export const isApplianceQuery = (parsed: ParsedAppliance, rawQueryOverride?: str
     return true;
   }
 
+  // If query has explicit wattage or specification keywords
+  const specKeywords = /\b(watt|watts|wattage|power|spec|specs|specification|specifications|model|rating|kwh)\b/i;
+  if (specKeywords.test(query)) {
+    return true;
+  }
+
   // Category with explicit specifications or attributes
   if (parsed.category !== null) {
     if (parsed.starRating !== null || parsed.capacity !== null || parsed.technology !== null) {
       return true;
     }
-    const specKeywords = /\b(watt|watts|wattage|power|spec|specs|specification|model|rating|kwh)\b/i;
-    if (specKeywords.test(query)) {
+
+    // Direct standalone appliance category query without advice phrases (e.g. "refrigerator", "AC", "washing machine", "fan")
+    // If the cleaned query is under 4 words, treat as an appliance spec lookup
+    const targetQuery = parsed.cleanedQuery || cleanQueryPrefix(query);
+    const wordCount = targetQuery.split(/\s+/).filter(Boolean).length;
+    if (wordCount <= 3 && wordCount >= 1) {
       return true;
     }
   }

@@ -31,8 +31,9 @@ export const searchAppliance = async (
     return { spec: validateSpec(estimateFromFallback(parsed)), fromCache: false };
   }
 
+  const queryToSearch = parsed.cleanedQuery || query;
   const prompt = `You are an expert appliance specification database. 
-I need detailed energy and power specifications for the following appliance based on user query: "${query}".
+I need detailed energy and power specifications for the following appliance based on user query: "${queryToSearch}".
 
 Extracted Info:
 - Brand: ${parsed.brand || 'Unknown'}
@@ -75,12 +76,15 @@ You must ALWAYS return a complete JSON result even if you have to estimate (use 
     const aiResponseText = await queryGemini(prompt);
     
     // Parse the JSON from the response robustly
-    let jsonText = aiResponseText.trim();
-    // Remove markdown code fences if present
-    if (jsonText.startsWith('```')) {
-      const match = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (match && match[1]) {
-        jsonText = match[1].trim();
+    let jsonText = (aiResponseText || '').trim();
+    const fenceMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (fenceMatch && fenceMatch[1]) {
+      jsonText = fenceMatch[1].trim();
+    } else {
+      const firstBrace = jsonText.indexOf('{');
+      const lastBrace = jsonText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        jsonText = jsonText.slice(firstBrace, lastBrace + 1);
       }
     }
     
@@ -115,8 +119,9 @@ You must ALWAYS return a complete JSON result even if you have to estimate (use 
     return { spec, fromCache: false };
 
   } catch (error) {
-    console.error('Error fetching/parsing Gemini response, falling back to estimator', error);
+    console.warn('[searchAppliance] Error fetching/parsing Gemini response, falling back to estimator:', error);
     const fallbackSpec = validateSpec(estimateFromFallback(parsed));
+    setCachedResult(query, fallbackSpec);
     return { spec: fallbackSpec, fromCache: false };
   }
 };

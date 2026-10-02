@@ -25,6 +25,36 @@ describe('Appliance Parser', () => {
     expect(isApplianceQuery(parsed)).toBe(true);
   });
 
+  it('detects appliance query with find/search prefixes', () => {
+    const parsedLg = parseApplianceQuery('find appliance LG AC');
+    expect(parsedLg.brand).toBe('LG');
+    expect(parsedLg.category).toBe('Air Conditioner');
+    expect(isApplianceQuery(parsedLg)).toBe(true);
+
+    const parsedFridge = parseApplianceQuery('find refrigerator');
+    expect(parsedFridge.category).toBe('Refrigerator');
+    expect(isApplianceQuery(parsedFridge)).toBe(true);
+
+    const parsedWattage = parseApplianceQuery('what is the wattage of LG AC');
+    expect(parsedWattage.brand).toBe('LG');
+    expect(parsedWattage.category).toBe('Air Conditioner');
+    expect(isApplianceQuery(parsedWattage)).toBe(true);
+  });
+
+  it('detects standalone appliance categories as valid appliance queries', () => {
+    const parsedAc = parseApplianceQuery('AC');
+    expect(parsedAc.category).toBe('Air Conditioner');
+    expect(isApplianceQuery(parsedAc)).toBe(true);
+
+    const parsedWasher = parseApplianceQuery('washing machine');
+    expect(parsedWasher.category).toBe('Washing Machine');
+    expect(isApplianceQuery(parsedWasher)).toBe(true);
+
+    const parsedFan = parseApplianceQuery('ceiling fan');
+    expect(parsedFan.category).toBe('Fan');
+    expect(isApplianceQuery(parsedFan)).toBe(true);
+  });
+
   it('returns false for isApplianceQuery on general chat prompt', () => {
     const parsed = parseApplianceQuery('How can I save money on my electricity bill?');
     expect(isApplianceQuery(parsed)).toBe(false);
@@ -165,5 +195,30 @@ describe('Search Service Pipeline', () => {
     const cachedResult = await searchAppliance('dell inspiron 15', mockQueryGemini);
     expect(cachedResult.fromCache).toBe(true);
     expect(callCount).toBe(1);
+  });
+
+  it('resiliently extracts JSON when wrapped in markdown code fences or conversational text', async () => {
+    const wrappedMock = async () => `Here is the requested specification from the manufacturer database:
+\`\`\`json
+{
+  "name": "LG 1.5 Ton Dual Inverter AC",
+  "brand": "LG",
+  "model": "MS-Q18YNZA",
+  "category": "Air Conditioner",
+  "ratedPowerW": 1450,
+  "annualEnergyKwh": 830,
+  "energyStarRating": 5,
+  "confidence": "high",
+  "source": "LG Electronics"
+}
+\`\`\`
+Hope this helps!`;
+
+    const result = await searchAppliance('LG 1.5 Ton Dual Inverter AC', wrappedMock);
+    expect(result.spec.name).toBe('LG 1.5 Ton Dual Inverter AC');
+    expect(result.spec.ratedPowerW).toBe(1450);
+    expect(result.spec.energyStarRating).toBe(5);
+    expect(result.spec.confidence).toBe('high');
+    expect(result.spec.auditCategory).toBe('ac');
   });
 });

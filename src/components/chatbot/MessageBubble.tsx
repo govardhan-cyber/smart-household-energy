@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Search } from 'lucide-react';
 import ChatBotLogo from './ChatBotLogo';
 import ApplianceResultCard from './ApplianceResultCard';
 import type { Message } from './types';
@@ -16,6 +16,7 @@ interface MessageBubbleProps {
   onToggleAddForm: () => void;
   onAddToAudit: () => void;
   onViewProduct: () => void;
+  onSelectChip?: (chip: string) => void;
   userInitial: string;
 }
 
@@ -42,9 +43,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onToggleAddForm,
   onAddToAudit,
   onViewProduct,
+  onSelectChip,
   userInitial
 }) => {
   const isUser = message.role === 'user';
+  const hasText = message.text && message.text.trim().length > 0;
   
   return (
     <motion.div
@@ -67,15 +70,34 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
 
         <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
-          <div
-            className={`max-w-[88%] px-3.5 py-2.5 text-[13px] leading-relaxed font-medium ${
-              isUser
-                ? "bg-gradient-to-r from-primary-blue to-emerald-500 dark:from-emerald-500 dark:to-teal-400 text-white dark:text-slate-950 font-bold rounded-2xl rounded-br-none shadow-md"
-                : "bg-white/60 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none border border-white/40 dark:border-slate-800/60 shadow-sm backdrop-blur-md"
-            }`}
-          >
-            {isUser ? message.text : formatText(message.text)}
-          </div>
+          {hasText && (
+            <div
+              className={`max-w-[88%] px-3.5 py-2.5 text-[13px] leading-relaxed font-medium ${
+                isUser
+                  ? "bg-gradient-to-r from-primary-blue to-emerald-500 dark:from-emerald-500 dark:to-teal-400 text-white dark:text-slate-950 font-bold rounded-2xl rounded-br-none shadow-md"
+                  : "bg-white/60 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none border border-white/40 dark:border-slate-800/60 shadow-sm backdrop-blur-md"
+              }`}
+            >
+              {isUser ? message.text : formatText(message.text)}
+            </div>
+          )}
+
+          {/* Interactive Chips for Quick Preset Selection */}
+          {!isUser && message.interactiveChips && message.interactiveChips.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5 max-w-[95%]">
+              {message.interactiveChips.map((chip, chipIdx) => (
+                <button
+                  key={chipIdx}
+                  type="button"
+                  onClick={() => onSelectChip?.(chip)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-cyan-500/10 via-sky-500/10 to-emerald-500/10 hover:from-cyan-500/20 hover:to-emerald-500/20 dark:from-cyan-500/20 dark:to-emerald-500/20 dark:hover:from-cyan-500/35 dark:hover:to-emerald-500/35 border border-cyan-400/30 hover:border-cyan-400/70 dark:border-cyan-500/30 dark:hover:border-cyan-400/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-cyan-200 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xs group"
+                >
+                  <Search className="w-3 h-3 text-cyan-600 dark:text-cyan-400 group-hover:scale-115 transition-transform" />
+                  <span>{chip}</span>
+                </button>
+              ))}
+            </div>
+          )}
           
           {/* Feedback controls for model messages */}
           {!isUser && index > 0 && (

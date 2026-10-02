@@ -60,7 +60,15 @@ export const ChatBot: React.FC = () => {
       ...prev,
       {
         role: "model",
-        text: "🔍 **Find Appliance Wattage & Specifications**\n\nType the brand and model of any appliance below to estimate its power consumption:\n- *LG 1.5 Ton Dual Inverter AC*\n- *Samsung 253L Refrigerator*\n- *Dell Inspiron 15 Laptop*\n- *Whirlpool 7kg Washing Machine*",
+        text: "🔍 **Appliance Wattage & Specification Finder**\n\nSearch any appliance brand, model, or category to look up its rated wattage and add it to your household energy audit.\n\n**Popular Presets (tap to search):**",
+        interactiveChips: [
+          "LG 1.5 Ton Dual Inverter AC",
+          "Samsung 253L Refrigerator",
+          "Dell Inspiron 15 Laptop",
+          "Whirlpool 7kg Washing Machine",
+          "Crompton BLDC Ceiling Fan",
+          "Havells 15L Water Heater"
+        ],
         timestamp: Date.now()
       }
     ]);
@@ -441,6 +449,65 @@ export const ChatBot: React.FC = () => {
     return responseText;
   };
 
+  const queryGeminiSpec = async (specPrompt: string): Promise<string> => {
+    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
+    let lastError: Error | null = null;
+
+    // 1. Attempt secure Firebase proxy first if available
+    if (functions) {
+      for (const model of modelsToTry) {
+        try {
+          const proxy = httpsCallable<unknown, Record<string, unknown>>(functions, "geminiProxy");
+          const result = await proxy({
+            model,
+            contents: [{ role: "user", parts: [{ text: specPrompt }] }],
+            systemInstruction: {
+              parts: [{ text: "You are an appliance technical specification database. Return strictly a raw JSON object matching the requested schema. No conversational text or markdown code fences." }]
+            }
+          });
+          const data = result.data;
+          const text = (data?.candidates as { content: { parts: { text: string }[] } }[])?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        } catch {
+          // Proxy unavailable — fall through to direct call
+        }
+      }
+    }
+
+    // 2. Direct Gemini API call fallback (with responseMimeType: "application/json")
+    const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+    if (geminiKey) {
+      for (const model of modelsToTry) {
+        try {
+          const chatUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const res = await fetch(chatUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: specPrompt }] }],
+              systemInstruction: {
+                parts: [{ text: "You are an appliance technical specification database. Return strictly a raw JSON object matching the requested schema. No conversational text." }]
+              },
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) return text;
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+        }
+      }
+    }
+
+    if (lastError) throw lastError;
+    throw new Error("Unable to reach Gemini specification database.");
+  };
+
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim()) return;
     stoppedRef.current = false;
@@ -449,6 +516,18 @@ export const ChatBot: React.FC = () => {
     setIsSearching(false);
     setSearchPipelineStep(-1);
     setActiveAddForm(null);
+
+    // If user asked to find appliances or opened finder command
+    const lowerTrim = textToSend.trim().toLowerCase();
+    if (
+      lowerTrim === 'find appliance' ||
+      lowerTrim === 'search appliance' ||
+      lowerTrim === 'find appliances' ||
+      lowerTrim === 'appliance finder'
+    ) {
+      handlePromptFindAppliance();
+      return;
+    }
 
     if (copilotMode === 'dashboard') setCopilotMode('chat');
     
@@ -467,20 +546,28 @@ export const ChatBot: React.FC = () => {
       setSearchPipelineStep(0);
 
       try {
-        // Animate through pipeline steps
-        const stepDelays = [600, 1200, 1800, 2400];
+        // Animate through pipeline steps smoothly
+        const stepDelays = [400, 900, 1400, 1900];
         const stepTimers = stepDelays.map((delay, idx) =>
           setTimeout(() => setSearchPipelineStep(idx + 1), delay)
         );
 
-        const result = await searchAppliance(textToSend, queryGeminiDirect);
+        const result = await searchAppliance(textToSend, queryGeminiSpec);
         
         // Clear step timers
         stepTimers.forEach(clearTimeout);
         setSearchPipelineStep(SEARCH_STEPS.length - 1);
 
-        // Append result message with clean spec card only
-        setMessages(prev => [...prev, { role: "model", text: "", applianceSpec: result.spec, timestamp: Date.now() }]);
+        // Append result message with clean spec card and informative header
+        setMessages(prev => [
+          ...prev,
+          {
+            role: "model",
+            text: `Found specifications for **${result.spec.name}** (${result.spec.ratedPowerW}W):`,
+            applianceSpec: result.spec,
+            timestamp: Date.now()
+          }
+        ]);
 
         // Short delay then hide pipeline
         setTimeout(() => {
@@ -495,7 +582,7 @@ export const ChatBot: React.FC = () => {
         if (stoppedRef.current) return;
         setMessages(prev => [...prev, {
           role: "model",
-          text: `I couldn't find specific data for that appliance. Try entering a more specific model number, or ask me general energy questions.`,
+          text: `I couldn't find specific data for that appliance. Try entering a more specific brand or model number (e.g. *LG 1.5 Ton AC*, *Samsung Refrigerator*), or ask me general energy questions.`,
           timestamp: Date.now()
         }]);
       }
@@ -1287,69 +1374,37 @@ export const ChatBot: React.FC = () => {
                     </div>
                     
                     {messages.map((msg, idx) => (
-                      <React.Fragment key={idx}>
-                        {msg.text.trim().length > 0 ? (
-                          <MessageBubble
-                            message={msg}
-                            index={idx}
-                            isFirstMessage={idx === 0}
-                            feedback={feedback[idx]}
-                            onFeedback={(type) => handleFeedback(idx, type)}
-                            formatText={formatText}
-                            showAddForm={activeAddForm === idx}
-                            onToggleAddForm={() => setActiveAddForm(activeAddForm === idx ? null : idx)}
-                            onAddToAudit={() => {
-                              setActiveAddForm(null);
-                              if (msg.applianceSpec) {
-                                setMessages(prev => [
-                                  ...prev,
-                                  {
-                                    role: "model",
-                                    text: `✅ Added **${msg.applianceSpec?.name}** (${msg.applianceSpec?.ratedPowerW}W) to your household energy audit!`,
-                                    timestamp: Date.now()
-                                  }
-                                ]);
+                      <MessageBubble
+                        key={idx}
+                        message={msg}
+                        index={idx}
+                        isFirstMessage={idx === 0}
+                        feedback={feedback[idx]}
+                        onFeedback={(type) => handleFeedback(idx, type)}
+                        formatText={formatText}
+                        showAddForm={activeAddForm === idx}
+                        onToggleAddForm={() => setActiveAddForm(activeAddForm === idx ? null : idx)}
+                        onAddToAudit={() => {
+                          setActiveAddForm(null);
+                          if (msg.applianceSpec) {
+                            setMessages(prev => [
+                              ...prev,
+                              {
+                                role: "model",
+                                text: `✅ Added **${msg.applianceSpec?.name}** (${msg.applianceSpec?.ratedPowerW}W) to your household energy audit!\n\n[Action: View in Audit Wizard|/dashboard]`,
+                                timestamp: Date.now()
                               }
-                            }}
-                            onViewProduct={() => {
-                              if (msg.applianceSpec?.productUrl) {
-                                window.open(msg.applianceSpec.productUrl, "_blank", "noopener,noreferrer");
-                              }
-                            }}
-                            userInitial={userInitial}
-                          />
-                        ) : msg.applianceSpec ? (
-                          <MessageBubble
-                            message={msg}
-                            index={idx}
-                            isFirstMessage={false}
-                            feedback={feedback[idx]}
-                            onFeedback={(type) => handleFeedback(idx, type)}
-                            formatText={formatText}
-                            showAddForm={activeAddForm === idx}
-                            onToggleAddForm={() => setActiveAddForm(activeAddForm === idx ? null : idx)}
-                            onAddToAudit={() => {
-                              setActiveAddForm(null);
-                              if (msg.applianceSpec) {
-                                setMessages(prev => [
-                                  ...prev,
-                                  {
-                                    role: "model",
-                                    text: `✅ Added **${msg.applianceSpec?.name}** (${msg.applianceSpec?.ratedPowerW}W) to your household energy audit!`,
-                                    timestamp: Date.now()
-                                  }
-                                ]);
-                              }
-                            }}
-                            onViewProduct={() => {
-                              if (msg.applianceSpec?.productUrl) {
-                                window.open(msg.applianceSpec.productUrl, "_blank", "noopener,noreferrer");
-                              }
-                            }}
-                            userInitial={userInitial}
-                          />
-                        ) : null}
-                      </React.Fragment>
+                            ]);
+                          }
+                        }}
+                        onViewProduct={() => {
+                          if (msg.applianceSpec?.productUrl) {
+                            window.open(msg.applianceSpec.productUrl, "_blank", "noopener,noreferrer");
+                          }
+                        }}
+                        onSelectChip={(chip) => handleSendMessage(chip)}
+                        userInitial={userInitial}
+                      />
                     ))}
 
                     {/* Appliance Search Pipeline Steps */}
