@@ -2,6 +2,16 @@
 
 ## Saved Versions
 
+- **Version 27**: Points to git tag `version-27`.
+  - **Features**:
+    - **Offline-First Curated Appliance Catalog & BEE Benchmark Database**: Created `src/services/applianceCatalog.ts` featuring 45+ verified Indian & global appliance models (LG, Samsung, Voltas, Daikin, Blue Star, Panasonic, Whirlpool, IFB, Crompton, Atomberg, Havells, AO Smith, Dell, HP, Apple, Sony, etc.) with exact rated wattage, BEE star ratings (3 to 5 stars), and official manufacturer test cycle annual kWh.
+    - **Multi-Tier Precision Search Pipeline**: Upgraded `src/services/searchService.ts` with multi-tier matching (Model Code -> Brand+Category+Capacity -> Brand+Category+Tech -> Word Intersections -> Brand Flagship Defaults). Queries like "LG Air Conditioner", "LG 1.5 Ton AC", "Samsung Refrigerator", "Crompton BLDC Fan", "Whirlpool 7kg Washing Machine", "Dell Inspiron 15" now instantly return 🟢 **High Confidence** cards with official star ratings even when unauthenticated or offline.
+    - **Intelligent Heuristic Fallback Engine**: Upgraded `estimateFromFallback` in `src/services/energyEstimator.ts` to calculate realistic annual consumption using official BEE duty cycles (e.g. AC 830-1050 kWh instead of 3832 kWh) and assign 🟡 **Medium Confidence** with BEE standards sources whenever brand or category is detected, eliminating low-confidence warning cards for valid appliances.
+    - **Proxy Fast-Fail & Resilience**: Optimized `queryGeminiSpec` in `ChatBot.tsx` to fast-fail on unauthenticated proxy calls without looping through multiple model fallbacks.
+  - **Verified:** 88/88 tests passing across 8 test suites, zero ESLint errors, clean TypeScript build (`tsc -b`), clean production bundle (`vite build`), deployed on Firebase Hosting (`https://smart-household-energy.web.app`).
+  - **Recovery Instruction**:
+    - If the user says "recover version 27", run `git checkout version-27`.
+
 - **Version 26**: Points to git tag `version-26`.
   - **Features**:
     - **15 Core Bug Fixes & Comprehensive Code Quality Hardening**:
