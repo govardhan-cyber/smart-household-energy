@@ -36,3 +36,38 @@ scratch
 .env.local
 .env.*.local
 # .env.example is intentionally NOT listed — it's safe to commit (no real values)
+
+# Documents & Presentations (Project deliverables stored locally)
+*.docx
+*.pptx
+*.pdf
+~$*
+
+# Large binaries, models & archives
+*.traineddata
+*.zip
+*.tar
+*.gz
+
+# Temporary inspection, OCR, and script files
+*inspect*.txt
+cell*.txt
+ocr_*.txt
+table*.txt
+fix_billanalyzer.ps1
+generate_pdf.py
+implementation_plan.md
+task.md
+walkthrough.md
+system_architecture.png
+framer_motion_chart.png
+figma_mobile_interface.svg
+
+# Non-source asset folders & deliverables
+home_animation/
+report_assets/
+screenshots-of-project/
+user-manual/
+slides/
+scripts/
+
